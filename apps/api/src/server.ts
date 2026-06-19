@@ -13,7 +13,7 @@ app.use(
     origin: (origin, callback) => {
       const allowedOrigins = [
         "http://localhost:3000",
-        "https://voldebug-ai-web-y9hd.vercel.app"
+        "https://voldebug-ai-web-esmp.vercel.app"
       ];
 
       // allow requests with no origin (like mobile apps / curl)
