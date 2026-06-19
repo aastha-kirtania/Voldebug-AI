@@ -104,7 +104,7 @@ function RegisterForm() {
       try {
         // 1. Register with backend API
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/v1/auth/register`,
+         `${(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/$/, "")}/v1/auth/register`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
