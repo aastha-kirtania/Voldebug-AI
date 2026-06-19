@@ -21,7 +21,7 @@ const app: Express = express();
 app.use(helmet());
 const allowedOrigins = [
   "http://localhost:3000", // Keep this for your local development
-  "https://ai-voldebug.vercel.app" // Your live Vercel frontend
+  "https://voldebug-ai-web-esmp.vercel.app" // Your live Vercel frontend
 ];
 
 app.use(
