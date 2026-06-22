@@ -108,7 +108,7 @@ export function DoubtSolver({ toolId, toolName, defaultGradeLevel = 9 }: DoubtSo
           isBlocked: true,
         };
         setMessages((prev) => [...prev, blockedMsg]);
-        toast.showError("Academic safety violation", "Your request was blocked.");
+        toast.showError("Your request was blocked.");
       } else {
         const aiMsg: Message = {
           sender: "ai",
@@ -118,7 +118,7 @@ export function DoubtSolver({ toolId, toolName, defaultGradeLevel = 9 }: DoubtSo
         setMessages((prev) => [...prev, aiMsg]);
       }
     } catch {
-      toast.showError("Request Failed", "Failed to communicate with the Doubt Solver AI.");
+      toast.showError("Failed to communicate with the Doubt Solver AI.");
     } finally {
       setLoading(false);
     }
