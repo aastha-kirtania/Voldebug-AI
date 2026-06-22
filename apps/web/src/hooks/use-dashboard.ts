@@ -30,6 +30,11 @@ interface AssignmentResponse {
 }
 
 interface DashboardStats {
+  user?: {
+    name: string | null;
+    role: string | null;
+    gradeLevel: number | null;
+  };
   xp: {
     total: number;
     level: number;

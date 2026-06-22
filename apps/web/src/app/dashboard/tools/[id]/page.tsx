@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useTool } from "@web/hooks/use-tools";
+import { useDashboardStats } from "@web/hooks/use-dashboard";
+import { DoubtSolver } from "@web/components/dashboard/doubt-solver";
 import { GradientMesh } from "@web/components/ui/background";
 import {
   ArrowLeft, ExternalLink, Users, BookOpen, Lightbulb,
@@ -59,6 +61,7 @@ const DEMO_TOOLS: Record<string, {
 
 export default function ToolDetailPage({ params }: { params: { id: string } }) {
   const { data: tool, isLoading, isError } = useTool(params.id);
+  const { data: stats } = useDashboardStats();
 
   // Use real tool data or fall back to demo
   const t = tool
@@ -72,8 +75,16 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
 
   const color = t.brandColor || "#6366f1";
 
+  const gradeLevel = stats?.user?.gradeLevel ?? 9;
+  let gradeClass = "grade-high";
+  if (gradeLevel >= 1 && gradeLevel <= 5) {
+    gradeClass = "grade-elementary";
+  } else if (gradeLevel >= 6 && gradeLevel <= 8) {
+    gradeClass = "grade-middle";
+  }
+
   return (
-    <div className="min-h-screen relative">
+    <div className={`min-h-screen relative ${gradeClass}`}>
       <GradientMesh />
 
       <div className="max-w-4xl mx-auto pb-24 lg:pb-8 px-4 md:px-6 lg:px-8">
@@ -249,6 +260,15 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
                   ))}
                 </ul>
               </div>
+            </div>
+
+            {/* AI Doubt Solver Widget */}
+            <div className="pt-4">
+              <DoubtSolver
+                toolId={params.id}
+                toolName={t.name}
+                defaultGradeLevel={gradeLevel}
+              />
             </div>
 
             {/* CTA */}

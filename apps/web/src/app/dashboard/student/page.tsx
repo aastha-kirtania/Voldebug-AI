@@ -92,8 +92,16 @@ export default function StudentDashboardPage() {
     return Math.min(100, stats.xp.total % 100);
   }, [stats]);
 
+  const gradeLevel = stats?.user?.gradeLevel ?? 9;
+  let gradeClass = "grade-high";
+  if (gradeLevel >= 1 && gradeLevel <= 5) {
+    gradeClass = "grade-elementary";
+  } else if (gradeLevel >= 6 && gradeLevel <= 8) {
+    gradeClass = "grade-middle";
+  }
+
   return (
-    <div className="min-h-screen relative selection:bg-accent/30">
+    <div className={`min-h-screen relative selection:bg-accent/30 ${gradeClass}`}>
       {/* Subtle, moody background mesh */}
       <GradientMesh className="opacity-40" />
 

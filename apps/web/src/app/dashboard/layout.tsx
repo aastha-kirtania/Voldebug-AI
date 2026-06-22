@@ -1,14 +1,23 @@
+"use client";
+
 import { type ReactNode } from "react";
 import { Navigation } from "@web/components/dashboard/navigation";
 import { NotificationBell } from "@web/components/dashboard/notification-bell";
+import { ThemeToggle } from "@web/components/dashboard/theme-toggle";
+import { useSession, signOut } from "next-auth/react";
+import { LogOut } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
+  const { data: session } = useSession();
+  const isTeacher = session?.user?.role === "TEACHER";
+  const brandHref = isTeacher ? "/dashboard/teacher" : "/dashboard/student";
+
   return (
     <div className="min-h-screen flex relative">
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex w-64 flex-col border-r border-white/5 p-4">
         <div className="px-2 py-4 mb-6">
-          <a href="/dashboard/student" className="font-display text-lg font-bold tracking-tight">
+          <a href={brandHref} className="font-display text-lg font-bold tracking-tight">
             <span className="text-gradient">VOLDEBUG</span>
             <span className="text-foreground-muted text-xs ml-1.5 font-sans font-normal">
               AI PORTAL
@@ -20,11 +29,19 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Top bar: notification bell + user */}
+        {/* Top bar: theme toggle + notification bell + logout + user */}
         <header className="sticky top-0 z-40 bg-bg/80 backdrop-blur-sm border-b border-white/5 h-14 flex items-center justify-end px-4 md:px-6 lg:px-8 gap-2">
+          <ThemeToggle />
           <NotificationBell />
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-hover border border-white/5 transition-all text-foreground-muted hover:text-foreground"
+            title="Sign Out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
           <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-xs font-bold text-accent-light border border-accent/20">
-            V
+            {session?.user?.name ? session.user.name[0].toUpperCase() : "V"}
           </div>
         </header>
 

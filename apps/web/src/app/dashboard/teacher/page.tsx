@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useTeacherDashboard } from "@web/hooks/use-teacher";
 import { GradientMesh } from "@web/components/ui/background";
@@ -9,15 +8,20 @@ import {
   GraduationCap,
   Clock,
   Users,
-  BarChart3,
+  Activity,
+  AlertTriangle,
   PlusCircle,
-  ArrowUpRight,
+  CheckSquare,
+  Megaphone,
   FileText,
+  ArrowUpRight,
   TrendingUp,
-  Eye,
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle2
+  BrainCircuit,
+  HelpCircle,
+  ShieldAlert,
+  Sparkles,
+  ExternalLink,
+  ChevronRight
 } from "lucide-react";
 
 // ─── Sophisticated Motion Variants ──────────────────────────────────────
@@ -28,16 +32,16 @@ const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.05, delayChildren: 0.1 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 15 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: smoothEase },
+    transition: { duration: 0.6, ease: smoothEase },
   },
 };
 
@@ -51,11 +55,11 @@ function GlassCard({ children, className = "" }: { children: React.ReactNode; cl
   );
 }
 
-function MiniStat({ title, value, icon }: { title: string; value: string | number; icon: React.ReactNode }) {
+function MiniStat({ title, value, icon, colorClass = "text-accent-light", bgClass = "bg-accent/10" }: { title: string; value: string | number; icon: React.ReactNode; colorClass?: string; bgClass?: string }) {
   return (
     <GlassCard className="!p-5 flex items-center gap-4 h-full">
-      <div className="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center flex-shrink-0 shadow-inner">
-        {icon}
+      <div className={`w-12 h-12 rounded-full ${bgClass} flex items-center justify-center flex-shrink-0 shadow-inner`}>
+        <div className={colorClass}>{icon}</div>
       </div>
       <div>
         <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">{title}</p>
@@ -64,8 +68,6 @@ function MiniStat({ title, value, icon }: { title: string; value: string | numbe
     </GlassCard>
   );
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -95,18 +97,6 @@ export default function TeacherDashboardPage() {
   const userName = session?.user?.name?.split(" ")[0] || "Teacher";
   const { data, isLoading } = useTeacherDashboard();
 
-  // Pagination Logic
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-
-  const recentSubmissions = data?.recentSubmissions || [];
-  const totalPages = Math.max(1, Math.ceil(recentSubmissions.length / itemsPerPage));
-
-  const currentSubmissions = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return recentSubmissions.slice(start, start + itemsPerPage);
-  }, [recentSubmissions, currentPage, itemsPerPage]);
-
   return (
     <div className="min-h-screen relative selection:bg-accent/30">
       <GradientMesh className="opacity-40" />
@@ -122,12 +112,10 @@ export default function TeacherDashboardPage() {
           <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <h1 className="font-display text-4xl md:text-5xl font-medium tracking-tight text-foreground">
-                {getGreeting()}, <span className="text-foreground-muted">{userName.split(" ")[0]}.</span>
+                {getGreeting()}, <span className="text-foreground-muted">{userName}.</span>
               </h1>
               <p className="text-sm md:text-base text-foreground-subtle mt-3 font-medium tracking-wide">
-                {isLoading ? "Loading your teaching overview..." : (
-                  <>You have <span className="text-foreground">{data?.activeAssignments ?? 0}</span> active assignments and <span className="text-warning">{data?.pendingSubmissions ?? 0}</span> pending submissions.</>
-                )}
+                Welcome to your dashboard. Here is your classes and students safety overview.
               </p>
             </div>
 
@@ -136,290 +124,386 @@ export default function TeacherDashboardPage() {
                 <GraduationCap className="w-5 h-5 text-accent-light" />
               </div>
               <div>
-                <p className="text-xs text-foreground-subtle font-medium uppercase tracking-wider mb-0.5">Faculty Status</p>
+                <p className="text-xs text-foreground-subtle font-medium uppercase tracking-wider mb-0.5">Role</p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-semibold leading-none text-accent-light">Active</span>
+                  <span className="text-sm font-semibold leading-none text-accent-light">Educator</span>
                 </div>
               </div>
             </div>
           </motion.div>
 
-          {/* Stats Bento Grid */}
+          {/* Overview Cards */}
           <motion.div
             variants={itemVariants}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
           >
-            <MiniStat title="Assignments" value={data?.activeAssignments ?? 0} icon={<FileText className="w-5 h-5 text-accent-light" />} />
-            <MiniStat title="To Grade" value={data?.pendingSubmissions ?? 0} icon={<Clock className="w-5 h-5 text-warning" />} />
-            <MiniStat title="Students" value={data?.totalStudents ?? 0} icon={<Users className="w-5 h-5 text-info" />} />
-            <MiniStat title="Avg Grade" value={data?.averageGrade != null ? `${Math.round(data.averageGrade)}%` : "—"} icon={<BarChart3 className="w-5 h-5 text-success" />} />
+            <MiniStat
+              title="Total Students"
+              value={isLoading ? "—" : (data?.totalStudents ?? 0)}
+              icon={<Users className="w-5 h-5" />}
+              colorClass="text-accent-light"
+              bgClass="bg-accent/15"
+            />
+            <MiniStat
+              title="Active Today"
+              value={isLoading ? "—" : (data?.activeStudentsToday ?? 0)}
+              icon={<Activity className="w-5 h-5" />}
+              colorClass="text-success"
+              bgClass="bg-success/15"
+            />
+            <MiniStat
+              title="Pending Review"
+              value={isLoading ? "—" : (data?.pendingSubmissions ?? 0)}
+              icon={<Clock className="w-5 h-5" />}
+              colorClass="text-warning"
+              bgClass="bg-warning/15"
+            />
+            <MiniStat
+              title="Safety Alerts"
+              value={isLoading ? "—" : (data?.safetyAlertsCount ?? 0)}
+              icon={<AlertTriangle className="w-5 h-5" />}
+              colorClass="text-error"
+              bgClass="bg-error/15"
+            />
           </motion.div>
 
-          {/* Quick Actions */}
-          <motion.div variants={itemVariants}>
-            <GlassCard className="!p-6">
-              <h2 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-5 ml-2">Quick Actions</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <QuickAction
-                  icon={<PlusCircle className="w-5 h-5" />}
-                  label="Create Assignment"
-                  href="/dashboard/teacher/create-assignment"
-                  primary
-                />
-                <QuickAction
-                  icon={<Eye className="w-5 h-5" />}
-                  label="View Classes"
-                  href="/dashboard/teacher/classes"
-                />
-                <QuickAction
-                  icon={<TrendingUp className="w-5 h-5" />}
-                  label="Class Analytics"
-                  href="/dashboard/teacher/analytics"
-                />
-                <QuickAction
-                  icon={<Clock className="w-5 h-5" />}
-                  label="Pending Grading"
-                  href="/dashboard/teacher/grading"
-                  badge={data?.pendingSubmissions}
-                />
-              </div>
-            </GlassCard>
-          </motion.div>
-
-          {/* Two-column layout */}
+          {/* Row 2: Recent Activity & Quick Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            {/* Recent Submissions Queue (With Pagination) */}
-            <div className="lg:col-span-2 space-y-6 flex flex-col">
-              <motion.div variants={itemVariants} className="flex-1">
-                <GlassCard className="h-full flex flex-col">
+            
+            {/* Chronological Activity Feed */}
+            <motion.div variants={itemVariants} className="lg:col-span-2">
+              <GlassCard className="h-full flex flex-col justify-between">
+                <div>
                   <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
                     <div className="flex items-center gap-3">
-                      <GraduationCap className="w-5 h-5 text-foreground-muted" />
-                      <h2 className="text-base font-medium text-foreground tracking-wide">Recent Submissions</h2>
+                      <Activity className="w-5 h-5 text-foreground-muted" />
+                      <h2 className="text-base font-medium text-foreground tracking-wide">Recent Student Activity</h2>
                     </div>
-                    {(recentSubmissions.length > 0) && (
-                      <a href="/dashboard/teacher/grading" className="text-xs font-medium text-foreground-subtle hover:text-foreground transition-colors flex items-center gap-1">
-                        Grade all <ArrowUpRight className="w-3.5 h-3.5" />
-                      </a>
-                    )}
                   </div>
 
                   {isLoading ? (
                     <div className="space-y-4">
-                      {[1, 2, 3].map((i) => (
+                      {[1, 2, 3, 4].map((i) => (
                         <div key={i} className="h-16 rounded-2xl bg-white/5 animate-pulse" />
                       ))}
                     </div>
-                  ) : recentSubmissions.length === 0 ? (
-                    <EmptyState
-                      icon={<CheckCircle2 className="w-8 h-8 text-foreground-subtle" />}
-                      title="No submissions yet"
-                      description="Student submissions will appear here once they turn in work."
-                    />
+                  ) : !data?.recentActivity || data.recentActivity.length === 0 ? (
+                    <div className="text-center py-12 text-foreground-muted">
+                      No student activity logged recently.
+                    </div>
                   ) : (
-                    <div className="flex flex-col flex-1 justify-between">
-                      <div className="space-y-2 mb-6">
-                        <AnimatePresence mode="popLayout">
-                          {currentSubmissions.map((sub) => (
-                            <SubmissionRow key={sub.id} sub={sub} />
-                          ))}
-                        </AnimatePresence>
-                      </div>
+                    <div className="space-y-3">
+                      {data.recentActivity.map((act) => {
+                        let badgeColor = "bg-white/5 text-foreground-muted border-white/5";
+                        let icon = <FileText className="w-3.5 h-3.5" />;
+                        if (act.type === "SAFETY_ALERT") {
+                          badgeColor = "bg-error/10 text-error border-error/20";
+                          icon = <AlertTriangle className="w-3.5 h-3.5" />;
+                        } else if (act.type === "SUBMISSION") {
+                          badgeColor = "bg-warning/10 text-warning border-warning/20";
+                          icon = <Clock className="w-3.5 h-3.5" />;
+                        } else if (act.type === "COMPLETION") {
+                          badgeColor = "bg-success/10 text-success border-success/20";
+                          icon = <CheckSquare className="w-3.5 h-3.5" />;
+                        } else if (act.type === "AI_USE") {
+                          badgeColor = "bg-accent/10 text-accent-light border-accent/20";
+                          icon = <BrainCircuit className="w-3.5 h-3.5" />;
+                        }
 
-                      {/* Pagination Controls */}
-                      {totalPages > 1 && (
-                        <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
-                          <span className="text-xs text-foreground-subtle font-medium">
-                            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, recentSubmissions.length)} of {recentSubmissions.length}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                              disabled={currentPage === 1}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 border border-white/5 text-foreground hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                            >
-                              <ChevronLeft className="w-4 h-4" />
-                            </button>
-                            <span className="text-xs font-semibold px-2">{currentPage} / {totalPages}</span>
-                            <button
-                              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                              disabled={currentPage === totalPages}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 border border-white/5 text-foreground hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                            >
-                              <ChevronRight className="w-4 h-4" />
-                            </button>
+                        return (
+                          <div
+                            key={act.id}
+                            className="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.04] transition-all duration-300 gap-4"
+                          >
+                            <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${badgeColor}`}>
+                                {icon}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-foreground truncate">
+                                  <span className="font-semibold text-foreground-muted">{act.studentName}</span> {act.detail}
+                                </p>
+                                <p className="text-[10px] text-foreground-subtle mt-0.5">{timeAgo(act.timestamp)}</p>
+                              </div>
+                            </div>
+                            <span className="text-[11px] font-bold uppercase tracking-widest text-foreground-subtle hidden sm:inline-block">
+                              {act.type}
+                            </span>
                           </div>
-                        </div>
-                      )}
+                        );
+                      })}
                     </div>
                   )}
-                </GlassCard>
-              </motion.div>
-            </div>
+                </div>
+              </GlassCard>
+            </motion.div>
 
-            {/* Right: Class Performance */}
-            <div className="space-y-6">
-              <motion.div variants={itemVariants} className="h-full">
-                <GlassCard className="h-full">
-                  <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6">
-                    Class Performance
+            {/* Quick Actions Card */}
+            <motion.div variants={itemVariants}>
+              <GlassCard className="h-full flex flex-col">
+                <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6">
+                  Quick Actions
+                </h3>
+                <div className="grid grid-cols-1 gap-3.5 flex-1">
+                  <a
+                    href="/dashboard/teacher/create-assignment"
+                    className="flex items-center justify-between p-4 rounded-2xl border border-accent/20 bg-accent-surface hover:bg-accent-surface-hover hover:border-accent/30 transition-all duration-300 group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <PlusCircle className="w-5 h-5 text-accent-light" />
+                      <span className="text-sm font-medium text-foreground">Create Assignment</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-foreground-subtle group-hover:text-foreground transition-colors" />
+                  </a>
+
+                  <a
+                    href="/dashboard/teacher/grading"
+                    className="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/5 hover:border-white/10 transition-all duration-300 group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <CheckSquare className="w-5 h-5 text-warning" />
+                      <span className="text-sm font-medium text-foreground">Review Submissions</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {data?.pendingSubmissions != null && data.pendingSubmissions > 0 && (
+                        <span className="px-2 py-0.5 rounded-full bg-warning/20 border border-warning/30 text-[10px] font-bold text-warning">
+                          {data.pendingSubmissions}
+                        </span>
+                      )}
+                      <ChevronRight className="w-4 h-4 text-foreground-subtle group-hover:text-foreground transition-colors" />
+                    </div>
+                  </a>
+
+                  <a
+                    href="/dashboard/teacher/announcements"
+                    className="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/5 hover:border-white/10 transition-all duration-300 group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Megaphone className="w-5 h-5 text-info" />
+                      <span className="text-sm font-medium text-foreground">Send Announcement</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-foreground-subtle group-hover:text-foreground transition-colors" />
+                  </a>
+
+                  <a
+                    href="/dashboard/teacher/analytics"
+                    className="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/5 hover:border-white/10 transition-all duration-300 group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-5 h-5 text-success" />
+                      <span className="text-sm font-medium text-foreground">View Reports</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-foreground-subtle group-hover:text-foreground transition-colors" />
+                  </a>
+                </div>
+              </GlassCard>
+            </motion.div>
+          </div>
+
+          {/* Row 3: AI Usage Summary, Frequently Asked Doubts & Classes */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            {/* AI Usage Summary */}
+            <motion.div variants={itemVariants}>
+              <GlassCard className="h-full flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <BrainCircuit className="w-4 h-4 text-accent-light" />
+                    AI Usage Summary
                   </h3>
 
                   {isLoading ? (
                     <div className="space-y-4">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="h-8 rounded bg-white/5 animate-pulse" />
+                      {[1, 2, 3].map((i) => <div key={i} className="h-8 rounded bg-white/5 animate-pulse" />)}
+                    </div>
+                  ) : !data?.aiUsage || data.aiUsage.mostUsedTools.length === 0 ? (
+                    <div className="text-center py-8 text-foreground-subtle text-xs">No AI usage logged.</div>
+                  ) : (
+                    <div className="space-y-4">
+                      {data.aiUsage.mostUsedTools.map((tool) => {
+                        const maxCount = Math.max(...data.aiUsage.mostUsedTools.map(t => t.count));
+                        const percent = maxCount > 0 ? (tool.count / maxCount) * 100 : 0;
+                        return (
+                          <div key={tool.name} className="space-y-1.5">
+                            <div className="flex items-center justify-between text-xs font-medium">
+                              <span className="text-foreground-muted">{tool.name}</span>
+                              <span className="text-foreground font-semibold">{tool.count} uses</span>
+                            </div>
+                            <div className="h-2 bg-surface rounded-full overflow-hidden border border-white/5">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${percent}%` }}
+                                transition={{ duration: 1, ease: smoothEase }}
+                                className="h-full rounded-full"
+                                style={{ backgroundColor: tool.brandColor }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {!isLoading && data?.aiUsage && (
+                  <div className="grid grid-cols-2 gap-4 mt-6 pt-5 border-t border-white/5 text-center">
+                    <div>
+                      <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">Daily Count</p>
+                      <p className="text-xl font-semibold text-foreground">{data.aiUsage.dailyUsage}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">Weekly Count</p>
+                      <p className="text-xl font-semibold text-foreground">{data.aiUsage.weeklyUsage}</p>
+                    </div>
+                  </div>
+                )}
+              </GlassCard>
+            </motion.div>
+
+            {/* Frequently Asked Doubts */}
+            <motion.div variants={itemVariants}>
+              <GlassCard className="h-full flex flex-col">
+                <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6 flex items-center gap-2">
+                  <HelpCircle className="w-4 h-4 text-warning" />
+                  Frequently Asked Doubts
+                </h3>
+
+                {isLoading ? (
+                  <div className="flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="h-8 w-16 rounded-full bg-white/5 animate-pulse" />)}
+                  </div>
+                ) : !data?.frequentDoubts || data.frequentDoubts.length === 0 ? (
+                  <div className="text-center py-8 text-foreground-subtle text-xs flex-1 flex items-center justify-center">
+                    No doubts analyzed yet.
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2 flex-1 items-start">
+                    {data.frequentDoubts.map((doubt) => (
+                      <span
+                        key={doubt.word}
+                        className="px-3.5 py-1.5 rounded-full bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 text-xs font-medium text-foreground-muted flex items-center gap-1.5 transition-all cursor-default"
+                      >
+                        <span>{doubt.word}</span>
+                        <span className="px-1.5 py-0.5 rounded-full bg-accent/20 text-[10px] text-accent-light font-bold">
+                          {doubt.count}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </GlassCard>
+            </motion.div>
+
+            {/* Teacher Classes */}
+            <motion.div variants={itemVariants}>
+              <GlassCard className="h-full flex flex-col">
+                <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6 flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4 text-info" />
+                  Your Classes
+                </h3>
+
+                {isLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2].map((i) => <div key={i} className="h-12 rounded-xl bg-white/5 animate-pulse" />)}
+                  </div>
+                ) : !data?.classInfo || data.classInfo.length === 0 ? (
+                  <div className="text-center py-8 text-foreground-subtle text-xs flex-1 flex items-center justify-center">
+                    No classes assigned yet.
+                  </div>
+                ) : (
+                  <div className="space-y-2 flex-1 overflow-y-auto">
+                    {data.classInfo.map((cls) => (
+                      <a
+                        key={cls.id}
+                        href={`/dashboard/teacher/classes/${cls.id}`}
+                        className="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/[0.01] hover:bg-white/5 hover:border-white/10 transition-all group"
+                      >
+                        <span className="text-xs font-medium text-foreground-muted group-hover:text-accent-light transition-colors truncate">
+                          {cls.name}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-semibold text-foreground-subtle bg-surface px-2 py-1 rounded-md border border-white/5">
+                            {cls._count?.members ?? 0} students
+                          </span>
+                          <ExternalLink className="w-3.5 h-3.5 text-foreground-subtle opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </GlassCard>
+            </motion.div>
+          </div>
+
+          {/* Safety Alerts Preview */}
+          <motion.div variants={itemVariants}>
+            <GlassCard>
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <ShieldAlert className="w-5 h-5 text-error" />
+                  <h2 className="text-base font-medium text-foreground tracking-wide">Safety Alerts Preview</h2>
+                </div>
+                <a
+                  href="/dashboard/teacher/analytics"
+                  className="text-xs font-medium text-foreground-subtle hover:text-foreground transition-colors flex items-center gap-1"
+                >
+                  View full history <ArrowUpRight className="w-3.5 h-3.5" />
+                </a>
+              </div>
+
+              {isLoading ? (
+                <div className="space-y-4">
+                  {[1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-white/5 animate-pulse" />)}
+                </div>
+              ) : !data?.safetyAlertsPreview || data.safetyAlertsPreview.length === 0 ? (
+                <div className="text-center py-8 text-foreground-muted text-xs">
+                  No safety flags triggered recently. All students are following academic integrity rules.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-white/5 text-[10px] font-bold text-foreground-subtle uppercase tracking-wider">
+                        <th className="pb-3 pr-4">Student</th>
+                        <th className="pb-3 pr-4">Grade</th>
+                        <th className="pb-3 pr-4">Flagged Query</th>
+                        <th className="pb-3 pr-4">AI Tool</th>
+                        <th className="pb-3 pr-4">Category</th>
+                        <th className="pb-3 pr-4">Severity</th>
+                        <th className="pb-3">Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 text-xs text-foreground-muted font-medium">
+                      {data.safetyAlertsPreview.map((alert) => (
+                        <tr key={alert.id} className="hover:bg-white/[0.01] transition-all">
+                          <td className="py-3.5 pr-4 text-foreground font-semibold">{alert.studentName}</td>
+                          <td className="py-3.5 pr-4">Grade {alert.gradeLevel || "—"}</td>
+                          <td className="py-3.5 pr-4 italic max-w-xs truncate" title={alert.promptText}>
+                            "{alert.promptText}"
+                          </td>
+                          <td className="py-3.5 pr-4">{alert.toolUsed}</td>
+                          <td className="py-3.5 pr-4">
+                            <span className="px-2 py-0.5 rounded bg-error/10 text-error border border-error/15 text-[10px] font-bold">
+                              {alert.category}
+                            </span>
+                          </td>
+                          <td className="py-3.5 pr-4">
+                            <span className="px-2 py-0.5 rounded bg-error/15 text-error text-[10px] font-bold">
+                              {alert.severity}
+                            </span>
+                          </td>
+                          <td className="py-3.5 text-foreground-subtle">{timeAgo(alert.timestamp)}</td>
+                        </tr>
                       ))}
-                    </div>
-                  ) : data ? (
-                    <div className="space-y-6">
-                      <PerformanceMetric
-                        label="Completion Rate"
-                        value={data.completionRate}
-                        suffix="%"
-                        color="var(--color-success)"
-                      />
-                      {data.averageGrade != null && (
-                        <PerformanceMetric
-                          label="Average Score"
-                          value={Math.round(data.averageGrade)}
-                          suffix="%"
-                          color="var(--color-accent)"
-                        />
-                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </GlassCard>
+          </motion.div>
 
-                      <div className="pt-5 border-t border-white/5 space-y-3">
-                        <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-2">Your Classes</p>
-                        {data.classInfo.length > 0 ? (
-                          data.classInfo.map((cls) => (
-                            <a
-                              key={cls.id}
-                              href={`/dashboard/teacher/classes/${cls.id}`}
-                              className="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/10 hover:border-white/10 transition-all group"
-                            >
-                              <span className="text-sm font-medium text-foreground group-hover:text-accent-light transition-colors truncate">{cls.name}</span>
-                              <span className="text-xs font-semibold text-foreground-muted bg-surface/50 px-2 py-1 rounded-md border border-white/5">
-                                {cls._count?.members ?? 0} students
-                              </span>
-                            </a>
-                          ))
-                        ) : (
-                          <p className="text-xs text-foreground-subtle text-center py-4 bg-white/5 rounded-xl border border-white/5">No classes created yet</p>
-                        )}
-                      </div>
-                    </div>
-                  ) : null}
-                </GlassCard>
-              </motion.div>
-            </div>
-
-          </div>
         </motion.div>
       </div>
-    </div>
-  );
-}
-
-// ─── Sub-components ─────────────────────────────────────────────────────
-
-function QuickAction({ icon, label, href, primary = false, badge }: { icon: React.ReactNode; label: string; href: string; primary?: boolean; badge?: number; }) {
-  return (
-    <a
-      href={href}
-      className={`group flex flex-col items-center justify-center gap-3 p-5 rounded-[1.5rem] border transition-all duration-300 ${primary
-          ? "bg-gradient-to-br from-accent/20 to-accent/5 border-accent/20 hover:border-accent/40 hover:shadow-[0_0_20px_rgba(99,102,241,0.15)]"
-          : "bg-white/[0.02] border-white/5 hover:bg-white/10 hover:border-white/10"
-        }`}
-    >
-      <div className="relative">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${primary ? "bg-accent/20 text-accent-light" : "bg-white/5 text-foreground-muted group-hover:text-foreground"} transition-colors`}>
-          {icon}
-        </div>
-        {badge != null && badge > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-warning border-2 border-background text-[10px] font-black flex items-center justify-center text-white shadow-sm">
-            {badge}
-          </span>
-        )}
-      </div>
-      <span className={`text-xs font-semibold text-center leading-tight ${primary ? "text-accent-light" : "text-foreground-subtle group-hover:text-foreground"} transition-colors`}>{label}</span>
-    </a>
-  );
-}
-
-function SubmissionRow({ sub }: { sub: any }) {
-  const needsGrading = sub.status === "SUBMITTED";
-  return (
-    <motion.a
-      href={`/dashboard/teacher/grading/${sub.id}`}
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.2 }}
-      className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/10 hover:border-white/10 transition-all duration-300 gap-4"
-    >
-      <div className="flex items-center gap-4 min-w-0 flex-1">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center text-sm font-bold text-foreground shadow-inner flex-shrink-0 group-hover:from-accent/20 group-hover:to-accent/5 group-hover:text-accent-light transition-all">
-          {sub.studentName[0]?.toUpperCase() ?? "?"}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-foreground group-hover:text-accent-light transition-colors truncate">
-            {sub.studentName}
-          </p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-[11px] text-foreground-subtle truncate max-w-[200px] sm:max-w-xs">
-              {sub.assignmentTitle}
-            </p>
-            <span className="w-1 h-1 rounded-full bg-white/10" />
-            <p className="text-[11px] text-foreground-muted font-medium">
-              {timeAgo(sub.submittedAt)}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
-        <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md border ${needsGrading ? "bg-warning/10 text-warning border-warning/20" : "bg-white/5 text-foreground-subtle border-white/5"}`}>
-          {needsGrading ? "Needs Grading" : sub.status}
-        </span>
-        <div className="w-8 h-8 rounded-full border border-white/5 flex items-center justify-center group-hover:bg-white/10 group-hover:border-white/10 transition-all duration-300">
-          <ArrowUpRight className="w-3.5 h-3.5 text-foreground-muted group-hover:text-foreground transition-colors" />
-        </div>
-      </div>
-    </motion.a>
-  );
-}
-
-function PerformanceMetric({ label, value, suffix, color }: { label: string; value: number; suffix: string; color: string; }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-foreground-muted">{label}</span>
-        <span className="text-sm font-bold" style={{ color }}>{value}{suffix}</span>
-      </div>
-      <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${Math.min(value, 100)}%` }}
-          transition={{ duration: 1.5, ease: smoothEase }}
-          className="h-full rounded-full relative"
-          style={{ backgroundColor: color }}
-        >
-          <div className="absolute top-0 right-0 bottom-0 w-10 bg-gradient-to-l from-white/30 to-transparent" />
-        </motion.div>
-      </div>
-    </div>
-  );
-}
-
-function EmptyState({ icon, title, description }: { icon: React.ReactNode; title: string; description: string; }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-12 text-center h-full">
-      <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4 text-foreground-muted">
-        {icon}
-      </div>
-      <p className="text-sm font-medium text-foreground">{title}</p>
-      <p className="text-xs text-foreground-subtle max-w-xs mt-1">{description}</p>
     </div>
   );
 }

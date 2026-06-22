@@ -12,14 +12,50 @@ export interface TeacherClass {
   _count?: { assignments: number; members: number };
 }
 
+export interface TeacherActivity {
+  id: string;
+  studentName: string;
+  type: "SUBMISSION" | "COMPLETION" | "SAFETY_ALERT" | "AI_USE";
+  detail: string;
+  timestamp: string;
+}
+
+export interface TeacherAIUsage {
+  mostUsedTools: { name: string; count: number; brandColor: string }[];
+  dailyUsage: number;
+  weeklyUsage: number;
+}
+
+export interface TeacherFrequentDoubt {
+  word: string;
+  count: number;
+}
+
+export interface TeacherSafetyAlert {
+  id: string;
+  studentName: string;
+  gradeLevel: number | null;
+  promptText: string;
+  toolUsed: string;
+  category: string;
+  severity: string;
+  timestamp: string;
+}
+
 export interface TeacherDashboard {
   activeAssignments: number;
   pendingSubmissions: number;
   totalStudents: number;
+  activeStudentsToday: number;
+  safetyAlertsCount: number;
   averageGrade: number | null;
   completionRate: number;
   classInfo: TeacherClass[];
   recentSubmissions: PendingSubmission[];
+  recentActivity: TeacherActivity[];
+  aiUsage: TeacherAIUsage;
+  frequentDoubts: TeacherFrequentDoubt[];
+  safetyAlertsPreview: TeacherSafetyAlert[];
 }
 
 export interface PendingSubmission {
@@ -184,5 +220,21 @@ export function useDeleteAssignment() {
       qc.invalidateQueries({ queryKey: ["assignments"] });
       qc.invalidateQueries({ queryKey: ["teacher"] });
     },
+  });
+}
+
+export function useTeacherAlerts() {
+  return useQuery({
+    queryKey: ["teacher", "alerts"],
+    queryFn: () => api.get<TeacherSafetyAlert[]>("/v1/teacher/alerts"),
+    staleTime: 15_000,
+  });
+}
+
+export function useTeacherAnalytics() {
+  return useQuery({
+    queryKey: ["teacher", "analytics"],
+    queryFn: () => api.get<any>("/v1/teacher/analytics"),
+    staleTime: 30_000,
   });
 }

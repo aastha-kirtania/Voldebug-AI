@@ -91,6 +91,11 @@ export async function handleDashboardStats(req: Request, res: Response) {
     );
 
     return apiSuccess(res, {
+      user: {
+        name: user?.name || null,
+        role: user?.role || null,
+        gradeLevel: user?.gradeLevel || null,
+      },
       xp: {
         total: totalXP,
         level,
