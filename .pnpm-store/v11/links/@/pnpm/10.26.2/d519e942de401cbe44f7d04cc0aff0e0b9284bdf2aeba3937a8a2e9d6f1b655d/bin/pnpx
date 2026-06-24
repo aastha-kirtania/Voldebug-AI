@@ -1,0 +1,17 @@
+#!/bin/sh
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+
+case `uname` in
+    *CYGWIN*|*MINGW*|*MSYS*)
+        if command -v cygpath > /dev/null 2>&1; then
+            basedir=`cygpath -w "$basedir"`
+        fi
+    ;;
+esac
+
+if [ -x "$basedir/node" ]; then
+  exec "$basedir/node"  "$basedir/../node_modules/pnpm/bin/pnpx.cjs" "$@"
+else
+  exec node  "$basedir/../node_modules/pnpm/bin/pnpx.cjs" "$@"
+fi
+# cmd-shim-target=C:/Users/KIIT0001/VoldeBug.AI-main/VoldeBug.AI-main/.pnpm-store/v11/links/@/pnpm/10.26.2/d519e942de401cbe44f7d04cc0aff0e0b9284bdf2aeba3937a8a2e9d6f1b655d/node_modules/pnpm/bin/pnpx.cjs

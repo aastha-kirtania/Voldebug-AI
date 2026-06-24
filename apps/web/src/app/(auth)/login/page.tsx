@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense, useCallback } from "react";
-import { signIn, getSession } from "next-auth/react";
+import { signIn, getSession, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@web/components/ui/input";
@@ -76,6 +76,7 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const { status } = useSession();
 
   useEffect(() => {
     if (errorParam) {
@@ -110,12 +111,19 @@ function LoginForm() {
     }
   }, [callbackUrl, router]);
 
+  // Handle auto-routing after OAuth redirects back to /login
+  useEffect(() => {
+    if (status === "authenticated") {
+      routeAfterLogin();
+    }
+  }, [status, routeAfterLogin]);
+
   // ── Google sign-in ────────────────────────────────────────────────────
   const handleGoogle = useCallback(async () => {
     setGoogleLoading(true);
     setError(undefined);
     try {
-      await signIn("google", { callbackUrl: "/dashboard" });
+      await signIn("google", { callbackUrl: "/login" });
     } catch {
       setError("Google sign-in failed. Please try again.");
       setGoogleLoading(false);

@@ -79,15 +79,21 @@ function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
 
   const strength = getPasswordStrength(password);
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const emailErrorMsg = emailTouched && email.length > 0 && !isEmailValid ? "Please enter a valid email address." : "";
+  const passwordErrorMsg = passwordTouched && password.length > 0 && password.length < 8 ? "Password must be at least 8 characters." : "";
 
   // ── Google sign-up ──────────────────────────────────────────────────────
   const handleGoogle = useCallback(async () => {
     setGoogleLoading(true);
     setError(undefined);
     // Google sign-up = same flow as Google sign-in; backend auto-creates user
-    await signIn("google", { callbackUrl: "/role-select" });
+    // Route to /login after callback so it uses the smart role/onboarding routing
+    await signIn("google", { callbackUrl: "/login" });
   }, []);
 
   // ── Email / password registration ───────────────────────────────────────
@@ -236,9 +242,15 @@ function RegisterForm() {
               placeholder="you@school.edu"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setEmailTouched(true)}
               disabled={loading}
-              className="w-full transition-shadow focus:ring-2 focus:ring-accent/20"
+              className={`w-full transition-shadow focus:ring-2 ${emailErrorMsg ? "border-error focus:ring-error/20" : "focus:ring-accent/20"}`}
             />
+            {emailErrorMsg && (
+              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-error">
+                {emailErrorMsg}
+              </motion.p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -254,8 +266,9 @@ function RegisterForm() {
                 placeholder="Min. 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => setPasswordTouched(true)}
                 disabled={loading}
-                className="w-full pr-10 transition-shadow focus:ring-2 focus:ring-accent/20"
+                className={`w-full pr-10 transition-shadow focus:ring-2 ${passwordErrorMsg ? "border-error focus:ring-error/20" : "focus:ring-accent/20"}`}
               />
               <button
                 type="button"
@@ -266,6 +279,11 @@ function RegisterForm() {
                 {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
               </button>
             </div>
+            {passwordErrorMsg && (
+              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-error mt-1">
+                {passwordErrorMsg}
+              </motion.p>
+            )}
 
             {/* Password strength meter */}
             {password.length > 0 && (
@@ -296,7 +314,7 @@ function RegisterForm() {
             variant="primary"
             size="lg"
             className="w-full font-semibold mt-2"
-            disabled={loading || !name || !email || password.length < 8}
+            disabled={loading || !name || !isEmailValid || password.length < 8}
           >
             {loading ? (
               <>
@@ -315,9 +333,9 @@ function RegisterForm() {
         {/* Terms */}
         <p className="text-xs text-foreground-muted text-center leading-relaxed px-4">
           By registering, you agree to our{" "}
-          <a href="#" className="text-accent font-medium hover:text-accent-light transition-colors">Terms of Service</a>
+          <Link href="/terms" className="text-accent font-medium hover:text-accent-light transition-colors">Terms of Service</Link>
           {" "}and{" "}
-          <a href="#" className="text-accent font-medium hover:text-accent-light transition-colors">Privacy Policy</a>.
+          <Link href="/privacy" className="text-accent font-medium hover:text-accent-light transition-colors">Privacy Policy</Link>.
         </p>
 
         {/* Switch to login */}
