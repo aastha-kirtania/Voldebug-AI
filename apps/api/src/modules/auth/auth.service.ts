@@ -184,7 +184,7 @@ export async function requestPasswordReset(input: { email: string }) {
   const resendApiKey = process.env.RESEND_API_KEY;
   if (resendApiKey && !resendApiKey.startsWith("re_your")) {
     try {
-      const res: globalThis.Response = await fetch("https://api.resend.com/emails", {
+      const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${resendApiKey}`,
