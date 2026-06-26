@@ -7,6 +7,8 @@ import {
   handleSetRole,
   handleMe,
   handleProviderLogin,
+  handleForgotPassword,
+  handleResetPassword,
 } from "./auth.controller.js";
 
 const authRouter = express.Router();
@@ -16,5 +18,7 @@ authRouter.post("/login", authLimiter, handleLogin);
 authRouter.post("/role", authLimiter, authenticate, handleSetRole);
 authRouter.get("/me", authenticate, handleMe);
 authRouter.post("/provider", authLimiter, handleProviderLogin);
+authRouter.post("/forgot-password", authLimiter, handleForgotPassword);
+authRouter.post("/reset-password", authLimiter, handleResetPassword);
 
 export { authRouter };

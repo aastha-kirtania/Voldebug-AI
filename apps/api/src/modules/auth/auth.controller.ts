@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { registerUser, loginUser, setUserRole, getUserById, createUserFromProvider } from "./auth.service.js";
+import { registerUser, loginUser, setUserRole, getUserById, createUserFromProvider, requestPasswordReset, resetPasswordWithToken } from "./auth.service.js";
 import { apiSuccess, apiError } from "../../utils/api.js";
 import { generateToken } from "../../utils/jwt.js";
 import { logger } from "../../middleware/requestLogger.js";
@@ -113,6 +113,32 @@ export async function handleProviderLogin(req: Request, res: Response) {
       code: "PROVIDER_LOGIN_FAILED",
       message: "Could not create or find user",
       status: 500,
+    });
+  }
+}
+
+export async function handleForgotPassword(req: Request, res: Response) {
+  try {
+    const result = await requestPasswordReset(req.body);
+    return apiSuccess(res, result);
+  } catch (err) {
+    return apiError(res, {
+      code: "FORGOT_PASSWORD_FAILED",
+      message: (err as Error).message,
+      status: 400,
+    });
+  }
+}
+
+export async function handleResetPassword(req: Request, res: Response) {
+  try {
+    const result = await resetPasswordWithToken(req.body);
+    return apiSuccess(res, result);
+  } catch (err) {
+    return apiError(res, {
+      code: "RESET_PASSWORD_FAILED",
+      message: (err as Error).message,
+      status: 400,
     });
   }
 }

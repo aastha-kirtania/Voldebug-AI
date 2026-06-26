@@ -18,6 +18,9 @@ import { limiter } from "./middleware/rateLimiter.js";
 
 const app: Express = express();
 
+// Trust reverse proxy headers (e.g., X-Forwarded-For)
+app.set("trust proxy", 1);
+
 app.use(helmet());
 const allowedOrigins = [
   "http://localhost:3000", // Keep this for your local development

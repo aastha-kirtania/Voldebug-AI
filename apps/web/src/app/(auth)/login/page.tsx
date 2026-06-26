@@ -78,6 +78,20 @@ function LoginForm() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { status } = useSession();
 
+  // Reset loading states when page is restored from browser back/forward cache (bfcache)
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        setGoogleLoading(false);
+        setEmailLoading(false);
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
   useEffect(() => {
     if (errorParam) {
       setError(ERROR_MAP[errorParam] ?? ERROR_MAP.Default);
@@ -233,12 +247,12 @@ function LoginForm() {
               <label htmlFor="password" className="text-sm font-medium text-foreground">
                 Password
               </label>
-              <button
-                type="button"
+              <Link
+                href="/forgot-password"
                 className="text-xs font-medium text-accent hover:text-accent-light transition-colors"
               >
                 Forgot password?
-              </button>
+              </Link>
             </div>
             <div className="relative">
               <Input

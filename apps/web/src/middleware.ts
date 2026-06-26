@@ -2,7 +2,7 @@ import { auth } from "./lib/auth";
 import { NextResponse } from "next/server";
 
 // Public paths that don't require authentication
-const PUBLIC_PATHS = ["/", "/login", "/register", "/role-select", "/terms", "/privacy"];
+const PUBLIC_PATHS = ["/", "/login", "/register", "/role-select", "/terms", "/privacy", "/forgot-password", "/reset-password"];
 const PUBLIC_PREFIXES = ["/onboarding", "/api", "/_next", "/favicon"];
 
 export default auth((req) => {
