@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -43,12 +43,30 @@ type RoleId = "STUDENT" | "TEACHER";
 // ─── Page ─────────────────────────────────────────────────────────────────
 
 export default function RoleSelectPage() {
-  const { data: session, update } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
 
   const [selected, setSelected] = useState<RoleId | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
+
+  // Client-side guard (middleware is the primary protection)
+  useEffect(() => {
+    if (status === "loading") return;
+    if (status === "unauthenticated") {
+      router.replace("/login");
+      return;
+    }
+    const user = session?.user as any;
+    if (user?.role) {
+      // Already has a role — skip role-select
+      if (user.onboardingStatus === "COMPLETED") {
+        router.replace(user.role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student");
+      } else {
+        router.replace(user.role === "TEACHER" ? "/onboarding/teacher" : "/onboarding/student");
+      }
+    }
+  }, [status, session, router]);
 
   const handleConfirm = useCallback(async () => {
     if (!selected) return;
@@ -84,6 +102,11 @@ export default function RoleSelectPage() {
       setLoading(false);
     }
   }, [selected, session, update, router]);
+
+  // Don't flash UI while session resolves or while redirecting
+  if (status === "loading" || status === "unauthenticated" || (session?.user as any)?.role) {
+    return null;
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto">

@@ -1,13 +1,28 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bot, Trophy, Zap, CheckCircle2, ChevronRight,
-  ChevronLeft, User, GraduationCap, AlertCircle
+  ChevronLeft, User, GraduationCap, AlertCircle, Eye, EyeOff
 } from "lucide-react";
+
+// Password strength helper
+function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
+  if (!pw) return { score: 0, label: "", color: "" };
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  if (score <= 1) return { score, label: "Weak", color: "bg-error" };
+  if (score <= 2) return { score, label: "Fair", color: "bg-warning" };
+  if (score <= 3) return { score, label: "Good", color: "bg-info" };
+  return { score, label: "Strong", color: "bg-success" };
+}
 
 // ─── Steps config ─────────────────────────────────────────────────────────
 
@@ -124,12 +139,26 @@ function SetupStep({
   setGradeLevel,
   setStudentId,
   error,
+  hasPassword,
+  password,
+  setPassword,
+  showPassword,
+  setShowPassword,
+  passwordTouched,
+  setPasswordTouched,
 }: {
   gradeLevel: string;
   studentId: string;
   setGradeLevel: (v: string) => void;
   setStudentId: (v: string) => void;
   error?: string;
+  hasPassword: boolean;
+  password: string;
+  setPassword: (v: string) => void;
+  showPassword: boolean;
+  setShowPassword: (v: boolean) => void;
+  passwordTouched: boolean;
+  setPasswordTouched: (v: boolean) => void;
 }) {
   return (
     <motion.div
@@ -141,7 +170,7 @@ function SetupStep({
     >
       <div className="text-center mb-4">
         <h2 className="font-display text-2xl font-bold">Set Up Your Profile</h2>
-        <p className="text-foreground-muted text-sm mt-1.5">Just two quick details and you're in</p>
+        <p className="text-foreground-muted text-sm mt-1.5">Just a few details and you're in</p>
       </div>
 
       {error && (
@@ -192,6 +221,70 @@ function SetupStep({
             Provided by your school. Leave blank if you don't have one.
           </p>
         </div>
+
+        {!hasPassword && (
+          <div className="space-y-1.5">
+            <label htmlFor="password" className="text-sm font-medium flex items-center gap-1.5">
+              <Zap className="w-4 h-4 text-foreground-subtle" />
+              Set Password
+              <span className="text-error">*</span>
+              <span className="text-foreground-subtle text-xs font-normal ml-1">(required to log in via email later)</span>
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => setPasswordTouched(true)}
+                className="input-base pr-10"
+                placeholder="Min. 8 characters + uppercase, number or symbol"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {passwordTouched && password.length > 0 && password.length < 8 && (
+              <p className="text-xs text-error mt-1">Password must be at least 8 characters.</p>
+            )}
+
+            {/* Password strength meter */}
+            {password.length > 0 && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-2">
+                <div className="flex gap-1.5">
+                  {[1, 2, 3, 4].map((i) => {
+                    const strength = getPasswordStrength(password);
+                    return (
+                      <div
+                        key={i}
+                        className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                          strength.score >= i ? strength.color : "bg-surface border border-card-border"
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+                {(() => {
+                  const strength = getPasswordStrength(password);
+                  return strength.label ? (
+                    <p className={`text-xs font-semibold ${
+                      strength.label === "Weak" ? "text-error" :
+                      strength.label === "Fair" ? "text-warning" :
+                      strength.label === "Good" ? "text-info" : "text-success"
+                    }`}>
+                      {strength.label} password
+                    </p>
+                  ) : null;
+                })()}
+              </motion.div>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -206,14 +299,22 @@ export default function StudentOnboarding() {
   const [step, setStep] = useState(0);
   const [gradeLevel, setGradeLevel] = useState("");
   const [studentId, setStudentId] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
 
   const userName = session?.user?.name ?? "";
+  const hasPassword = session?.user?.hasPassword ?? false;
 
   const handleSubmit = useCallback(async () => {
     if (!gradeLevel) {
       setError("Please select your grade level.");
+      return;
+    }
+    if (password && password.length < 8) {
+      setError("Password must be at least 8 characters.");
       return;
     }
     setSubmitting(true);
@@ -221,6 +322,7 @@ export default function StudentOnboarding() {
 
     try {
       const token = (session?.user as any)?.token;
+      console.log("[STUDENT ONBOARDING] token present:", !!token, "| password provided:", !!password);
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/v1/users/onboarding/student`,
         {
@@ -232,6 +334,7 @@ export default function StudentOnboarding() {
           body: JSON.stringify({
             gradeLevel: Number(gradeLevel),
             studentId: studentId || undefined,
+            password: password || undefined,
           }),
         }
       );
@@ -241,15 +344,18 @@ export default function StudentOnboarding() {
         throw new Error(json?.error?.message ?? "Setup failed. Please try again.");
       }
 
-      // Refresh session with new onboarding status
-      await update({ onboardingStatus: "COMPLETED" });
+      // Refresh session with new onboarding status and updated password state
+      await update({
+        onboardingStatus: "COMPLETED",
+        hasPassword: hasPassword || !!password,
+      });
       router.replace("/dashboard/student");
     } catch (err: any) {
       setError(err.message ?? "Something went wrong.");
     } finally {
       setSubmitting(false);
     }
-  }, [gradeLevel, studentId, session, update, router]);
+  }, [gradeLevel, studentId, password, session, update, router, hasPassword]);
 
   const isLastStep = step === STEPS.length - 1;
   const canNext = step < STEPS.length - 1;
@@ -306,6 +412,13 @@ export default function StudentOnboarding() {
                   setGradeLevel={setGradeLevel}
                   setStudentId={setStudentId}
                   error={error}
+                  hasPassword={hasPassword}
+                  password={password}
+                  setPassword={setPassword}
+                  showPassword={showPassword}
+                  setShowPassword={setShowPassword}
+                  passwordTouched={passwordTouched}
+                  setPasswordTouched={setPasswordTouched}
                 />
               )}
             </AnimatePresence>
@@ -336,12 +449,19 @@ export default function StudentOnboarding() {
             {isLastStep && (
               <button
                 onClick={handleSubmit}
-                disabled={submitting || !gradeLevel}
+                disabled={
+                  submitting ||
+                  !gradeLevel ||
+                  // Google users (no existing password) must set a password with score >= 2 (Fair or better)
+                  (!hasPassword && getPasswordStrength(password).score < 2) ||
+                  // If they typed something, it must be valid length
+                  (password.length > 0 && password.length < 8)
+                }
                 className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-white font-semibold text-sm shadow-md shadow-accent/20 hover:bg-accent-light transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
                     Setting up…
                   </>
                 ) : (

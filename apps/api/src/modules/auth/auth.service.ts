@@ -73,6 +73,7 @@ export async function loginUser(input: { email: string; password: string }) {
     name: user.name ?? "",
     role: user.role,
     onboardingStatus: user.onboardingStatus,
+    hasPassword: true,
     token,
   };
 }
@@ -109,10 +110,17 @@ export async function getUserById(userId: string) {
       studentId: true,
       schoolId: true,
       lastActiveAt: true,
+      passwordHash: true,
     },
   });
 
-  return user;
+  if (!user) return null;
+
+  const { passwordHash, ...rest } = user;
+  return {
+    ...rest,
+    hasPassword: passwordHash != null,
+  };
 }
 
 export async function findUser(email: string) {
@@ -149,6 +157,7 @@ export async function createUserFromProvider(email: string, name: string, image?
     name: user.name,
     role: user.role,
     onboardingStatus: user.onboardingStatus,
+    hasPassword: user.passwordHash != null,
   };
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useCallback } from "react";
+import { useState, useEffect, useRef, Suspense, useCallback } from "react";
 import { signIn, getSession, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -125,9 +125,16 @@ function LoginForm() {
     }
   }, [callbackUrl, router]);
 
-  // Handle auto-routing after OAuth redirects back to /login
+  // Handle auto-routing after OAuth redirects back to /login.
+  // We only fire if the status *transitions* to "authenticated" — not on the
+  // initial render when the user already has an active session. This prevents
+  // the login page from being skipped when a logged-in user navigates here.
+  const prevStatusRef = useRef<string>("loading");
   useEffect(() => {
-    if (status === "authenticated") {
+    const prev = prevStatusRef.current;
+    prevStatusRef.current = status;
+    // Only route when status changes from a non-authenticated state
+    if (status === "authenticated" && prev !== "authenticated") {
       routeAfterLogin();
     }
   }, [status, routeAfterLogin]);
