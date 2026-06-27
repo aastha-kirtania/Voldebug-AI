@@ -14,22 +14,21 @@ export async function registerUser(input: {
   name: string;
   email: string;
   password: string;
-  verificationToken: string;
+  verificationToken?: string;
 }) {
   const data = registerSchema.parse(input);
 
-  // Validate the email verification token issued after OTP check
-  let verifiedEmail: string;
-  try {
-    const payload = jwt.verify(data.verificationToken, JWT_SECRET) as { email: string; purpose: string };
-    if (payload.purpose !== "email-verification") throw new Error("Invalid token purpose");
-    verifiedEmail = payload.email;
-  } catch {
-    throw new Error("Email verification token is invalid or expired. Please verify your email again.");
-  }
-
-  if (verifiedEmail.toLowerCase() !== data.email.toLowerCase()) {
-    throw new Error("Verified email does not match the registration email.");
+  // If verificationToken is provided, validate it
+  if (data.verificationToken) {
+    try {
+      const payload = jwt.verify(data.verificationToken, JWT_SECRET) as { email: string; purpose: string };
+      if (payload.purpose !== "email-verification") throw new Error("Invalid token purpose");
+      if (payload.email.toLowerCase() !== data.email.toLowerCase()) {
+        throw new Error("Verified email does not match registration email.");
+      }
+    } catch {
+      throw new Error("Email verification token is invalid or expired.");
+    }
   }
 
   const existing = await prisma.user.findUnique({

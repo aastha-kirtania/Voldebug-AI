@@ -7,7 +7,7 @@ export const registerSchema = z.object({
     .string()
     .min(6, "Password must be at least 6 characters")
     .max(128),
-  verificationToken: z.string().min(1, "Email verification is required"),
+  verificationToken: z.string().optional(),
 });
 
 export const loginSchema = z.object({
