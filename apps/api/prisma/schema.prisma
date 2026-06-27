@@ -373,3 +373,20 @@ model AuditLog {
   @@index([studentId, timestamp])
   @@map("audit_logs")
 }
+
+// ─── Email OTP ────────────────────────────────────────────────────────────
+// Stores short-lived verification codes sent during email registration.
+// Rows are marked used=true after successful verification (never deleted
+// immediately so replays are blocked during the expiry window).
+
+model EmailOtp {
+  id        String   @id @default(cuid())
+  email     String
+  codeHash  String             // sha256 of the 6-digit OTP
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("email_otps")
+}

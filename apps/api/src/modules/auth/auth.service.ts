@@ -1,17 +1,36 @@
 import { compare, hash } from "bcryptjs";
 import { prisma } from "../../utils/prisma.js";
-import { registerSchema, loginSchema, roleSchema, forgotPasswordSchema, resetPasswordSchema } from "./auth.schema.js";
+import { registerSchema, loginSchema, roleSchema, forgotPasswordSchema, resetPasswordSchema, sendEmailOtpSchema, verifyEmailOtpSchema } from "./auth.schema.js";
 import { generateToken } from "../../utils/jwt.js";
 import type { UserRole } from "@prisma/client";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 import { logger } from "../../middleware/requestLogger.js";
+
+const JWT_SECRET = process.env.JWT_SECRET ?? "fallback-dev-secret";
+const OTP_EXPIRY_MINUTES = 10;
 
 export async function registerUser(input: {
   name: string;
   email: string;
   password: string;
+  verificationToken: string;
 }) {
   const data = registerSchema.parse(input);
+
+  // Validate the email verification token issued after OTP check
+  let verifiedEmail: string;
+  try {
+    const payload = jwt.verify(data.verificationToken, JWT_SECRET) as { email: string; purpose: string };
+    if (payload.purpose !== "email-verification") throw new Error("Invalid token purpose");
+    verifiedEmail = payload.email;
+  } catch {
+    throw new Error("Email verification token is invalid or expired. Please verify your email again.");
+  }
+
+  if (verifiedEmail.toLowerCase() !== data.email.toLowerCase()) {
+    throw new Error("Verified email does not match the registration email.");
+  }
 
   const existing = await prisma.user.findUnique({
     where: { email: data.email },
@@ -26,6 +45,7 @@ export async function registerUser(input: {
     data: {
       name: data.name,
       email: data.email,
+      emailVerified: new Date(), // email was verified via OTP
       passwordHash,
       role: "STUDENT",
     },
@@ -262,4 +282,112 @@ export async function resetPasswordWithToken(input: { token: string; password: s
 
   logger.info(`Password successfully reset for user ID: ${user.id}`);
   return { success: true };
+}
+
+// ─── Email OTP ────────────────────────────────────────────────────────────
+
+export async function sendEmailOtp(input: { email: string }) {
+  const { email } = sendEmailOtpSchema.parse(input);
+
+  // Check if email is already registered
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    throw new Error("An account with this email already exists. Please sign in instead.");
+  }
+
+  // Invalidate any previous unused OTPs for this email
+  await prisma.emailOtp.updateMany({
+    where: { email, used: false },
+    data: { used: true },
+  });
+
+  // Generate 6-digit OTP
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const codeHash = crypto.createHash("sha256").update(code).digest("hex");
+  const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+
+  await prisma.emailOtp.create({
+    data: { email, codeHash, expiresAt },
+  });
+
+  // Log for dev / send via Resend in prod
+  logger.info(`[EMAIL OTP FOR ${email}]: ${code}`);
+
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (resendApiKey && !resendApiKey.startsWith("re_your")) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM_EMAIL || "noreply@voldebug.ai",
+          to: email,
+          subject: "Your Voldebug AI verification code",
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px;">
+              <h2 style="color: #4f46e5; margin-bottom: 20px;">Verify Your Email</h2>
+              <p>Enter this 6-digit code to verify your email address. It expires in ${OTP_EXPIRY_MINUTES} minutes.</p>
+              <div style="margin: 30px 0; text-align: center;">
+                <div style="display: inline-block; background: #f3f4f6; border: 2px solid #4f46e5; border-radius: 12px; padding: 16px 40px;">
+                  <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #4f46e5;">${code}</span>
+                </div>
+              </div>
+              <p style="color: #6b7280; font-size: 14px;">If you didn't request this, you can safely ignore this email.</p>
+            </div>
+          `,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        logger.error(`Resend API error sending OTP: ${errorText}`);
+      } else {
+        logger.info(`OTP email sent to ${email}`);
+      }
+    } catch (err) {
+      logger.error(`Failed to send OTP email to ${email}: ${err}`);
+    }
+  }
+
+  return { success: true };
+}
+
+export async function verifyEmailOtp(input: { email: string; code: string }) {
+  const { email, code } = verifyEmailOtpSchema.parse(input);
+
+  const codeHash = crypto.createHash("sha256").update(code).digest("hex");
+
+  // Find the most recent unused OTP for this email
+  const otp = await prisma.emailOtp.findFirst({
+    where: {
+      email,
+      codeHash,
+      used: false,
+      expiresAt: { gt: new Date() },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!otp) {
+    throw new Error("Invalid or expired verification code. Please request a new one.");
+  }
+
+  // Mark as used to prevent replay
+  await prisma.emailOtp.update({
+    where: { id: otp.id },
+    data: { used: true },
+  });
+
+  // Issue a short-lived JWT that proves this email was verified
+  const verificationToken = jwt.sign(
+    { email, purpose: "email-verification" },
+    JWT_SECRET,
+    { expiresIn: "10m" },
+  );
+
+  logger.info(`Email OTP verified for ${email}`);
+  return { verificationToken };
 }

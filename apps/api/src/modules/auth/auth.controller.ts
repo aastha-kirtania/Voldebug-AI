@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { registerUser, loginUser, setUserRole, getUserById, createUserFromProvider, requestPasswordReset, resetPasswordWithToken } from "./auth.service.js";
+import { registerUser, loginUser, setUserRole, getUserById, createUserFromProvider, requestPasswordReset, resetPasswordWithToken, sendEmailOtp, verifyEmailOtp } from "./auth.service.js";
 import { apiSuccess, apiError } from "../../utils/api.js";
 import { generateToken } from "../../utils/jwt.js";
 import { logger } from "../../middleware/requestLogger.js";
@@ -137,6 +137,32 @@ export async function handleResetPassword(req: Request, res: Response) {
   } catch (err) {
     return apiError(res, {
       code: "RESET_PASSWORD_FAILED",
+      message: (err as Error).message,
+      status: 400,
+    });
+  }
+}
+
+export async function handleSendEmailOtp(req: Request, res: Response) {
+  try {
+    const result = await sendEmailOtp(req.body);
+    return apiSuccess(res, result);
+  } catch (err) {
+    return apiError(res, {
+      code: "SEND_OTP_FAILED",
+      message: (err as Error).message,
+      status: 400,
+    });
+  }
+}
+
+export async function handleVerifyEmailOtp(req: Request, res: Response) {
+  try {
+    const result = await verifyEmailOtp(req.body);
+    return apiSuccess(res, result);
+  } catch (err) {
+    return apiError(res, {
+      code: "VERIFY_OTP_FAILED",
       message: (err as Error).message,
       status: 400,
     });

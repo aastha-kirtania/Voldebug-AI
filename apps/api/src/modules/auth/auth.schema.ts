@@ -7,6 +7,7 @@ export const registerSchema = z.object({
     .string()
     .min(6, "Password must be at least 6 characters")
     .max(128),
+  verificationToken: z.string().min(1, "Email verification is required"),
 });
 
 export const loginSchema = z.object({
@@ -33,3 +34,17 @@ export const resetPasswordSchema = z.object({
 
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+// ─── OTP schemas ──────────────────────────────────────────────────────────
+
+export const sendEmailOtpSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
+export const verifyEmailOtpSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  code: z.string().length(6, "Code must be 6 digits").regex(/^\d{6}$/, "Code must be numeric"),
+});
+
+export type SendEmailOtpInput = z.infer<typeof sendEmailOtpSchema>;
+export type VerifyEmailOtpInput = z.infer<typeof verifyEmailOtpSchema>;
