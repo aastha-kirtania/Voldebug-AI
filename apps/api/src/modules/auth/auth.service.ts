@@ -220,7 +220,7 @@ export async function requestPasswordReset(input: { email: string }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: process.env.RESEND_FROM_EMAIL || "noreply@voldebug.ai",
+          from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
           to: data.email,
           subject: "Reset your Voldebug AI Password",
           html: `
@@ -323,7 +323,7 @@ export async function sendEmailOtp(input: { email: string }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: process.env.RESEND_FROM_EMAIL || "noreply@voldebug.ai",
+          from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
           to: email,
           subject: "Your Voldebug AI verification code",
           html: `
