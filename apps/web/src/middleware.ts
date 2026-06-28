@@ -2,8 +2,8 @@ import { auth } from "./lib/auth";
 import { NextResponse } from "next/server";
 
 // Public paths that don't require authentication
-const PUBLIC_PATHS = ["/", "/login", "/register", "/terms", "/privacy", "/forgot-password", "/reset-password"];
-const PUBLIC_PREFIXES = ["/api", "/_next", "/favicon"];
+const PUBLIC_PATHS = ["/", "/login", "/register", "/terms", "/privacy", "/forgot-password", "/reset-password", "/tools"];
+const PUBLIC_PREFIXES = ["/api", "/_next", "/favicon", "/tools"];
 
 // Auth-only setup routes (require session but no role yet)
 const SETUP_PREFIXES = ["/role-select", "/onboarding"];

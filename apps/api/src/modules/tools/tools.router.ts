@@ -9,19 +9,12 @@ import {
 
 const toolsRouter = express.Router();
 
-// All tool endpoints require authentication
-toolsRouter.use(authenticate);
-
-// Tool listing
+// Public read-only endpoints — guests can browse the catalog
 toolsRouter.get("/", handleListTools);
-
-// Tool detail
 toolsRouter.get("/:id", handleGetTool);
 
-// Tool chat doubt-solving & keyword checking
-toolsRouter.post("/:id/chat", handleToolChat);
-
-// Track tool usage increments
-toolsRouter.post("/:id/track", handleTrackToolUsage);
+// Protected endpoints — require an authenticated student session
+toolsRouter.post("/:id/chat", authenticate, handleToolChat);
+toolsRouter.post("/:id/track", authenticate, handleTrackToolUsage);
 
 export { toolsRouter };

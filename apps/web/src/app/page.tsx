@@ -373,7 +373,7 @@ export default function LandingPage() {
         >
           <h2 className="font-display text-2xl font-bold">350+ AI Tools, Organized for Students</h2>
           <Link
-            href="/login"
+            href="/tools"
             className="hidden md:flex items-center gap-1.5 text-sm text-accent-light hover:underline"
           >
             Browse all tools <ChevronRight className="w-4 h-4" />
