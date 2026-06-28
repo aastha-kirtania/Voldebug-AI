@@ -124,6 +124,8 @@ function LoginForm() {
     }
   }, [callbackUrl, router]);
 
+  const isLogout = searchParams.get("logout") === "true";
+
   // Handle auto-routing after OAuth redirects back to /login.
   // We only fire if the status *transitions* to "authenticated" — not on the
   // initial render when the user already has an active session. This prevents
@@ -132,11 +134,11 @@ function LoginForm() {
   useEffect(() => {
     const prev = prevStatusRef.current;
     prevStatusRef.current = status;
-    // Only route when status changes from a non-authenticated state
-    if (status === "authenticated" && prev !== "authenticated") {
+    // Only route when status changes from a non-authenticated state and NOT explicitly logged out
+    if (status === "authenticated" && prev !== "authenticated" && !isLogout) {
       routeAfterLogin();
     }
-  }, [status, routeAfterLogin]);
+  }, [status, routeAfterLogin, isLogout]);
 
   // ── Google sign-in ────────────────────────────────────────────────────
   const handleGoogle = useCallback(async () => {

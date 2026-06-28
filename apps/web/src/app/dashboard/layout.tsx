@@ -16,11 +16,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       if (typeof window !== "undefined") {
         localStorage.removeItem("voldebug_token");
       }
+      await fetch("/api/auth/logout", { method: "POST" });
       await signOut({ redirect: false });
     } catch (e) {
       console.error("Sign out error:", e);
     } finally {
-      window.location.href = "/login";
+      window.location.href = "/login?logout=true";
     }
   };
 
