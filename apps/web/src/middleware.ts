@@ -8,6 +8,10 @@ const PUBLIC_PREFIXES = ["/api", "/_next", "/favicon"];
 // Auth-only setup routes (require session but no role yet)
 const SETUP_PREFIXES = ["/role-select", "/onboarding"];
 
+// Pages where an authenticated user should be redirected away to their dashboard
+// UNLESS they just explicitly logged out (voldebug_logged_out cookie present)
+const AUTH_GUEST_PATHS = ["/login", "/register"];
+
 export default auth((req) => {
   const { pathname } = req.nextUrl;
 
@@ -16,49 +20,68 @@ export default auth((req) => {
     PUBLIC_PATHS.includes(pathname) ||
     PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
 
-  if (isPublic) return NextResponse.next();
+  if (!isPublic) {
+    // ── Private route: require session ────────────────────────────────
+    const isSetupRoute = SETUP_PREFIXES.some((p) => pathname.startsWith(p));
 
-  const isSetupRoute = SETUP_PREFIXES.some((p) => pathname.startsWith(p));
-
-  // If not logged in, redirect to login
-  if (!req.auth) {
-    const loginUrl = new URL("/login", req.nextUrl);
-    loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  const role = req.auth.user?.role;
-  const onboardingStatus = (req.auth.user as any)?.onboardingStatus;
-
-  // Authenticated user on setup routes
-  if (isSetupRoute) {
-    // If they already have a completed onboarding, send to their dashboard
-    if (role && onboardingStatus === "COMPLETED") {
-      const dest = role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student";
-      return NextResponse.redirect(new URL(dest, req.nextUrl));
+    if (!req.auth) {
+      const loginUrl = new URL("/login", req.nextUrl);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
     }
-    // If they have a role but onboarding is in progress, only allow /onboarding routes
-    if (role && pathname === "/role-select") {
-      const dest = role === "TEACHER" ? "/onboarding/teacher" : "/onboarding/student";
-      return NextResponse.redirect(new URL(dest, req.nextUrl));
+
+    const role = req.auth.user?.role;
+    const onboardingStatus = (req.auth.user as any)?.onboardingStatus;
+
+    // Authenticated user on setup routes
+    if (isSetupRoute) {
+      if (role && onboardingStatus === "COMPLETED") {
+        const dest = role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student";
+        return NextResponse.redirect(new URL(dest, req.nextUrl));
+      }
+      if (role && pathname === "/role-select") {
+        const dest = role === "TEACHER" ? "/onboarding/teacher" : "/onboarding/student";
+        return NextResponse.redirect(new URL(dest, req.nextUrl));
+      }
+      if (!role && pathname.startsWith("/onboarding")) {
+        return NextResponse.redirect(new URL("/role-select", req.nextUrl));
+      }
+      return NextResponse.next();
     }
-    // If they have no role and try to access /onboarding directly, send to role-select
-    if (!role && pathname.startsWith("/onboarding")) {
-      return NextResponse.redirect(new URL("/role-select", req.nextUrl));
+
+    // Ensure role-based routing for dashboard
+    const isTeacherRoute = pathname.startsWith("/dashboard/teacher");
+    const isStudentRoute = pathname.startsWith("/dashboard/student") || pathname.startsWith("/dashboard/classroom");
+
+    if (role === "STUDENT" && isTeacherRoute) {
+      return NextResponse.redirect(new URL("/dashboard/student", req.nextUrl));
     }
+    if (role === "TEACHER" && isStudentRoute) {
+      return NextResponse.redirect(new URL("/dashboard/teacher", req.nextUrl));
+    }
+
     return NextResponse.next();
   }
 
-  // Ensure role-based routing for dashboard
-  const isTeacherRoute = pathname.startsWith("/dashboard/teacher");
-  const isStudentRoute = pathname.startsWith("/dashboard/student") || pathname.startsWith("/dashboard/classroom");
+  // ── Public route ─────────────────────────────────────────────────────
+  // If the user is already authenticated and visiting /login or /register,
+  // send them straight to their dashboard — UNLESS they just explicitly
+  // logged out (indicated by the short-lived voldebug_logged_out cookie).
+  const justLoggedOut = req.cookies.get("voldebug_logged_out")?.value === "1";
 
-  if (role === "STUDENT" && isTeacherRoute) {
-    return NextResponse.redirect(new URL("/dashboard/student", req.nextUrl));
-  }
+  if (req.auth && AUTH_GUEST_PATHS.includes(pathname) && !justLoggedOut) {
+    const role = req.auth.user?.role;
+    const onboardingStatus = (req.auth.user as any)?.onboardingStatus;
 
-  if (role === "TEACHER" && isStudentRoute) {
-    return NextResponse.redirect(new URL("/dashboard/teacher", req.nextUrl));
+    if (!onboardingStatus || onboardingStatus === "NOT_STARTED") {
+      return NextResponse.redirect(new URL("/role-select", req.nextUrl));
+    }
+    if (onboardingStatus === "IN_PROGRESS") {
+      const dest = role === "TEACHER" ? "/onboarding/teacher" : "/onboarding/student";
+      return NextResponse.redirect(new URL(dest, req.nextUrl));
+    }
+    const dest = role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student";
+    return NextResponse.redirect(new URL(dest, req.nextUrl));
   }
 
   return NextResponse.next();

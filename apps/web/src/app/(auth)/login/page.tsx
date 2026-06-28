@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense, useCallback } from "react";
-import { signIn, getSession, useSession } from "next-auth/react";
+import { useState, useEffect, Suspense, useCallback } from "react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@web/components/ui/input";
@@ -76,7 +76,6 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { status } = useSession();
 
   // Reset loading states when page is restored from browser back/forward cache (bfcache)
   useEffect(() => {
@@ -124,21 +123,8 @@ function LoginForm() {
     }
   }, [callbackUrl, router]);
 
-  const isLogout = searchParams.get("logout") === "true";
-
-  // Handle auto-routing after OAuth redirects back to /login.
-  // We only fire if the status *transitions* to "authenticated" — not on the
-  // initial render when the user already has an active session. This prevents
-  // the login page from being skipped when a logged-in user navigates here.
-  const prevStatusRef = useRef<string>("loading");
-  useEffect(() => {
-    const prev = prevStatusRef.current;
-    prevStatusRef.current = status;
-    // Only route when status changes from a non-authenticated state and NOT explicitly logged out
-    if (status === "authenticated" && prev !== "authenticated" && !isLogout) {
-      routeAfterLogin();
-    }
-  }, [status, routeAfterLogin, isLogout]);
+  // Note: auto-routing for already-authenticated users is handled by middleware.
+  // routeAfterLogin() is only called explicitly after a new sign-in event below.
 
   // ── Google sign-in ────────────────────────────────────────────────────
   const handleGoogle = useCallback(async () => {
