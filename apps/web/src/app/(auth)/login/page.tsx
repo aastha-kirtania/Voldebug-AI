@@ -102,7 +102,6 @@ function LoginForm() {
   const routeAfterLogin = useCallback(async () => {
     const session = await getSession();
     if (!session?.user) {
-      router.push(callbackUrl);
       return;
     }
 

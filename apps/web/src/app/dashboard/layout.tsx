@@ -11,6 +11,18 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { data: session } = useSession();
   const isTeacher = session?.user?.role === "TEACHER";
   const brandHref = isTeacher ? "/dashboard/teacher" : "/dashboard/student";
+  const handleLogout = async () => {
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("voldebug_token");
+      }
+      await signOut({ redirect: false });
+    } catch (e) {
+      console.error("Sign out error:", e);
+    } finally {
+      window.location.href = "/login";
+    }
+  };
 
   return (
     <div className="min-h-screen flex relative">
@@ -34,7 +46,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <ThemeToggle />
           <NotificationBell />
           <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={handleLogout}
             className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-hover border border-white/5 transition-all text-foreground-muted hover:text-foreground"
             title="Sign Out"
           >
