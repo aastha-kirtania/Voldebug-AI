@@ -119,7 +119,8 @@ export async function handleProviderLogin(req: Request, res: Response) {
 
 export async function handleForgotPassword(req: Request, res: Response) {
   try {
-    const result = await requestPasswordReset(req.body);
+    const origin = req.get("origin") || req.get("referer");
+    const result = await requestPasswordReset(req.body, origin);
     return apiSuccess(res, result);
   } catch (err) {
     return apiError(res, {

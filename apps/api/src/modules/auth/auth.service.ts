@@ -180,7 +180,7 @@ export async function createUserFromProvider(email: string, name: string, image?
   };
 }
 
-export async function requestPasswordReset(input: { email: string }) {
+export async function requestPasswordReset(input: { email: string }, clientOrigin?: string) {
   const data = forgotPasswordSchema.parse(input);
 
   const user = await prisma.user.findUnique({
@@ -204,7 +204,20 @@ export async function requestPasswordReset(input: { email: string }) {
     },
   });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  let appUrl = "";
+  if (clientOrigin) {
+    try {
+      const parsed = new URL(clientOrigin);
+      appUrl = parsed.origin;
+    } catch {
+      appUrl = clientOrigin.replace(/\/$/, "");
+    }
+  }
+  if (!appUrl) {
+    appUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3000";
+  }
+  appUrl = appUrl.replace(/\/$/, "");
+
   const resetUrl = `${appUrl}/reset-password?token=${rawToken}`;
 
   logger.info(`[PASSWORD RESET LINK FOR ${data.email}]: ${resetUrl}`);
