@@ -9,6 +9,7 @@ export interface TeacherClass {
   schoolId: string;
   teacherId: string;
   createdAt: string;
+  joinCode: string | null;
   _count?: { assignments: number; members: number };
 }
 
@@ -265,5 +266,12 @@ export function useCreateClass() {
       qc.invalidateQueries({ queryKey: ["teacher", "classes"] });
       qc.invalidateQueries({ queryKey: ["teacher", "dashboard"] });
     },
+  });
+}
+
+export function useCreateAnnouncement() {
+  return useMutation({
+    mutationFn: ({ classId, title, body }: { classId: string; title: string; body: string }) =>
+      api.post<{ message: string }>(`/v1/classes/${classId}/announcements`, { title, body } as any),
   });
 }

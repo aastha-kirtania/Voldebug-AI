@@ -175,3 +175,61 @@ export async function handleCreateClass(req: Request, res: Response) {
     });
   }
 }
+
+export async function handleCreateClassAnnouncement(req: Request, res: Response) {
+  const userId = req.userId;
+  if (!userId) {
+    return apiError(res, { code: "UNAUTHORIZED", message: "Authentication required", status: 401 });
+  }
+
+  const { id: classId } = req.params;
+  const { title, body } = req.body;
+
+  if (!body || !body.trim()) {
+    return apiError(res, { code: "BAD_REQUEST", message: "Announcement message body is required", status: 400 });
+  }
+
+  try {
+    const cls = await prisma.class.findUnique({
+      where: { id: classId },
+      select: { teacherId: true, name: true },
+    });
+
+    if (!cls) {
+      return apiError(res, { code: "NOT_FOUND", message: "Class not found", status: 404 });
+    }
+
+    if (cls.teacherId !== userId) {
+      return apiError(res, { code: "FORBIDDEN", message: "Only the teacher of this class can make announcements", status: 403 });
+    }
+
+    const members = await prisma.classMember.findMany({
+      where: { classId },
+      select: { userId: true },
+    });
+
+    const notificationsData = members.map((m) => ({
+      userId: m.userId,
+      type: "TEACHER_MESSAGE" as any,
+      title: title?.trim() || `New Announcement in ${cls.name}`,
+      body: body.trim(),
+    }));
+
+    if (notificationsData.length > 0) {
+      await prisma.notification.createMany({
+        data: notificationsData,
+      });
+    }
+
+    return apiSuccess(res, {
+      message: "Announcement successfully sent to all class members!",
+      count: notificationsData.length,
+    });
+  } catch (err) {
+    return apiError(res, {
+      code: "CREATE_ANNOUNCEMENT_FAILED",
+      message: `Failed to create announcement: ${(err as Error).message}`,
+      status: 500,
+    });
+  }
+}

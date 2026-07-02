@@ -484,7 +484,12 @@ export default function TeacherDashboardPage() {
                           {cls.name}
                         </span>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-semibold text-foreground-subtle bg-surface px-2 py-1 rounded-md border border-white/5">
+                          {cls.joinCode && (
+                            <span className="text-[10px] font-semibold font-mono text-accent-light bg-accent/10 px-2 py-0.5 rounded-md border border-accent/20 tracking-wider">
+                              {cls.joinCode}
+                            </span>
+                          )}
+                          <span className="text-[10px] font-semibold text-foreground-subtle bg-surface px-2 py-0.5 rounded-md border border-white/5">
                             {cls._count?.members ?? 0} students
                           </span>
                           <ExternalLink className="w-3.5 h-3.5 text-foreground-subtle opacity-0 group-hover:opacity-100 transition-opacity" />
