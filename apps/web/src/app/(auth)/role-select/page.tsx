@@ -107,7 +107,7 @@ export default function RoleSelectPage() {
   if (
     status === "loading" ||
     status === "unauthenticated" ||
-    ((session?.user as any)?.onboardingStatus && (session?.user as any)?.onboardingStatus !== "NOT_STARTED")
+    (!loading && (session?.user as any)?.onboardingStatus && (session?.user as any)?.onboardingStatus !== "NOT_STARTED")
   ) {
     return null;
   }
