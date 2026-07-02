@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { prisma } from "../../utils/prisma.js";
 import { apiSuccess, apiError } from "../../utils/api.js";
+import { completeDailyChallenge } from "../gamification/gamification.service.js";
 
 export async function handleCreateSubmission(req: Request, res: Response) {
   const userId = req.userId!;
@@ -78,6 +79,9 @@ export async function handleCreateSubmission(req: Request, res: Response) {
       title: "New Submission",
       body: `${sessionUser?.name || "A student"} submitted work for ${assignment.title}.`,
     }).catch(console.error);
+
+    // Complete Daily Challenge if applicable
+    completeDailyChallenge(userId, "Submit an assignment").catch(console.error);
 
     return apiSuccess(res, { ...submission, xpAwarded: totalXP }, 201);
   } catch (err) {
@@ -236,6 +240,11 @@ export async function handleGradeSubmission(req: Request, res: Response) {
       title: "Grade Received",
       body: `Your submission for "${submission.assignment.title}" has been graded! Score: ${score}`,
     }).catch(console.error);
+
+    // Complete Daily Challenge if score is 90% or higher
+    if (score && Number(score) >= 90) {
+      completeDailyChallenge(submission.studentId, "Achieve 90%+ on a graded assignment").catch(console.error);
+    }
 
     return apiSuccess(res, updated);
   } catch (err) {

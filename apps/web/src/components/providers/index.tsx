@@ -6,6 +6,7 @@ import { AuthProvider } from "./auth-provider";
 import { ThemeProvider } from "./theme-provider";
 import { SocketProvider } from "./socket-provider";
 import { ToastProvider } from "@web/components/ui/toast-provider";
+import { LanguageProvider } from "@web/context/language-context";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
@@ -14,7 +15,9 @@ export function Providers({ children }: { children: ReactNode }) {
         <AuthProvider>
           <SocketProvider>
             <ToastProvider>
-              {children}
+              <LanguageProvider>
+                {children}
+              </LanguageProvider>
             </ToastProvider>
           </SocketProvider>
         </AuthProvider>

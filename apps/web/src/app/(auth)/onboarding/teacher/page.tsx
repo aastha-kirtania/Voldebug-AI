@@ -137,6 +137,8 @@ function SetupStep({
   setShowPassword,
   passwordTouched,
   setPasswordTouched,
+  registeredSchools,
+  loadingSchools,
 }: {
   schoolName: string;
   className: string;
@@ -152,6 +154,8 @@ function SetupStep({
   setShowPassword: (v: boolean) => void;
   passwordTouched: boolean;
   setPasswordTouched: (v: boolean) => void;
+  registeredSchools: { id: string; name: string }[];
+  loadingSchools: boolean;
 }) {
   const SUBJECTS = [
     "Computer Science", "Mathematics", "Science", "English",
@@ -185,15 +189,31 @@ function SetupStep({
             School Name
             <span className="text-error ml-auto text-xs font-normal">required</span>
           </label>
-          <input
-            id="schoolName"
-            type="text"
-            required
-            value={schoolName}
-            onChange={(e) => setSchoolName(e.target.value)}
-            className="input-base"
-            placeholder="Springfield High School"
-          />
+          {loadingSchools ? (
+            <div className="flex items-center gap-2 text-xs text-foreground-subtle py-2">
+              <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
+              Loading schools...
+            </div>
+          ) : registeredSchools.length > 0 ? (
+            <select
+              id="schoolName"
+              value={schoolName}
+              onChange={(e) => setSchoolName(e.target.value)}
+              className="input-base"
+              required
+            >
+              <option value="">Select school...</option>
+              {registeredSchools.map((sch) => (
+                <option key={sch.id} value={sch.name}>
+                  {sch.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="p-3.5 rounded-xl bg-warning/8 border border-warning/25 text-warning text-xs leading-relaxed font-medium">
+              ⚠️ No schools have been registered by a Principal yet. Please ask your school administration to register first.
+            </div>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -309,11 +329,41 @@ export default function TeacherOnboarding() {
   const [schoolName, setSchoolName] = useState("");
   const [className, setClassName] = useState("");
   const [subject, setSubject] = useState("");
+  const [registeredSchools, setRegisteredSchools] = useState<{ id: string; name: string }[]>([]);
+  const [loadingSchools, setLoadingSchools] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
+
+  useEffect(() => {
+    async function fetchSchools() {
+      setLoadingSchools(true);
+      try {
+        const token = (session?.user as any)?.token;
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/v1/users/schools`,
+          {
+            headers: {
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
+        if (res.ok) {
+          const json = await res.json();
+          setRegisteredSchools(json.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch registered schools:", err);
+      } finally {
+        setLoadingSchools(false);
+      }
+    }
+    if (session) {
+      fetchSchools();
+    }
+  }, [session]);
 
   const userName = session?.user?.name ?? "";
   const hasPassword = session?.user?.hasPassword ?? false;
@@ -427,6 +477,8 @@ export default function TeacherOnboarding() {
                   setShowPassword={setShowPassword}
                   passwordTouched={passwordTouched}
                   setPasswordTouched={setPasswordTouched}
+                  registeredSchools={registeredSchools}
+                  loadingSchools={loadingSchools}
                 />
               )}
             </AnimatePresence>

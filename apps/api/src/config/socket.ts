@@ -13,9 +13,9 @@ export function initSocket(server: HttpServer) {
 
   // Try Redis adapter — fall back to default if Redis is unavailable
   const pubClient = getRedis();
-  const subClient = getRedis();
 
-  if (pubClient && subClient) {
+  if (pubClient) {
+    const subClient = pubClient.duplicate();
     io.adapter(createAdapter(pubClient, subClient));
   }
 

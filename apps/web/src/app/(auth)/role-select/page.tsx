@@ -58,8 +58,8 @@ export default function RoleSelectPage() {
       return;
     }
     const user = session?.user as any;
-    if (user?.role) {
-      // Already has a role — skip role-select
+    if (user?.onboardingStatus && user.onboardingStatus !== "NOT_STARTED") {
+      // Already has chosen a role — skip role-select
       if (user.onboardingStatus === "COMPLETED") {
         router.replace(user.role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student");
       } else {
@@ -104,7 +104,11 @@ export default function RoleSelectPage() {
   }, [selected, session, update, router]);
 
   // Don't flash UI while session resolves or while redirecting
-  if (status === "loading" || status === "unauthenticated" || (session?.user as any)?.role) {
+  if (
+    status === "loading" ||
+    status === "unauthenticated" ||
+    ((session?.user as any)?.onboardingStatus && (session?.user as any)?.onboardingStatus !== "NOT_STARTED")
+  ) {
     return null;
   }
 

@@ -43,6 +43,7 @@ export interface TeacherSafetyAlert {
 }
 
 export interface TeacherDashboard {
+  schoolName: string | null;
   activeAssignments: number;
   pendingSubmissions: number;
   totalStudents: number;
@@ -75,6 +76,7 @@ export interface PendingSubmission {
 export interface ClassDetail {
   id: string;
   name: string;
+  joinCode: string | null;
   assignments: AssignmentSummary[];
   memberStats: StudentStats[];
 }
@@ -100,6 +102,8 @@ export interface StudentStats {
   completedCount: number;
   avgScore: number | null;
   totalXPEarned: number;
+  streak?: number;
+  challengeCompleted?: boolean;
 }
 
 export interface Submission {
@@ -185,9 +189,11 @@ export function useGradeSubmission() {
       data: { score: number; grade: string; feedback: string; xpAwarded?: number };
     }) => api.patch(`/v1/submissions/${submissionId}/grade`, data as any),
     onSuccess: (_, { submissionId }) => {
-      qc.invalidateQueries({ queryKey: ["submissions", submissionId] });
-      qc.invalidateQueries({ queryKey: ["teacher", "dashboard"] });
-      qc.invalidateQueries({ queryKey: ["submissions", "assignment"] });
+      qc.invalidateQueries({ queryKey: ["submissions"] });
+      qc.invalidateQueries({ queryKey: ["teacher"] });
+      qc.invalidateQueries({ queryKey: ["assignments"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      qc.invalidateQueries({ queryKey: ["leaderboard"] });
     },
   });
 }
@@ -236,5 +242,28 @@ export function useTeacherAnalytics() {
     queryKey: ["teacher", "analytics"],
     queryFn: () => api.get<any>("/v1/teacher/analytics"),
     staleTime: 30_000,
+  });
+}
+
+export function useRegenerateClassCode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (classId: string) =>
+      api.post<{ class: { joinCode: string } }>(`/v1/classes/${classId}/regenerate-code`, {}),
+    onSuccess: (data, classId) => {
+      qc.invalidateQueries({ queryKey: ["teacher", "classes", classId] });
+    },
+  });
+}
+
+export function useCreateClass() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string }) =>
+      api.post<{ class: { id: string; name: string; joinCode: string } }>("/v1/classes", data as any),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["teacher", "classes"] });
+      qc.invalidateQueries({ queryKey: ["teacher", "dashboard"] });
+    },
   });
 }

@@ -1,40 +1,11 @@
 import "dotenv/config";
-import cors from "cors";
 
 import { app } from "./app.js";
 import { env } from "./config/env.js";
 import { logger } from "./middleware/requestLogger.js";
 import { prisma } from "./utils/prisma.js";
 import { initSocket } from "./config/socket.js";
-
-// ✅ CORS MUST be FIRST middleware
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        "http://localhost:3000",
-        "https://voldebug-ai-web-esmp.vercel.app"
-      ];
-
-      // allow requests with no origin (like mobile apps / curl)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-  })
-);
-
-// IMPORTANT: proper preflight handling
-app.options("*", cors());
-
-// (optional but recommended for preflight requests)
-app.options("*", cors());
+import { initScheduler } from "./utils/scheduler.js";
 
 const server = app.listen(env.PORT, env.HOST, () => {
   logger.info(
@@ -44,6 +15,7 @@ const server = app.listen(env.PORT, env.HOST, () => {
 
 // Initialize Socket.io
 initSocket(server);
+initScheduler();
 
 // Graceful shutdown
 async function shutdown(signal: string) {

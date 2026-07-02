@@ -6,6 +6,12 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
   const userId = req.userId!;
 
   try {
+    const teacherUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { school: { select: { name: true } } },
+    });
+    const schoolName = teacherUser?.school?.name || null;
+
     // Get teacher's classes
     const classes = await prisma.class.findMany({
       where: { teacherId: userId },
@@ -255,6 +261,7 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
     });
 
     return apiSuccess(res, {
+      schoolName,
       activeAssignments,
       pendingSubmissions: pendingSubmissionsList.length,
       totalStudents,
@@ -340,10 +347,23 @@ export async function handleTeacherClassDetail(req: Request, res: Response) {
 
     // Compute per-student completion stats
     const assignmentIds = cls.assignments.map((a) => a.id);
-    const submissions = await prisma.submission.findMany({
-      where: { assignmentId: { in: assignmentIds }, deletedAt: null },
-      select: { studentId: true, assignmentId: true, status: true, score: true, xpAwarded: true },
-    });
+    const studentIds = cls.members.map((m) => m.userId);
+
+    const [submissions, streaks, dailyChallenges] = await Promise.all([
+      prisma.submission.findMany({
+        where: { assignmentId: { in: assignmentIds }, deletedAt: null },
+        select: { studentId: true, assignmentId: true, status: true, score: true, xpAwarded: true },
+      }),
+      prisma.streak.findMany({
+        where: { userId: { in: studentIds } },
+      }),
+      prisma.dailyChallenge.findMany({
+        where: {
+          userId: { in: studentIds },
+          date: new Date().toISOString().split("T")[0],
+        },
+      }),
+    ]);
 
     const studentStats = cls.members.map((m) => {
       const studentSubs = submissions.filter((s) => s.studentId === m.userId);
@@ -351,12 +371,18 @@ export async function handleTeacherClassDetail(req: Request, res: Response) {
       const avgScore = studentSubs.length > 0
         ? Math.round(studentSubs.reduce((acc, s) => acc + (s.score ?? 0), 0) / studentSubs.length)
         : null;
+
+      const streakObj = streaks.find((s) => s.userId === m.userId);
+      const challengeObj = dailyChallenges.find((c) => c.userId === m.userId);
+
       return {
         ...m.user,
         submissionsCount: studentSubs.length,
         completedCount: completed,
         avgScore,
         totalXPEarned: studentSubs.reduce((acc, s) => acc + (s.xpAwarded ?? 0), 0),
+        streak: streakObj ? streakObj.currentStreak : 0,
+        challengeCompleted: challengeObj ? challengeObj.completed : false,
       };
     });
 

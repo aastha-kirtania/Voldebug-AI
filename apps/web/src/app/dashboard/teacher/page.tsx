@@ -1,8 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
-import { useTeacherDashboard } from "@web/hooks/use-teacher";
+import { useRouter } from "next/navigation";
+import { useTeacherDashboard, useCreateClass } from "@web/hooks/use-teacher";
 import { GradientMesh } from "@web/components/ui/background";
 import {
   GraduationCap,
@@ -21,7 +23,12 @@ import {
   ShieldAlert,
   Sparkles,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Plus,
+  X,
+  Loader2,
+  AlertCircle,
+  CheckCircle2
 } from "lucide-react";
 
 // ─── Sophisticated Motion Variants ──────────────────────────────────────
@@ -93,9 +100,50 @@ function timeAgo(dateStr: string): string {
 // ─── Main Page ───────────────────────────────────────────────────────────
 
 export default function TeacherDashboardPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.role === "STUDENT") {
+      router.replace("/dashboard/student");
+    }
+  }, [session, status, router]);
+
   const userName = session?.user?.name?.split(" ")[0] || "Teacher";
   const { data, isLoading } = useTeacherDashboard();
+
+  const [isCreateClassOpen, setIsCreateClassOpen] = useState(false);
+  const [classNameInput, setClassNameInput] = useState("");
+  const [createClassSuccess, setCreateClassSuccess] = useState<string>();
+  const [createClassError, setCreateClassError] = useState<string>();
+  const createClassMutation = useCreateClass();
+
+  const handleCreateClassSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!classNameInput.trim()) return;
+    setCreateClassError(undefined);
+
+    createClassMutation.mutate(
+      { name: classNameInput.trim() },
+      {
+        onSuccess: (resData) => {
+          setCreateClassSuccess(`Class successfully created with code: ${resData.class.joinCode}`);
+          setClassNameInput("");
+          setTimeout(() => {
+            setIsCreateClassOpen(false);
+            setCreateClassSuccess(undefined);
+          }, 2500);
+        },
+        onError: (err: any) => {
+          setCreateClassError(err?.message ?? "Failed to create class. Please try again.");
+        },
+      }
+    );
+  };
+
+  if (status === "loading" || session?.user?.role === "STUDENT") {
+    return null;
+  }
 
   return (
     <div className="min-h-screen relative selection:bg-accent/30">
@@ -117,6 +165,11 @@ export default function TeacherDashboardPage() {
               <p className="text-sm md:text-base text-foreground-subtle mt-3 font-medium tracking-wide">
                 Welcome to your dashboard. Here is your classes and students safety overview.
               </p>
+              {data?.schoolName && (
+                <div className="flex flex-wrap items-center gap-2 mt-2 text-xs md:text-sm text-foreground-subtle font-medium">
+                  <span>{data.schoolName}</span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-4 bg-surface/30 backdrop-blur-xl border border-white/5 px-5 py-3 rounded-2xl shadow-xl">
@@ -397,10 +450,19 @@ export default function TeacherDashboardPage() {
             {/* Teacher Classes */}
             <motion.div variants={itemVariants}>
               <GlassCard className="h-full flex flex-col">
-                <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6 flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4 text-info" />
-                  Your Classes
-                </h3>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-info" />
+                    Your Classes
+                  </h3>
+                  <button
+                    onClick={() => setIsCreateClassOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-accent text-white font-semibold text-xs shadow-md shadow-accent/20 hover:bg-accent-light transition-all active:scale-[0.98]"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Create</span>
+                  </button>
+                </div>
 
                 {isLoading ? (
                   <div className="space-y-3">
@@ -504,6 +566,88 @@ export default function TeacherDashboardPage() {
 
         </motion.div>
       </div>
+
+      {/* Create Class Modal */}
+      <AnimatePresence>
+        {isCreateClassOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: smoothEase }}
+              className="w-full max-w-md p-6 md:p-8 rounded-3xl border border-white/10 bg-surface-hover backdrop-blur-2xl shadow-2xl relative overflow-hidden"
+            >
+              <button
+                onClick={() => {
+                  setIsCreateClassOpen(false);
+                  setClassNameInput("");
+                  setCreateClassSuccess(undefined);
+                  setCreateClassError(undefined);
+                }}
+                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/10 text-foreground-muted hover:text-foreground transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="text-center space-y-2 mb-6">
+                <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-2">
+                  <Plus className="w-6 h-6 text-accent-light" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-foreground">Create a New Class</h3>
+                <p className="text-sm text-foreground-subtle">
+                  A unique 6-character code will be generated instantly
+                </p>
+              </div>
+
+              {(createClassMutation.isError || createClassError) && (
+                <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-error/15 border border-error/25 text-error text-xs">
+                  <AlertCircle className="w-4.5 h-4.5 flex-shrink-0" />
+                  <span>{createClassError || (createClassMutation.error as any)?.message || "Failed to create class."}</span>
+                </div>
+              )}
+
+              {createClassSuccess ? (
+                <div className="text-center py-6 space-y-3">
+                  <div className="w-10 h-10 rounded-full bg-success/15 border border-success/30 flex items-center justify-center text-success mx-auto">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">{createClassSuccess}</p>
+                </div>
+              ) : (
+                <form onSubmit={handleCreateClassSubmit} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label htmlFor="modalClassName" className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">
+                      Class / Course Name
+                    </label>
+                    <input
+                      id="modalClassName"
+                      type="text"
+                      placeholder="e.g. Science 102, AI Lab"
+                      value={classNameInput}
+                      onChange={(e) => setClassNameInput(e.target.value)}
+                      disabled={createClassMutation.isPending}
+                      required
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all text-sm text-foreground placeholder:text-white/20"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={createClassMutation.isPending || !classNameInput.trim()}
+                    className="w-full py-3 bg-gradient-to-r from-accent to-accent-light hover:from-accent/90 hover:to-accent-light/90 text-white font-semibold rounded-xl shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center"
+                  >
+                    {createClassMutation.isPending && (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    )}
+                    Generate Class Code
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

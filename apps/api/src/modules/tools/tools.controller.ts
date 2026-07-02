@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { prisma } from "../../utils/prisma.js";
 import { apiSuccess, apiError } from "../../utils/api.js";
 import { createNotification } from "../notifications/notifications.service.js";
+import { completeDailyChallenge } from "../gamification/gamification.service.js";
 
 export async function handleListTools(req: Request, res: Response) {
   try {
@@ -190,6 +191,9 @@ export async function handleToolChat(req: Request, res: Response) {
         isFlagged: false,
       }
     });
+
+    // Complete Daily Challenge if applicable
+    completeDailyChallenge(studentId, "Use an AI Tool today").catch(console.error);
 
     // Increment tool usage count
     await prisma.tool.update({

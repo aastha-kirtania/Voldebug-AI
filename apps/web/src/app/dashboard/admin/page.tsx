@@ -23,29 +23,38 @@ interface SchoolInfo {
   _count: { members: number; classes: number };
 }
 
-interface SystemStats {
-  totalUsers: number;
+interface SchoolOverview {
+  school: { id: string; name: string };
+  totalStudents: number;
+  totalTeachers: number;
   totalClasses: number;
   totalAssignments: number;
-  activeToday: number;
+  totalSubmissions: number;
+  recentSubmissions: number;
+  averageScore: number | null;
+  gradedCount: number;
+  auditLogs: {
+    total: number;
+    flagged: number;
+  };
 }
-
-// Mock stats for now — will be replaced with real aggregation endpoint
-const mockSystemStats: SystemStats = {
-  totalUsers: 156,
-  totalClasses: 12,
-  totalAssignments: 48,
-  activeToday: 34,
-};
 
 // ─── Page ───────────────────────────────────────────────────────────────
 
 export default function AdminDashboardPage() {
-  const { data: school, isLoading } = useQuery({
+  const { data: school, isLoading: schoolLoading } = useQuery({
     queryKey: ["admin-school"],
     queryFn: () => api.get<SchoolInfo>("/v1/admin/school"),
     retry: false,
   });
+
+  const { data: overview, isLoading: overviewLoading } = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: () => api.get<SchoolOverview>("/v1/admin/overview"),
+    retry: false,
+  });
+
+  const isLoading = schoolLoading || overviewLoading;
 
   return (
     <div className="min-h-screen relative">
@@ -64,29 +73,29 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <StatCard
             icon={<Users className="w-5 h-5" />}
-            value={mockSystemStats.totalUsers}
+            value={isLoading ? "..." : (overview?.totalStudents ?? 0) + (overview?.totalTeachers ?? 0)}
             label="Total Users"
             iconBg="bg-accent/10"
             iconColor="text-accent-light"
           />
           <StatCard
             icon={<School className="w-5 h-5" />}
-            value={mockSystemStats.totalClasses}
+            value={isLoading ? "..." : overview?.totalClasses ?? 0}
             label="Classes"
             iconBg="bg-info/10"
             iconColor="text-info"
           />
           <StatCard
             icon={<GraduationCap className="w-5 h-5" />}
-            value={mockSystemStats.totalAssignments}
+            value={isLoading ? "..." : overview?.totalAssignments ?? 0}
             label="Assignments"
             iconBg="bg-success/10"
             iconColor="text-success"
           />
           <StatCard
             icon={<TrendingUp className="w-5 h-5" />}
-            value={mockSystemStats.activeToday}
-            label="Active Today"
+            value={isLoading ? "..." : overview?.recentSubmissions ?? 0}
+            label="Active Submissions (7d)"
             iconBg="bg-warning/10"
             iconColor="text-warning"
           />
@@ -117,11 +126,17 @@ export default function AdminDashboardPage() {
 
         {/* Quick Links */}
         <div className="card p-5">
-          <h2 className="font-display text-lg font-semibold mb-4">Management</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <AdminLink href="/admin/users" label="Manage Users" description="View, edit, update user roles" />
-            <AdminLink href="/admin/classes" label="Manage Classes" description="Create, assign, organize classes" />
-            <AdminLink href="/admin/settings" label="Settings" description="School config and preferences" />
+          <h2 className="font-display text-lg font-semibold mb-4">Management & Safety Controls</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <AdminLink href="/dashboard/principal" label="Principal Command Center" description="Access school-wide KPIs, teacher count, and class metrics" />
+            <AdminLink href="/dashboard/principal/audit-logs" label="CBSE Compliance Audits" description="Audit AI interactions, filter prompts, check safety logs" />
+            <div className="p-4 rounded-xl border border-white/5 bg-white/[0.01] opacity-70">
+              <p className="text-sm font-medium text-foreground-muted flex items-center gap-1.5">
+                <span>System Configurations</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent-light border border-accent/20">DB Seeded</span>
+              </p>
+              <p className="text-xs text-foreground-subtle mt-1">Class sizes and parameters are managed via migration presets.</p>
+            </div>
           </div>
         </div>
       </div>

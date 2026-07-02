@@ -6,8 +6,9 @@ import type { UserRole } from "@prisma/client";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { logger } from "../../middleware/requestLogger.js";
+import { env } from "../../config/env.js";
 
-const JWT_SECRET = process.env.JWT_SECRET ?? "fallback-dev-secret";
+const JWT_SECRET = env.JWT_SECRET;
 const OTP_EXPIRY_MINUTES = 10;
 
 export async function registerUser(input: {
@@ -189,7 +190,7 @@ export async function requestPasswordReset(input: { email: string }, clientOrigi
 
   if (!user) {
     logger.info(`Password reset requested for non-existent email: ${data.email}`);
-    return { success: true };
+    throw new Error("No account found with this email. Please create an account first.");
   }
 
   const rawToken = crypto.randomBytes(32).toString("hex");

@@ -4,31 +4,39 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   Home, Zap, GraduationCap, Trophy, UserCircle,
-  History, Shield, BookOpen, BarChart3
+  History, Shield, BookOpen, BarChart3, Map
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { cn } from "@web/lib/utils";
+import { useTranslation } from "@web/context/language-context";
 
 // ─── Nav item definitions ─────────────────────────────────────────────────
 
 const STUDENT_NAV = [
-  { label: "Home", href: "/dashboard/student", icon: Home },
-  { label: "Tools", href: "/dashboard/tools", icon: Zap },
-  { label: "Classroom", href: "/dashboard/classroom", icon: GraduationCap },
-  { label: "Scores", href: "/dashboard/scoreboard", icon: Trophy },
-  { label: "Profile", href: "/dashboard/profile", icon: UserCircle },
+  { label: "Home", key: "nav.home", href: "/dashboard/student", icon: Home },
+  { label: "Classroom", key: "nav.classroom", href: "/dashboard/classroom", icon: GraduationCap },
+  { label: "Tools", key: "nav.tools", href: "/dashboard/tools", icon: Zap },
+  { label: "Scores", key: "nav.scores", href: "/dashboard/scoreboard", icon: Trophy },
+  { label: "Profile", key: "nav.profile", href: "/dashboard/profile", icon: UserCircle },
 ];
 
 const TEACHER_NAV = [
-  { label: "Dashboard", href: "/dashboard/teacher", icon: Home },
-  { label: "Assignments", href: "/dashboard/teacher/grading", icon: BookOpen },
-  { label: "Analytics", href: "/dashboard/teacher/analytics", icon: BarChart3 },
-  { label: "Scores", href: "/dashboard/scoreboard", icon: Trophy },
-  { label: "Profile", href: "/dashboard/profile", icon: UserCircle },
+  { label: "Dashboard", key: "nav.dashboard", href: "/dashboard/teacher", icon: Home },
+  { label: "Assignments", key: "nav.assignments", href: "/dashboard/teacher/grading", icon: BookOpen },
+  { label: "Analytics", key: "nav.analytics", href: "/dashboard/teacher/analytics", icon: BarChart3 },
+  { label: "Profile", key: "nav.profile", href: "/dashboard/profile", icon: UserCircle },
+];
+
+const ADMIN_NAV = [
+  { label: "Dashboard", key: "nav.dashboard", href: "/dashboard/admin", icon: Home },
+  { label: "School Center", key: "nav.schoolOverview", href: "/dashboard/principal", icon: Shield },
+  { label: "Safety Audits", key: "nav.safetyAudits", href: "/dashboard/principal/audit-logs", icon: BookOpen },
+  { label: "Profile", key: "nav.profile", href: "/dashboard/profile", icon: UserCircle },
 ];
 
 const SIDEBAR_EXTRA_STUDENT = [
-  { label: "History", href: "/dashboard/submissions", icon: History },
+  { label: "Tools", key: "nav.tools", href: "/dashboard/tools", icon: Zap },
+  { label: "Roadmap", key: "nav.roadmap", href: "/dashboard/student/roadmap", icon: Map },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────
@@ -36,9 +44,12 @@ const SIDEBAR_EXTRA_STUDENT = [
 export function Navigation({ variant }: { variant: "sidebar" | "mobile" }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { t } = useTranslation();
 
-  const isTeacher = session?.user?.role === "TEACHER";
-  const navItems = isTeacher ? TEACHER_NAV : STUDENT_NAV;
+  const role = session?.user?.role;
+  const isTeacher = role === "TEACHER";
+  const isAdmin = role === "ADMIN";
+  const navItems = isAdmin ? ADMIN_NAV : (isTeacher ? TEACHER_NAV : STUDENT_NAV);
 
   function isActive(href: string) {
     if (href === "/dashboard/student" || href === "/dashboard/teacher") {
@@ -52,7 +63,7 @@ export function Navigation({ variant }: { variant: "sidebar" | "mobile" }) {
       <nav className="flex flex-col gap-0.5 flex-1">
         {navItems.map((item) => (
           <Link
-            key={item.label}
+            key={item.key}
             href={item.href}
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
@@ -62,19 +73,19 @@ export function Navigation({ variant }: { variant: "sidebar" | "mobile" }) {
             )}
           >
             <item.icon className="w-4.5 h-4.5 flex-shrink-0" />
-            <span>{item.label}</span>
+            <span>{t(item.key)}</span>
           </Link>
         ))}
 
         {/* Student-only extras in sidebar */}
-        {!isTeacher && (
+        {role === "STUDENT" && (
           <>
             <div className="mt-2 mb-1 px-3">
               <p className="text-[10px] font-semibold text-foreground-subtle uppercase tracking-widest">More</p>
             </div>
             {SIDEBAR_EXTRA_STUDENT.map((item) => (
               <Link
-                key={item.label}
+                key={item.key}
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
@@ -84,7 +95,7 @@ export function Navigation({ variant }: { variant: "sidebar" | "mobile" }) {
                 )}
               >
                 <item.icon className="w-4.5 h-4.5 flex-shrink-0" />
-                <span>{item.label}</span>
+                <span>{t(item.key)}</span>
               </Link>
             ))}
           </>
@@ -102,7 +113,7 @@ export function Navigation({ variant }: { variant: "sidebar" | "mobile" }) {
         const active = isActive(item.href);
         return (
           <Link
-            key={item.label}
+            key={item.key}
             href={item.href}
             className={cn(
               "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all min-w-0 flex-1",
@@ -115,7 +126,7 @@ export function Navigation({ variant }: { variant: "sidebar" | "mobile" }) {
             )}>
               <item.icon className="w-4.5 h-4.5" />
             </div>
-            <span className="text-[10px] font-medium truncate max-w-full">{item.label}</span>
+            <span className="text-[10px] font-medium truncate max-w-full">{t(item.key)}</span>
           </Link>
         );
       })}

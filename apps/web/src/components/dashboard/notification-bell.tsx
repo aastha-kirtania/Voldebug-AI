@@ -48,6 +48,31 @@ export function NotificationBell() {
   const queryClient = useQueryClient();
   const toast = useToast();
 
+  const markAllRead = async () => {
+    try {
+      await api.patch("/v1/notifications/read-all", {});
+      queryClient.setQueryData(["notifications-unread"], { count: 0 });
+      queryClient.setQueryData(["notifications"], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          notifications: old.notifications.map((n: any) => ({ ...n, read: true })),
+        };
+      });
+    } catch (e) {
+      console.error("Failed to mark notifications as read", e);
+    }
+  };
+
+  const handleToggle = () => {
+    const nextState = !open;
+    setOpen(nextState);
+    if (nextState) {
+      refetch();
+      markAllRead();
+    }
+  };
+
   useEffect(() => {
     if (!socket || !connected) return;
 
@@ -70,6 +95,13 @@ export function NotificationBell() {
       queryClient.setQueryData(["notifications-unread"], (old: any) => {
         return { count: (old?.count || 0) + 1 };
       });
+
+      // 4. Invalidate stats/assignments/leaderboard to sync UI in real-time
+      if (payload.type === "GRADE_RECEIVED") {
+        queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+        queryClient.invalidateQueries({ queryKey: ["assignments"] });
+        queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+      }
     };
 
     socket.on("notification", onNotification);
@@ -98,7 +130,7 @@ export function NotificationBell() {
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => { setOpen(!open); refetch(); }}
+        onClick={handleToggle}
         className="relative w-9 h-9 rounded-lg flex items-center justify-center hover:bg-surface/60 transition-colors"
       >
         <Bell className="w-[18px] h-[18px]" />

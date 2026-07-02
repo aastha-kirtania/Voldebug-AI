@@ -129,6 +129,7 @@ export async function updateStreak(userId: string): Promise<number> {
         lastActiveDate: now,
       },
     });
+    completeDailyChallenge(userId, "Earn a streak bonus").catch(console.error);
     return updated.currentStreak;
   }
 
@@ -199,6 +200,22 @@ export async function evaluateBadges(userId: string): Promise<string[]> {
       case "xp_milestone_1000":
         meetsCondition = totalXP >= 1000;
         break;
+      case "quiz_first_pass": {
+        const passedQuizzes = await prisma.quizAttempt.groupBy({
+          by: ["quizId"],
+          where: { studentId: userId, passed: true },
+        });
+        meetsCondition = passedQuizzes.length >= 1;
+        break;
+      }
+      case "quiz_three_passes": {
+        const passedQuizzes = await prisma.quizAttempt.groupBy({
+          by: ["quizId"],
+          where: { studentId: userId, passed: true },
+        });
+        meetsCondition = passedQuizzes.length >= 3;
+        break;
+      }
     }
 
     if (meetsCondition) {

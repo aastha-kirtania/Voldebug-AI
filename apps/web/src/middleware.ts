@@ -39,11 +39,11 @@ export default auth((req) => {
         const dest = role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student";
         return NextResponse.redirect(new URL(dest, req.nextUrl));
       }
-      if (role && pathname === "/role-select") {
+      if (onboardingStatus && onboardingStatus !== "NOT_STARTED" && pathname === "/role-select") {
         const dest = role === "TEACHER" ? "/onboarding/teacher" : "/onboarding/student";
         return NextResponse.redirect(new URL(dest, req.nextUrl));
       }
-      if (!role && pathname.startsWith("/onboarding")) {
+      if ((!onboardingStatus || onboardingStatus === "NOT_STARTED") && pathname.startsWith("/onboarding")) {
         return NextResponse.redirect(new URL("/role-select", req.nextUrl));
       }
       return NextResponse.next();

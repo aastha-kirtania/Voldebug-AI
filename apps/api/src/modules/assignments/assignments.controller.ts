@@ -56,7 +56,7 @@ export async function handleGetAssignment(req: Request, res: Response) {
           select: { id: true, name: true, email: true, image: true },
         },
         class: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, schoolId: true, teacherId: true },
         },
         submissions: {
           where: { studentId: userId },
@@ -70,6 +70,28 @@ export async function handleGetAssignment(req: Request, res: Response) {
 
     if ((assignment as any).deletedAt) {
       return apiError(res, { code: "NOT_FOUND", message: "Assignment not found", status: 404 });
+    }
+
+    // Role-based boundaries check
+    if (req.userRole === "STUDENT") {
+      const isMember = await prisma.classMember.findFirst({
+        where: { classId: assignment.classId, userId },
+      });
+      if (!isMember) {
+        return apiError(res, { code: "FORBIDDEN", message: "You are not enrolled in this class", status: 403 });
+      }
+    } else if (req.userRole === "TEACHER") {
+      if (assignment.creatorId !== userId && assignment.class.teacherId !== userId) {
+        return apiError(res, { code: "FORBIDDEN", message: "You do not teach this class", status: 403 });
+      }
+    } else if (req.userRole === "ADMIN") {
+      const adminUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { schoolId: true },
+      });
+      if (!adminUser?.schoolId || adminUser.schoolId !== assignment.class.schoolId) {
+        return apiError(res, { code: "FORBIDDEN", message: "This class belongs to a different school", status: 403 });
+      }
     }
 
     return apiSuccess(res, assignment);

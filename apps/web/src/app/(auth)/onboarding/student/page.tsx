@@ -4,10 +4,13 @@ import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactConfetti from "react-confetti";
 import {
   Bot, Trophy, Zap, CheckCircle2, ChevronRight,
-  ChevronLeft, User, GraduationCap, AlertCircle, Eye, EyeOff
+  ChevronLeft, User, GraduationCap, AlertCircle, Eye, EyeOff,
+  Building2, BookOpen
 } from "lucide-react";
+import { sound } from "@web/lib/audio";
 
 // Password strength helper
 function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
@@ -29,8 +32,69 @@ function getPasswordStrength(pw: string): { score: number; label: string; color:
 const STEPS = [
   { id: "welcome", title: "Welcome!" },
   { id: "how-it-works", title: "How It Works" },
+  { id: "avatar", title: "Choose Avatar" },
   { id: "setup", title: "Set Up Profile" },
 ];
+
+const AVATARS = [
+  { id: "robot", name: "Volt Robot", emoji: "🤖" },
+  { id: "lion", name: "Leo Lion", emoji: "🦁" },
+  { id: "panda", name: "Pip Panda", emoji: "🐼" },
+  { id: "fox", name: "Foxy Fox", emoji: "🦊" },
+  { id: "unicorn", name: "Spark Unicorn", emoji: "🦄" },
+  { id: "owl", name: "Ollie Owl", emoji: "🦉" },
+];
+
+function AvatarStep({
+  selectedAvatar,
+  setSelectedAvatar,
+}: {
+  selectedAvatar: string;
+  setSelectedAvatar: (v: string) => void;
+}) {
+  return (
+    <motion.div
+      key="avatar"
+      initial={{ opacity: 0, x: 24 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -24 }}
+      className="space-y-5"
+    >
+      <div className="text-center mb-4">
+        <h2 className="font-display text-2xl font-bold">Choose Your Avatar</h2>
+        <p className="text-foreground-muted text-sm mt-1.5">Pick a helper buddy to guide your AI learning journey!</p>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        {AVATARS.map((av) => {
+          const isSelected = selectedAvatar === av.id;
+          return (
+            <motion.button
+              key={av.id}
+              type="button"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => {
+                setSelectedAvatar(av.id);
+                sound.playClick();
+              }}
+              className={`p-4 rounded-2xl border text-center flex flex-col items-center gap-3 transition-all duration-200 ${
+                isSelected
+                  ? "bg-accent/15 border-accent shadow-lg shadow-accent/10"
+                  : "bg-white/4 border-white/5 hover:border-white/10"
+              }`}
+            >
+              <div className="text-4xl">{av.emoji}</div>
+              <span className={`text-xs font-semibold ${isSelected ? "text-accent-light" : "text-foreground-subtle"}`}>
+                {av.name}
+              </span>
+            </motion.button>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+}
 
 const HOW_IT_WORKS_ITEMS = [
   {
@@ -134,6 +198,12 @@ function HowItWorksStep() {
 }
 
 function SetupStep({
+  schoolName,
+  classId,
+  classes,
+  loadingClasses,
+  setSchoolName,
+  setClassId,
   gradeLevel,
   studentId,
   setGradeLevel,
@@ -146,7 +216,15 @@ function SetupStep({
   setShowPassword,
   passwordTouched,
   setPasswordTouched,
+  registeredSchools,
+  loadingSchools,
 }: {
+  schoolName: string;
+  classId: string;
+  classes: { id: string; name: string; teacher: { name: string | null } }[];
+  loadingClasses: boolean;
+  setSchoolName: (v: string) => void;
+  setClassId: (v: string) => void;
   gradeLevel: string;
   studentId: string;
   setGradeLevel: (v: string) => void;
@@ -159,6 +237,8 @@ function SetupStep({
   setShowPassword: (v: boolean) => void;
   passwordTouched: boolean;
   setPasswordTouched: (v: boolean) => void;
+  registeredSchools: { id: string; name: string }[];
+  loadingSchools: boolean;
 }) {
   return (
     <motion.div
@@ -181,6 +261,73 @@ function SetupStep({
       )}
 
       <div className="space-y-4">
+        <div className="space-y-1.5">
+          <label htmlFor="schoolName" className="text-sm font-medium flex items-center gap-1.5">
+            <Building2 className="w-4 h-4 text-foreground-subtle" />
+            School Name
+            <span className="text-error">*</span>
+          </label>
+          {loadingSchools ? (
+            <div className="flex items-center gap-2 text-xs text-foreground-subtle py-2">
+              <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
+              Loading schools...
+            </div>
+          ) : registeredSchools.length > 0 ? (
+            <select
+              id="schoolName"
+              value={schoolName}
+              onChange={(e) => setSchoolName(e.target.value)}
+              className="input-base"
+              required
+            >
+              <option value="">Select your school...</option>
+              {registeredSchools.map((sch) => (
+                <option key={sch.id} value={sch.name}>
+                  {sch.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="p-3.5 rounded-xl bg-warning/8 border border-warning/25 text-warning text-xs leading-relaxed font-medium">
+              ⚠️ No schools have been registered by a Principal yet. Please ask your school administration to register first.
+            </div>
+          )}
+        </div>
+
+        {schoolName.trim().length > 0 && (
+          <div className="space-y-1.5">
+            <label htmlFor="classId" className="text-sm font-medium flex items-center gap-1.5">
+              <BookOpen className="w-4 h-4 text-foreground-subtle" />
+              Class / Classroom
+              <span className="text-foreground-subtle text-xs font-normal ml-1">(optional)</span>
+            </label>
+            {loadingClasses ? (
+              <div className="flex items-center gap-2 text-xs text-foreground-subtle py-2">
+                <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
+                Finding classes...
+              </div>
+            ) : classes.length > 0 ? (
+              <select
+                id="classId"
+                value={classId}
+                onChange={(e) => setClassId(e.target.value)}
+                className="input-base"
+              >
+                <option value="">Select class to join...</option>
+                {classes.map((cls) => (
+                  <option key={cls.id} value={cls.id}>
+                    {cls.name} (Teacher: {cls.teacher?.name || "Unknown"})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p className="text-xs text-warning py-1 font-medium">
+                No classes found in this school yet. Ask your teacher to create the class first.
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="space-y-1.5">
           <label htmlFor="gradeLevel" className="text-sm font-medium flex items-center gap-1.5">
             <GraduationCap className="w-4 h-4 text-foreground-subtle" />
@@ -299,16 +446,89 @@ export default function StudentOnboarding() {
   const [step, setStep] = useState(0);
   const [gradeLevel, setGradeLevel] = useState("");
   const [studentId, setStudentId] = useState("");
+  const [schoolName, setSchoolName] = useState("");
+  const [classId, setClassId] = useState("");
+  const [selectedAvatar, setSelectedAvatar] = useState("robot");
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [classes, setClasses] = useState<{ id: string; name: string; teacher: { name: string | null } }[]>([]);
+  const [loadingClasses, setLoadingClasses] = useState(false);
+  const [registeredSchools, setRegisteredSchools] = useState<{ id: string; name: string }[]>([]);
+  const [loadingSchools, setLoadingSchools] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
 
+  useEffect(() => {
+    async function fetchSchools() {
+      setLoadingSchools(true);
+      try {
+        const token = (session?.user as any)?.token;
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/v1/users/schools`,
+          {
+            headers: {
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
+        if (res.ok) {
+          const json = await res.json();
+          setRegisteredSchools(json.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch registered schools:", err);
+      } finally {
+        setLoadingSchools(false);
+      }
+    }
+    if (session) {
+      fetchSchools();
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (!schoolName.trim()) {
+      setClasses([]);
+      setClassId("");
+      return;
+    }
+
+    const delayDebounce = setTimeout(async () => {
+      setLoadingClasses(true);
+      try {
+        const token = (session?.user as any)?.token;
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/v1/users/school-classes?schoolName=${encodeURIComponent(schoolName.trim())}`,
+          {
+            headers: {
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
+        if (res.ok) {
+          const json = await res.json();
+          setClasses(json.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch classes:", err);
+      } finally {
+        setLoadingClasses(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounce);
+  }, [schoolName, session]);
+
   const userName = session?.user?.name ?? "";
   const hasPassword = session?.user?.hasPassword ?? false;
 
   const handleSubmit = useCallback(async () => {
+    if (!schoolName.trim()) {
+      setError("Please enter your school name.");
+      return;
+    }
     if (!gradeLevel) {
       setError("Please select your grade level.");
       return;
@@ -334,7 +554,10 @@ export default function StudentOnboarding() {
           body: JSON.stringify({
             gradeLevel: Number(gradeLevel),
             studentId: studentId || undefined,
+            schoolName: schoolName.trim() || undefined,
+            classId: classId || undefined,
             password: password || undefined,
+            avatar: selectedAvatar,
           }),
         }
       );
@@ -349,19 +572,32 @@ export default function StudentOnboarding() {
         onboardingStatus: "COMPLETED",
         hasPassword: hasPassword || !!password,
       });
-      router.replace("/dashboard/student");
+
+      setShowConfetti(true);
+      sound.playSuccess();
+      setTimeout(() => {
+        router.replace("/dashboard/student");
+      }, 3500);
     } catch (err: any) {
       setError(err.message ?? "Something went wrong.");
     } finally {
       setSubmitting(false);
     }
-  }, [gradeLevel, studentId, password, session, update, router, hasPassword]);
+  }, [gradeLevel, studentId, schoolName, classId, password, selectedAvatar, session, update, router, hasPassword]);
 
   const isLastStep = step === STEPS.length - 1;
   const canNext = step < STEPS.length - 1;
 
   return (
-    <div className="w-full max-w-lg mx-auto">
+    <div className="w-full max-w-lg mx-auto relative">
+      {showConfetti && (
+        <ReactConfetti
+          width={typeof window !== "undefined" ? window.innerWidth : 500}
+          height={typeof window !== "undefined" ? window.innerHeight : 600}
+          recycle={false}
+          numberOfPieces={300}
+        />
+      )}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -406,7 +642,19 @@ export default function StudentOnboarding() {
               {step === 0 && <WelcomeStep name={userName} />}
               {step === 1 && <HowItWorksStep />}
               {step === 2 && (
+                <AvatarStep
+                  selectedAvatar={selectedAvatar}
+                  setSelectedAvatar={setSelectedAvatar}
+                />
+              )}
+              {step === 3 && (
                 <SetupStep
+                  schoolName={schoolName}
+                  classId={classId}
+                  classes={classes}
+                  loadingClasses={loadingClasses}
+                  setSchoolName={setSchoolName}
+                  setClassId={setClassId}
                   gradeLevel={gradeLevel}
                   studentId={studentId}
                   setGradeLevel={setGradeLevel}
@@ -419,6 +667,8 @@ export default function StudentOnboarding() {
                   setShowPassword={setShowPassword}
                   passwordTouched={passwordTouched}
                   setPasswordTouched={setPasswordTouched}
+                  registeredSchools={registeredSchools}
+                  loadingSchools={loadingSchools}
                 />
               )}
             </AnimatePresence>
@@ -428,7 +678,11 @@ export default function StudentOnboarding() {
           <div className="flex gap-3 mt-8">
             {step > 0 && (
               <button
-                onClick={() => { setStep((s) => s - 1); setError(undefined); }}
+                onClick={() => {
+                  setStep((s) => s - 1);
+                  setError(undefined);
+                  sound.playClick();
+                }}
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-card-border hover:bg-surface/60 text-sm font-medium transition-all"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -438,7 +692,10 @@ export default function StudentOnboarding() {
 
             {canNext && (
               <button
-                onClick={() => setStep((s) => s + 1)}
+                onClick={() => {
+                  setStep((s) => s + 1);
+                  sound.playClick();
+                }}
                 className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-white font-semibold text-sm shadow-md shadow-accent/20 hover:bg-accent-light transition-all"
               >
                 Next

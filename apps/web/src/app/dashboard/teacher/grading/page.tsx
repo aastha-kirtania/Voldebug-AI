@@ -136,7 +136,7 @@ export default function GradingDashboardPage() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-success/10 text-success text-xs font-medium border border-success/20">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Graded: {sub.grade}
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Graded{sub.grade ? `: ${sub.grade}` : sub.score != null ? ` (${sub.score}%)` : ""}
                       </div>
                     )}
                     

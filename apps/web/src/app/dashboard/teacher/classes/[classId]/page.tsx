@@ -3,22 +3,21 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useClassDetail } from "@web/hooks/use-teacher";
+import { useClassDetail, useRegenerateClassCode } from "@web/hooks/use-teacher";
 import { GradientMesh } from "@web/components/ui/background";
-import { Users, BookOpen, AlertCircle, TrendingUp, CheckCircle2, Copy, Sparkles, ChevronLeft, Calendar, FileText } from "lucide-react";
+import { Users, BookOpen, AlertCircle, TrendingUp, CheckCircle2, Copy, Sparkles, ChevronLeft, Calendar, FileText, RefreshCw, Flame } from "lucide-react";
 
 export default function ClassDetailPage() {
   const params = useParams();
   const router = useRouter();
   const classId = params.classId as string;
   const { data: cls, isLoading, error } = useClassDetail(classId);
+  const regenerateMutation = useRegenerateClassCode();
 
   const [activeTab, setActiveTab] = useState<"STUDENTS" | "ASSIGNMENTS">("STUDENTS");
   const [copied, setCopied] = useState(false);
 
-  // Invite code logic (Mocked for now since the backend doesn't have an invite code table yet)
-  // In a real app we'd fetch or generate an invite code for this classId.
-  const inviteCode = cls?.id.slice(0, 6).toUpperCase();
+  const inviteCode = cls?.joinCode || "------";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(inviteCode || "");
@@ -96,6 +95,14 @@ export default function ClassDetailPage() {
                   <button onClick={handleCopy} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors group">
                     {copied ? <CheckCircle2 className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4 text-foreground-muted group-hover:text-foreground" />}
                   </button>
+                  <button
+                    onClick={() => regenerateMutation.mutate(classId)}
+                    disabled={regenerateMutation.isPending}
+                    title="Regenerate Invite Code"
+                    className="p-1.5 hover:bg-white/10 rounded-lg transition-colors group disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-4 h-4 text-foreground-muted group-hover:text-foreground ${regenerateMutation.isPending ? "animate-spin" : ""}`} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -139,6 +146,8 @@ export default function ClassDetailPage() {
                       <tr className="border-b border-card-border bg-surface/30">
                         <th className="px-6 py-4 font-medium text-foreground-subtle">Student</th>
                         <th className="px-6 py-4 font-medium text-foreground-subtle">Grade Lvl</th>
+                        <th className="px-6 py-4 font-medium text-foreground-subtle">Streak</th>
+                        <th className="px-6 py-4 font-medium text-foreground-subtle">Daily Challenge</th>
                         <th className="px-6 py-4 font-medium text-foreground-subtle">Completed Subs</th>
                         <th className="px-6 py-4 font-medium text-foreground-subtle">Avg Score</th>
                         <th className="px-6 py-4 font-medium text-foreground-subtle">Total XP</th>
@@ -159,6 +168,23 @@ export default function ClassDetailPage() {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-foreground-muted">{student.gradeLevel ? `Grade ${student.gradeLevel}` : "—"}</td>
+                          <td className="px-6 py-4">
+                            <span className="inline-flex items-center gap-1 font-semibold text-warning">
+                              <Flame className="w-3.5 h-3.5 fill-warning/10" />
+                              {student.streak ?? 0}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            {student.challengeCompleted ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-success/10 text-success border border-success/20">
+                                Completed
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-warning/10 text-warning border border-warning/20">
+                                Pending
+                              </span>
+                            )}
+                          </td>
                           <td className="px-6 py-4">
                             <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface border border-card-border font-medium text-xs">
                               <FileText className="w-3.5 h-3.5 text-foreground-subtle" />

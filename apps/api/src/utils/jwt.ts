@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
-
-const secret = process.env.JWT_SECRET;
+import { env } from "../config/env.js";
 
 export function generateToken(payload: {
   id: string;
@@ -9,7 +8,7 @@ export function generateToken(payload: {
 }): string {
   return jwt.sign(
     payload,
-    secret ?? "fallback-dev-secret",
+    env.JWT_SECRET,
     { expiresIn: "30d" },
   );
 }
@@ -20,5 +19,5 @@ export function verifyToken(token: string): {
   role: string;
   iat: number;
 } {
-  return jwt.verify(token, secret ?? "fallback-dev-secret") as any;
+  return jwt.verify(token, env.JWT_SECRET) as any;
 }

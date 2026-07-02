@@ -10,8 +10,10 @@ import { submissionsRouter } from "./modules/submissions/submissions.router.js";
 import { dashboardRouter } from "./modules/dashboard/dashboard.router.js";
 import { gamificationRouter } from "./modules/gamification/gamification.router.js";
 import { teacherRouter } from "./modules/teacher/teacher.router.js";
+import { quizzesRouter } from "./modules/quizzes/quizzes.router.js";
 import { notificationsRouter } from "./modules/notifications/notifications.router.js";
 import { adminRouter } from "./modules/admin/admin.router.js";
+import { classesRouter } from "./modules/classes/classes.router.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { limiter } from "./middleware/rateLimiter.js";
@@ -29,12 +31,22 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // allow requests with no origin (like mobile apps / curl)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+app.options("*", cors());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
@@ -51,8 +63,10 @@ api.use("/submissions", submissionsRouter);
 api.use("/dashboard", dashboardRouter);
 api.use("/gamification", gamificationRouter);
 api.use("/teacher", teacherRouter);
+api.use("/quizzes", quizzesRouter);
 api.use("/notifications", notificationsRouter);
 api.use("/admin", adminRouter);
+api.use("/classes", classesRouter);
 
 app.use("/v1", api);
 

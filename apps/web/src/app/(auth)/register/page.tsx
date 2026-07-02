@@ -93,11 +93,13 @@ function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [nameTouched, setNameTouched] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
 
   const strength = getPasswordStrength(password);
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const nameErrorMsg = nameTouched && name.length > 0 && name.trim().length < 2 ? "Full name must be at least 2 characters." : "";
   const emailErrorMsg = emailTouched && email.length > 0 && !isEmailValid ? "Please enter a valid email address." : "";
   const passwordErrorMsg = passwordTouched && password.length > 0 && password.length < 8 ? "Password must be at least 8 characters." : "";
 
@@ -185,19 +187,27 @@ function RegisterForm() {
       >
         {/* Header */}
         <div className="text-center space-y-4">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.4 }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20 relative"
-            style={{ boxShadow: "0 0 40px rgba(99,102,241,0.15)" }}
-          >
-            <UserPlus className="w-7 h-7 text-accent-light" />
-          </motion.div>
+          <div className="flex flex-col items-center gap-2">
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+              className="text-5xl select-none"
+            >
+              🤖
+            </motion.div>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="bg-accent/10 border border-accent/20 px-3 py-1.5 rounded-2xl text-[11px] font-bold text-accent-light"
+            >
+              "Hey! Let's learn AI!"
+            </motion.div>
+          </div>
 
           <div>
             <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Create your account</h1>
-            <p className="text-foreground-muted text-sm mt-2">Join 12,000+ students on Voldebug</p>
+            <p className="text-foreground-muted text-sm mt-1.5">Join 12,000+ students on Voldebug</p>
           </div>
         </div>
 
@@ -230,7 +240,7 @@ function RegisterForm() {
             <label htmlFor="name" className="text-sm font-medium text-foreground">
               Full name
             </label>
-            <Input
+             <Input
               id="name"
               type="text"
               required
@@ -238,9 +248,15 @@ function RegisterForm() {
               placeholder="Jane Doe"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onBlur={() => setNameTouched(true)}
               disabled={loading}
-              className="w-full transition-shadow focus:ring-2 focus:ring-accent/20"
+              className={`w-full transition-shadow focus:ring-2 ${nameErrorMsg ? "border-error focus:ring-error/20" : "focus:ring-accent/20"}`}
             />
+            {nameErrorMsg && (
+              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-error">
+                {nameErrorMsg}
+              </motion.p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -329,7 +345,7 @@ function RegisterForm() {
             variant="primary"
             size="lg"
             className="w-full font-semibold mt-2"
-            disabled={loading || !name || !isEmailValid || password.length < 8 || strength.score < 2}
+            disabled={loading || !name || name.trim().length < 2 || !isEmailValid || password.length < 8 || strength.score < 2}
           >
             {loading ? (
               <>

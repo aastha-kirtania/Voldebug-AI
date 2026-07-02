@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAssignmentList } from "@web/hooks/use-classroom";
+import { useDashboardStats } from "@web/hooks/use-dashboard";
 import { GradientMesh } from "@web/components/ui/background";
 import {
   BookOpen, Clock, CheckCircle2, AlertTriangle, ChevronRight,
@@ -184,41 +186,60 @@ function AssignmentCard({ assignment }: { assignment: any }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────
 
-export default function ClassroomPage() {
+function ClassroomPageContent() {
   const [activeTab, setActiveTab] = useState<Tab>("all");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const classIdParam = searchParams.get("classId");
+
+  const { data: stats } = useDashboardStats();
   const { data: assignments, isLoading } = useAssignmentList();
 
   const filtered = useMemo(() => {
     if (!assignments) return [];
+    
+    // Apply class filter
+    let base = assignments;
+    if (classIdParam) {
+      base = assignments.filter((a) => a.classId === classIdParam);
+    }
+
     const now = new Date();
     switch (activeTab) {
       case "active":
-        return assignments.filter((a) => {
+        return base.filter((a) => {
           const due = new Date(a.dueDate);
           return (!a.submissions || a.submissions.length === 0) && due >= now;
         });
       case "completed":
-        return assignments.filter((a) => a.submissions && a.submissions.length > 0);
+        return base.filter((a) => a.submissions && a.submissions.length > 0);
       case "overdue":
-        return assignments.filter((a) => {
+        return base.filter((a) => {
           const due = new Date(a.dueDate);
           return (!a.submissions || a.submissions.length === 0) && due < now;
         });
       default:
-        return assignments;
+        return base;
     }
-  }, [assignments, activeTab]);
+  }, [assignments, activeTab, classIdParam]);
 
   const counts = useMemo(() => {
     if (!assignments) return { all: 0, active: 0, completed: 0, overdue: 0 };
+    
+    // Apply class filter
+    let base = assignments;
+    if (classIdParam) {
+      base = assignments.filter((a) => a.classId === classIdParam);
+    }
+
     const now = new Date();
     return {
-      all: assignments.length,
-      active: assignments.filter((a) => (!a.submissions || !a.submissions.length) && new Date(a.dueDate) >= now).length,
-      completed: assignments.filter((a) => a.submissions && a.submissions.length > 0).length,
-      overdue: assignments.filter((a) => (!a.submissions || !a.submissions.length) && new Date(a.dueDate) < now).length,
+      all: base.length,
+      active: base.filter((a) => (!a.submissions || !a.submissions.length) && new Date(a.dueDate) >= now).length,
+      completed: base.filter((a) => a.submissions && a.submissions.length > 0).length,
+      overdue: base.filter((a) => (!a.submissions || !a.submissions.length) && new Date(a.dueDate) < now).length,
     };
-  }, [assignments]);
+  }, [assignments, classIdParam]);
 
   return (
     <div className="min-h-screen relative selection:bg-accent/30">
@@ -248,41 +269,75 @@ export default function ClassroomPage() {
           </div>
         </motion.div>
 
-        {/* Segmented Glass Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: smoothEase, delay: 0.1 }}
-          className="inline-flex p-1.5 bg-surface/30 backdrop-blur-xl rounded-[1.25rem] border border-white/5 mb-8 shadow-lg overflow-x-auto max-w-full hide-scrollbar"
-        >
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`relative flex items-center justify-center py-2.5 px-5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${activeTab === tab.key
-                  ? "text-white"
-                  : "text-foreground-subtle hover:text-foreground hover:bg-white/5"
-                }`}
+        {/* Filter and Tab Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          {/* Segmented Glass Tabs */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: smoothEase, delay: 0.1 }}
+            className="inline-flex p-1.5 bg-surface/30 backdrop-blur-xl rounded-[1.25rem] border border-white/5 shadow-lg overflow-x-auto max-w-full hide-scrollbar"
+          >
+            {TABS.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`relative flex items-center justify-center py-2.5 px-5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${activeTab === tab.key
+                    ? "text-white"
+                    : "text-foreground-subtle hover:text-foreground hover:bg-white/5"
+                  }`}
+              >
+                {activeTab === tab.key && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute inset-0 bg-accent rounded-xl shadow-[0_4px_12px_rgba(99,102,241,0.3)]"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-10">{tab.label}</span>
+                {counts[tab.key] > 0 && (
+                  <span
+                    className={`relative z-10 ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-md text-[10px] font-black ${activeTab === tab.key ? "bg-white/20 text-white" : "bg-white/10 text-foreground-muted"
+                      }`}
+                  >
+                    {counts[tab.key]}
+                  </span>
+                )}
+              </button>
+            ))}
+          </motion.div>
+
+          {/* Class Filter Selector */}
+          {stats?.classes && stats.classes.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, ease: smoothEase, delay: 0.15 }}
+              className="flex items-center gap-2 bg-surface/30 backdrop-blur-xl border border-white/5 px-4 py-2.5 rounded-2xl shadow-lg shrink-0 self-start sm:self-center"
             >
-              {activeTab === tab.key && (
-                <motion.div
-                  layoutId="activeTabIndicator"
-                  className="absolute inset-0 bg-accent rounded-xl shadow-[0_4px_12px_rgba(99,102,241,0.3)]"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                />
-              )}
-              <span className="relative z-10">{tab.label}</span>
-              {counts[tab.key] > 0 && (
-                <span
-                  className={`relative z-10 ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-md text-[10px] font-black ${activeTab === tab.key ? "bg-white/20 text-white" : "bg-white/10 text-foreground-muted"
-                    }`}
-                >
-                  {counts[tab.key]}
-                </span>
-              )}
-            </button>
-          ))}
-        </motion.div>
+              <span className="text-[10px] font-black text-foreground-subtle uppercase tracking-wider">Class Filter:</span>
+              <select
+                value={classIdParam || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    router.push(`/dashboard/classroom?classId=${val}`);
+                  } else {
+                    router.push("/dashboard/classroom");
+                  }
+                }}
+                className="bg-transparent text-xs font-semibold text-foreground focus:outline-none cursor-pointer pr-4"
+              >
+                <option value="" className="bg-[#0b0c16] text-foreground">All Classes</option>
+                {stats.classes.map((cls) => (
+                  <option key={cls.id} value={cls.id} className="bg-[#0b0c16] text-foreground">
+                    {cls.name}
+                  </option>
+                ))}
+              </select>
+            </motion.div>
+          )}
+        </div>
 
         {/* Content Area */}
         <div className="min-h-[400px]">
@@ -313,5 +368,17 @@ export default function ClassroomPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ClassroomPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen relative flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-3 border-accent/30 border-t-accent rounded-full animate-spin" />
+      </div>
+    }>
+      <ClassroomPageContent />
+    </Suspense>
   );
 }

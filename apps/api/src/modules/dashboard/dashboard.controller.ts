@@ -13,12 +13,20 @@ export async function handleDashboardStats(req: Request, res: Response) {
       await Promise.all([
         prisma.user.findUnique({
           where: { id: userId },
-          select: { name: true, role: true, gradeLevel: true },
+          select: {
+            name: true,
+            role: true,
+            gradeLevel: true,
+            parentEmail: true,
+            parentReportingEnabled: true,
+            parentReportFrequency: true,
+            school: { select: { name: true } },
+          },
         }),
         prisma.xPTransaction.findMany({
           where: { userId },
           orderBy: { createdAt: "desc" },
-          select: { amount: true, createdAt: true, source: true },
+          select: { id: true, amount: true, createdAt: true, source: true },
         }),
         prisma.streak.findUnique({ where: { userId } }),
         prisma.userBadge.findMany({ 
@@ -95,6 +103,10 @@ export async function handleDashboardStats(req: Request, res: Response) {
         name: user?.name || null,
         role: user?.role || null,
         gradeLevel: user?.gradeLevel || null,
+        schoolName: user?.school?.name || null,
+        parentEmail: user?.parentEmail || null,
+        parentReportingEnabled: user?.parentReportingEnabled || false,
+        parentReportFrequency: user?.parentReportFrequency || "WEEKLY",
       },
       xp: {
         total: totalXP,
@@ -121,6 +133,19 @@ export async function handleDashboardStats(req: Request, res: Response) {
       },
       submissionCount: submissions,
       pendingAssignments,
+      recentActivity: xpTransactions.map((t) => ({
+        id: t.id,
+        amount: t.amount,
+        source: t.source,
+        createdAt: t.createdAt,
+      })),
+      classes: classMemberships.map((m) => ({
+        id: m.class.id,
+        name: m.class.name,
+        teacherId: m.class.teacherId,
+        schoolId: m.class.schoolId,
+        joinCode: m.class.joinCode,
+      })),
     });
   } catch (err) {
     return apiError(res, {

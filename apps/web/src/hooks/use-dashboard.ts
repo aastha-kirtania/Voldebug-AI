@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@web/lib/api";
 
 // ─── Types ──────────────────────────────────────────────────────────────
@@ -11,7 +11,7 @@ interface Tool {
   logoUrl: string;
   brandColor: string;
   usageCount: number;
-  subject: string[];
+  subjects: string[];
   useCases: string[];
 }
 
@@ -34,6 +34,7 @@ interface DashboardStats {
     name: string | null;
     role: string | null;
     gradeLevel: number | null;
+    schoolName: string | null;
   };
   xp: {
     total: number;
@@ -53,6 +54,19 @@ interface DashboardStats {
   };
   submissionCount: number;
   pendingAssignments: number;
+  recentActivity?: {
+    id: string;
+    amount: number;
+    source: string;
+    createdAt: string;
+  }[];
+  classes?: {
+    id: string;
+    name: string;
+    teacherId: string;
+    schoolId: string | null;
+    joinCode: string | null;
+  }[];
 }
 
 // ─── Queries ────────────────────────────────────────────────────────────
@@ -81,5 +95,88 @@ export function useTools() {
     queryFn: () => api.get<Tool[]>("/v1/tools"),
     staleTime: 5 * 60_000,
     retry: 2,
+  });
+}
+
+export interface DailyChallengeResponse {
+  id: string;
+  date: string;
+  action: string;
+  completed: boolean;
+  xpAwarded: number | null;
+}
+
+export function useDailyChallenge() {
+  return useQuery({
+    queryKey: ["daily-challenge"],
+    queryFn: () => api.get<DailyChallengeResponse>("/v1/gamification/challenge"),
+    staleTime: 30_000,
+    retry: 2,
+  });
+}
+
+export interface RoadmapTool extends Tool {
+  isCompleted: boolean;
+  isLocked: boolean;
+  requiredLevel: number;
+}
+
+export interface RoadmapResponse {
+  tools: RoadmapTool[];
+  recommendedToolId: string | null;
+  studentProgress: {
+    totalXP: number;
+    currentLevel: number;
+    xpNeededForNextLevel: number;
+    percentToNextLevel: number;
+    gradeLevel: number;
+  };
+}
+
+export function useRoadmap() {
+  return useQuery({
+    queryKey: ["roadmap"],
+    queryFn: () => api.get<RoadmapResponse>("/v1/gamification/roadmap"),
+    staleTime: 30_000,
+    retry: 2,
+  });
+}
+
+export interface ParentSettingsInput {
+  parentEmail: string | null;
+  parentReportingEnabled: boolean;
+  parentReportFrequency: string;
+}
+
+export function useSaveParentSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ParentSettingsInput) =>
+      api.post<any>("/v1/gamification/parent/settings", data as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+    },
+  });
+}
+
+export function useTriggerParentReport() {
+  return useMutation({
+    mutationFn: () => api.post<any>("/v1/gamification/parent/trigger", {}),
+  });
+}
+
+export interface UpdateProfileInput {
+  name?: string;
+  avatar?: string;
+}
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateProfileInput) =>
+      api.patch<{ id: string; name: string; image: string }>("/v1/users/profile", data as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+    },
   });
 }

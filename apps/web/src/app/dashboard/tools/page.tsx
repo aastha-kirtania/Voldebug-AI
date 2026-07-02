@@ -12,12 +12,12 @@ import {
 // ─── Constants ────────────────────────────────────────────────────────────
 
 const CATEGORIES = [
-  { key: "", label: "All Tools", icon: Sparkles },
-  { key: "CHAT_AI", label: "Chat AI", icon: Bot },
-  { key: "CODE_AI", label: "Code AI", icon: Code2 },
-  { key: "IMAGE_AI", label: "Image AI", icon: Image },
-  { key: "WRITING_AI", label: "Writing AI", icon: Pen },
-  { key: "RESEARCH_AI", label: "Research AI", icon: BookOpen },
+  { key: "", label: "All Worlds", icon: Sparkles },
+  { key: "CHAT_AI", label: "💬 Story Forest (Chat AI)", icon: Bot },
+  { key: "CODE_AI", label: "🤖 Robot Factory (Code AI)", icon: Code2 },
+  { key: "IMAGE_AI", label: "🎨 Creative Studio (Design)", icon: Image },
+  { key: "WRITING_AI", label: "📝 Writer's Sanctuary (Writing)", icon: Pen },
+  { key: "RESEARCH_AI", label: "🚀 Space Explorer (Research)", icon: BookOpen },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -29,11 +29,11 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const CATEGORY_LABEL: Record<string, string> = {
-  CHAT_AI: "Chat AI",
-  CODE_AI: "Code AI",
-  IMAGE_AI: "Image AI",
-  WRITING_AI: "Writing AI",
-  RESEARCH_AI: "Research AI",
+  CHAT_AI: "💬 Story Forest (Chat)",
+  CODE_AI: "🤖 Robot Factory (Code)",
+  IMAGE_AI: "🎨 Creative Studio (Design)",
+  WRITING_AI: "📝 Writer's Sanctuary (Writing)",
+  RESEARCH_AI: "🚀 Space Explorer (Research)",
 };
 
 // Demo tools for when the database is empty
@@ -154,11 +154,11 @@ export default function ToolsPage() {
           className="pt-6 pb-2 space-y-1"
         >
           <h1 className="font-display text-2xl font-bold flex items-center gap-2">
-            <Zap className="w-6 h-6 text-accent-light" />
-            AI Tools Library
+            <Sparkles className="w-6 h-6 text-accent-light" />
+            AI Learning Worlds
           </h1>
           <p className="text-sm text-foreground-muted">
-            {allTools.length} tools curated for students — find the right one for your assignment
+            {allTools.length} magical learning worlds curated for students — pick a world to start exploring
           </p>
         </motion.div>
 

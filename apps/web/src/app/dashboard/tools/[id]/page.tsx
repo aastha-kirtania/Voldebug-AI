@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useTool } from "@web/hooks/use-tools";
 import { useDashboardStats } from "@web/hooks/use-dashboard";
 import { DoubtSolver } from "@web/components/dashboard/doubt-solver";
+import { ToolQuizCard } from "@web/components/dashboard/tool-quiz-card";
 import { GradientMesh } from "@web/components/ui/background";
 import {
   ArrowLeft, ExternalLink, Users, BookOpen, Lightbulb,
@@ -13,11 +14,11 @@ import {
 // ─── Category label map ───────────────────────────────────────────────────
 
 const CATEGORY_LABEL: Record<string, string> = {
-  CHAT_AI: "Chat AI",
-  CODE_AI: "Code AI",
-  IMAGE_AI: "Image AI",
-  WRITING_AI: "Writing AI",
-  RESEARCH_AI: "Research AI",
+  CHAT_AI: "💬 Story Forest (Chat)",
+  CODE_AI: "🤖 Robot Factory (Code)",
+  IMAGE_AI: "🎨 Creative Studio (Design)",
+  WRITING_AI: "📝 Writer's Sanctuary (Writing)",
+  RESEARCH_AI: "🚀 Space Explorer (Research)",
 };
 
 // ─── Demo fallback for this tool ──────────────────────────────────────────
@@ -100,7 +101,7 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
             className="inline-flex items-center gap-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Tools
+            Back to Learning Worlds
           </a>
         </motion.div>
 
@@ -268,6 +269,14 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
                 toolId={params.id}
                 toolName={t.name}
                 defaultGradeLevel={gradeLevel}
+              />
+            </div>
+
+            {/* Tool Quiz Card */}
+            <div className="pt-4">
+              <ToolQuizCard
+                toolId={params.id}
+                brandColor={color}
               />
             </div>
 

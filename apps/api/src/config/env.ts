@@ -15,6 +15,7 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
   REDIS_URL: z.string().url().optional(),
   RESEND_API_KEY: z.string().optional(),
+  JWT_SECRET: z.string().default("fallback-dev-secret"),
 });
 
 export const env = envSchema.parse(process.env);

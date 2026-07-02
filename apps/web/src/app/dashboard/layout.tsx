@@ -1,16 +1,34 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type ReactNode, useState, useEffect } from "react";
 import { Navigation } from "@web/components/dashboard/navigation";
 import { NotificationBell } from "@web/components/dashboard/notification-bell";
 import { ThemeToggle } from "@web/components/dashboard/theme-toggle";
+import { LanguageSwitcher } from "@web/components/dashboard/language-switcher";
 import { useSession, signOut } from "next-auth/react";
-import { LogOut } from "lucide-react";
+import { LogOut, Volume2, VolumeX } from "lucide-react";
+import { sound } from "@web/lib/audio";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { data: session } = useSession();
-  const isTeacher = session?.user?.role === "TEACHER";
-  const brandHref = isTeacher ? "/dashboard/teacher" : "/dashboard/student";
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  useEffect(() => {
+    setSoundEnabled(sound.isEnabled());
+  }, []);
+
+  const handleToggleSound = () => {
+    const next = sound.toggle();
+    setSoundEnabled(next);
+    if (next) {
+      sound.playClick();
+    }
+  };
+
+  const role = session?.user?.role;
+  const brandHref = role === "ADMIN"
+    ? "/dashboard/admin"
+    : (role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student");
   const handleLogout = async () => {
     try {
       if (typeof window !== "undefined") {
@@ -42,9 +60,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Top bar: theme toggle + notification bell + logout + user */}
+        {/* Top bar: language switcher + theme toggle + sound toggle + notification bell + logout + user */}
         <header className="sticky top-0 z-40 bg-bg/80 backdrop-blur-sm border-b border-white/5 h-14 flex items-center justify-end px-4 md:px-6 lg:px-8 gap-2">
+          <LanguageSwitcher />
           <ThemeToggle />
+          <button
+            onClick={handleToggleSound}
+            className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-surface/60 border border-white/5 transition-all text-foreground-muted hover:text-foreground"
+            title={soundEnabled ? "Mute Sounds" : "Unmute Sounds"}
+          >
+            {soundEnabled ? (
+              <Volume2 className="w-[18px] h-[18px]" />
+            ) : (
+              <VolumeX className="w-[18px] h-[18px] text-error" />
+            )}
+          </button>
           <NotificationBell />
           <button
             onClick={handleLogout}

@@ -180,7 +180,7 @@ export default function SubmissionsPage() {
         >
           <h1 className="font-display text-2xl font-bold flex items-center gap-2">
             <History className="w-5.5 h-5.5 text-accent-light" />
-            Submission History
+            Grades & Submissions
           </h1>
           <p className="text-sm text-foreground-muted mt-0.5">
             All your past assignment submissions and grades

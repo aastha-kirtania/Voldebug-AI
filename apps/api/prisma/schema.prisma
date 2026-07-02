@@ -47,6 +47,7 @@ enum XPSource {
   STREAK_BONUS
   BADGE_EARNED
   TEACHER_BONUS
+  QUIZ_COMPLETED
 }
 
 enum ToolCategory {
@@ -107,8 +108,13 @@ model User {
   dailyChallenges  DailyChallenge[]
   notifications    Notification[]
   streak           Streak?
-  auditLogs        AuditLog[]
-  lastActiveAt     DateTime           @default(now())
+  auditLogs         AuditLog[]
+  quizAttempts      QuizAttempt[]
+  parentEmail            String?
+  parentReportingEnabled Boolean            @default(false)
+  parentReportFrequency  String             @default("WEEKLY")
+  parentReports          ParentReportLog[]
+  lastActiveAt      DateTime           @default(now())
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
@@ -128,6 +134,7 @@ model User {
 model Class {
   id          String        @id @default(cuid())
   name        String
+  joinCode    String?       @unique
   schoolId    String?
   school      School?       @relation(fields: [schoolId], references: [id])
   teacherId   String
@@ -139,6 +146,7 @@ model Class {
 
   @@index([teacherId])
   @@index([schoolId])
+  @@index([joinCode])
   @@map("classes")
 }
 
@@ -188,18 +196,20 @@ model Session {
 }
 
 model Tool {
-  id          String        @id @default(cuid())
-  name        String
-  category    ToolCategory
-  description String        @db.Text
-  logoUrl     String
-  brandColor  String        @default("#ffffff")
-  useCases    String[]
-  subjects    String[]
-  usageCount  Int           @default(0)
-  assignments Assignment[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  name          String
+  category      ToolCategory
+  description   String        @db.Text
+  logoUrl       String
+  brandColor    String        @default("#ffffff")
+  useCases      String[]
+  subjects      String[]
+  usageCount    Int           @default(0)
+  requiredLevel Int           @default(1)
+  assignments   Assignment[]
+  quiz          Quiz?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@index([category])
   @@map("tools")
@@ -389,4 +399,66 @@ model EmailOtp {
 
   @@index([email])
   @@map("email_otps")
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+}
+
+model Quiz {
+  id           String        @id @default(cuid())
+  title        String
+  description  String?       @db.Text
+  toolId       String        @unique
+  tool         Tool          @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  xpReward     Int           @default(50)
+  passingScore Int           @default(70)
+  questions    Question[]
+  attempts     QuizAttempt[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("quizzes")
+}
+
+model Question {
+  id                 String       @id @default(cuid())
+  quizId             String
+  quiz               Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  type               QuestionType @default(MULTIPLE_CHOICE)
+  questionText       String       @db.Text
+  options            String[]
+  correctAnswerIndex Int
+  explanation        String?      @db.Text
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@map("questions")
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  score     Int
+  passed    Boolean
+  answers   Json
+  createdAt DateTime @default(now())
+
+  @@map("quiz_attempts")
+}
+
+model ParentReportLog {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parentEmail String
+  sentAt      DateTime @default(now())
+  content     String   @db.Text
+  status      String   @default("SENT")
+
+  @@map("parent_report_logs")
 }

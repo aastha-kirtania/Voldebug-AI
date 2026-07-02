@@ -174,21 +174,29 @@ function LoginForm() {
       >
         {/* Logo & heading */}
         <div className="text-center space-y-4">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20 mb-1 relative"
-            style={{ boxShadow: "0 0 40px rgba(99,102,241,0.15)" }}
-          >
-            <Zap className="w-8 h-8 text-accent-light" />
-          </motion.div>
+          <div className="flex flex-col items-center gap-2">
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+              className="text-5xl select-none"
+            >
+              🤖
+            </motion.div>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="bg-accent/10 border border-accent/20 px-3 py-1.5 rounded-2xl text-[11px] font-bold text-accent-light"
+            >
+              "Hey! Let's learn AI!"
+            </motion.div>
+          </div>
 
           <div>
             <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
               Welcome back
             </h1>
-            <p className="text-foreground-muted text-sm mt-2">
+            <p className="text-foreground-muted text-sm mt-1.5">
               Sign in to continue your AI learning journey
             </p>
           </div>

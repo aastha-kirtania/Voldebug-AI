@@ -14,12 +14,12 @@ import {
 const GUEST_VISIBLE_LIMIT = 10;
 
 const CATEGORIES = [
-  { key: "", label: "All Tools", icon: Sparkles },
-  { key: "CHAT_AI", label: "Chat AI", icon: Bot },
-  { key: "CODE_AI", label: "Code AI", icon: Code2 },
-  { key: "IMAGE_AI", label: "Image AI", icon: Image },
-  { key: "WRITING_AI", label: "Writing AI", icon: Pen },
-  { key: "RESEARCH_AI", label: "Research AI", icon: BookOpen },
+  { key: "", label: "All Worlds", icon: Sparkles },
+  { key: "CHAT_AI", label: "💬 Story Forest (Chat AI)", icon: Bot },
+  { key: "CODE_AI", label: "🤖 Robot Factory (Code AI)", icon: Code2 },
+  { key: "IMAGE_AI", label: "🎨 Creative Studio (Design)", icon: Image },
+  { key: "WRITING_AI", label: "📝 Writer's Sanctuary (Writing)", icon: Pen },
+  { key: "RESEARCH_AI", label: "🚀 Space Explorer (Research)", icon: BookOpen },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -31,11 +31,11 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const CATEGORY_LABEL: Record<string, string> = {
-  CHAT_AI: "Chat AI",
-  CODE_AI: "Code AI",
-  IMAGE_AI: "Image AI",
-  WRITING_AI: "Writing AI",
-  RESEARCH_AI: "Research AI",
+  CHAT_AI: "💬 Story Forest (Chat)",
+  CODE_AI: "🤖 Robot Factory (Code)",
+  IMAGE_AI: "🎨 Creative Studio (Design)",
+  WRITING_AI: "📝 Writer's Sanctuary (Writing)",
+  RESEARCH_AI: "🚀 Space Explorer (Research)",
 };
 
 // 20 demo tools — first 10 visible, rest locked
@@ -323,16 +323,16 @@ export default function ToolsPreviewPage() {
           </div>
 
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
-            AI Tools for Students
+            AI Learning Worlds
           </h1>
           <p className="text-base text-white/45 max-w-lg mx-auto">
-            Explore {baseTools.length} curated AI tools — browse the first {GUEST_VISIBLE_LIMIT} free, sign up to unlock the rest.
+            Explore {baseTools.length} curated learning worlds — browse the first {GUEST_VISIBLE_LIMIT} free, sign up to unlock the rest.
           </p>
 
           {/* Quick stat pills */}
           <div className="flex items-center justify-center gap-4 mt-6 flex-wrap">
             {[
-              { icon: Zap,            label: `${baseTools.length} Tools`       },
+              { icon: Zap,            label: `${baseTools.length} Worlds`       },
               { icon: GraduationCap,  label: "For Students"                    },
               { icon: BookOpen,       label: "All Subjects"                    },
             ].map(({ icon: Icon, label }) => (
