@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTools } from "@web/hooks/use-tools";
 import { GradientMesh } from "@web/components/ui/background";
+import { useTranslation } from "@web/context/language-context";
 import {
   Search, Bot, Code2, Pen, Image, BookOpen,
   ExternalLink, Sparkles, TrendingUp, ChevronRight, Zap, X
@@ -53,8 +54,17 @@ const DEMO_TOOLS = [
 // ─── Sub-components ───────────────────────────────────────────────────────
 
 function ToolCard({ tool, index }: { tool: typeof DEMO_TOOLS[0]; index: number }) {
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
+
   const color = tool.brandColor || CATEGORY_COLORS[tool.category] || "#6366f1";
-  const catLabel = CATEGORY_LABEL[tool.category] || tool.category;
+  const catLabel = isHindi ? (
+    tool.category === "CHAT_AI" ? "💬 स्टोरी फ़ॉरेस्ट (चैट)" :
+    tool.category === "CODE_AI" ? "🤖 रोबोट फ़ैक्टरी (कोड)" :
+    tool.category === "IMAGE_AI" ? "🎨 क्रिएटिव स्टूडियो (डिजाइन)" :
+    tool.category === "WRITING_AI" ? "📝 राइटर्स सैंक्चुअरी (लेखन)" :
+    tool.category === "RESEARCH_AI" ? "🚀 स्पेस एक्सप्लोरर (अनुसंधान)" : tool.category
+  ) : (CATEGORY_LABEL[tool.category] || tool.category);
 
   return (
     <motion.a
@@ -95,10 +105,10 @@ function ToolCard({ tool, index }: { tool: typeof DEMO_TOOLS[0]; index: number }
       <div className="flex items-center justify-between pt-1 border-t border-card-border">
         <div className="flex items-center gap-1 text-xs text-foreground-subtle">
           <TrendingUp className="w-3 h-3" />
-          <span>{tool.usageCount.toLocaleString()} uses</span>
+          <span>{isHindi ? `${tool.usageCount.toLocaleString()} बार उपयोग` : `${tool.usageCount.toLocaleString()} uses`}</span>
         </div>
         <span className="text-xs text-accent-light group-hover:underline flex items-center gap-0.5">
-          Open <ChevronRight className="w-3 h-3" />
+          {isHindi ? "खोलें" : "Open"} <ChevronRight className="w-3 h-3" />
         </span>
       </div>
     </motion.a>
@@ -111,6 +121,8 @@ export default function ToolsPage() {
   const [activeCategory, setActiveCategory] = useState("");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
 
   // Debounce search
   const handleSearchChange = useCallback((val: string) => {
@@ -155,10 +167,10 @@ export default function ToolsPage() {
         >
           <h1 className="font-display text-2xl font-bold flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-accent-light" />
-            AI Learning Worlds
+            {isHindi ? "एआई सीखने की दुनिया" : "AI Learning Worlds"}
           </h1>
           <p className="text-sm text-foreground-muted">
-            {allTools.length} magical learning worlds curated for students — pick a world to start exploring
+            {isHindi ? `${allTools.length} छात्रों के लिए तैयार की गई जादुई सीखने की दुनिया — खोजना शुरू करने के लिए एक दुनिया चुनें` : `${allTools.length} magical learning worlds curated for students — pick a world to start exploring`}
           </p>
         </motion.div>
 
@@ -176,7 +188,7 @@ export default function ToolsPage() {
               type="text"
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search tools by name or description…"
+              placeholder={isHindi ? "नाम या विवरण द्वारा टूल्स खोजें..." : "Search tools by name or description…"}
               className="input-base pl-10 pr-10"
               aria-label="Search AI tools"
             />
@@ -203,7 +215,14 @@ export default function ToolsPage() {
                 }`}
               >
                 <cat.icon className="w-3.5 h-3.5" />
-                {cat.label}
+                {isHindi ? (
+                  cat.key === "" ? "सभी दुनिया" :
+                  cat.key === "CHAT_AI" ? "💬 स्टोरी फ़ॉरेस्ट (चैट)" :
+                  cat.key === "CODE_AI" ? "🤖 रोबोट फ़ैक्टरी (कोड)" :
+                  cat.key === "IMAGE_AI" ? "🎨 क्रिएटिव स्टूडियो (डिजाइन)" :
+                  cat.key === "WRITING_AI" ? "📝 राइटर्स सैंक्चुअरी (लेखन)" :
+                  cat.key === "RESEARCH_AI" ? "🚀 स्पेस एक्सप्लोरर (अनुसंधान)" : cat.label
+                ) : cat.label}
               </button>
             ))}
           </div>
@@ -212,7 +231,7 @@ export default function ToolsPage() {
         {/* Results count */}
         <div className="mt-4 mb-3 flex items-center justify-between">
           <p className="text-xs text-foreground-subtle">
-            {isLoading ? "Loading..." : `${filtered.length} tool${filtered.length !== 1 ? "s" : ""} found`}
+            {isLoading ? (isHindi ? "लोड हो रहा है..." : "Loading...") : (isHindi ? `कुल ${filtered.length} टूल मिले` : `${filtered.length} tool${filtered.length !== 1 ? "s" : ""} found`)}
           </p>
         </div>
 
@@ -232,9 +251,9 @@ export default function ToolsPage() {
             <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center mb-4">
               <Search className="w-8 h-8 text-foreground-subtle opacity-40" />
             </div>
-            <p className="font-display text-base font-semibold mb-1">No tools found</p>
+            <p className="font-display text-base font-semibold mb-1">{isHindi ? "कोई टूल नहीं मिला" : "No tools found"}</p>
             <p className="text-sm text-foreground-subtle">
-              Try a different search term or category
+              {isHindi ? "एक अलग खोज शब्द या श्रेणी का प्रयास करें" : "Try a different search term or category"}
             </p>
           </motion.div>
         ) : (

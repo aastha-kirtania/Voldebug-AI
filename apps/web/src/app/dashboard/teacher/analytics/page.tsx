@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { GradientMesh } from "@web/components/ui/background";
-import { useTeacherDashboard } from "@web/hooks/use-teacher";
+import { useTeacherDashboard, useTeacherAnalytics } from "@web/hooks/use-teacher";
 import {
   BarChart3, TrendingUp, Users, BookOpen, Award,
   AlertTriangle, CheckCircle2, Zap, ExternalLink
@@ -53,7 +53,21 @@ const MAX_TOOL = TOP_TOOLS[0].uses;
 // ─── Page ─────────────────────────────────────────────────────────────────
 
 export default function TeacherAnalyticsPage() {
-  const { data, isLoading } = useTeacherDashboard();
+  const { data: dashboardData, isLoading: isDashboardLoading } = useTeacherDashboard();
+  const { data: analyticsData, isLoading: isAnalyticsLoading } = useTeacherAnalytics();
+
+  const isLoading = isDashboardLoading || isAnalyticsLoading;
+
+  const weeklySubmissions = analyticsData?.weeklySubmissions ?? [];
+  const maxSubmission = Math.max(...weeklySubmissions.map((s: any) => s.count), 0);
+
+  const gradeDistribution = analyticsData?.gradeDistribution ?? [];
+  const maxGrade = Math.max(...gradeDistribution.map((g: any) => g.count), 0);
+
+  const topTools = analyticsData?.toolStats ?? [];
+  const maxTool = Math.max(...topTools.map((t: any) => t.usageCount), 0);
+
+  const atRiskStudents = analyticsData?.atRiskStudents ?? [];
 
   const containerVariants = {
     hidden: {},
@@ -94,10 +108,10 @@ export default function TeacherAnalyticsPage() {
           {/* Overview stats */}
           <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: "Total Students", value: data?.totalStudents ?? 0, icon: Users, color: "#6366f1" },
-              { label: "Completion Rate", value: data ? `${Math.round(data.completionRate)}%` : "—", icon: CheckCircle2, color: "#22c55e" },
-              { label: "Average Grade", value: data?.averageGrade != null ? `${Math.round(data.averageGrade)}%` : "—", icon: TrendingUp, color: "#f59e0b" },
-              { label: "Active Assignments", value: data?.activeAssignments ?? 0, icon: BookOpen, color: "#06b6d4" },
+              { label: "Total Students", value: dashboardData?.totalStudents ?? 0, icon: Users, color: "#6366f1" },
+              { label: "Completion Rate", value: dashboardData ? `${Math.round(dashboardData.completionRate)}%` : "—", icon: CheckCircle2, color: "#22c55e" },
+              { label: "Average Grade", value: dashboardData?.averageGrade != null ? `${Math.round(dashboardData.averageGrade)}%` : "—", icon: TrendingUp, color: "#f59e0b" },
+              { label: "Active Assignments", value: dashboardData?.activeAssignments ?? 0, icon: BookOpen, color: "#06b6d4" },
             ].map((s) => (
               <div key={s.label} className="card p-4">
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-3" style={{ backgroundColor: `${s.color}18` }}>
@@ -116,27 +130,32 @@ export default function TeacherAnalyticsPage() {
                 <TrendingUp className="w-4.5 h-4.5 text-accent-light" />
                 Weekly Submissions
               </h2>
-              <div className="flex items-end justify-between gap-2 h-32">
-                {SUBMISSION_DATA.map((val, i) => {
-                  const max = Math.max(...SUBMISSION_DATA);
-                  const pct = max > 0 ? (val / max) * 100 : 0;
-                  return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                      <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: `${pct}%` }}
-                        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: i * 0.05 }}
-                        className="w-full rounded-t-md min-h-[4px] relative group cursor-default"
-                        style={{ backgroundColor: "#6366f1", maxHeight: "100px" }}
-                      >
-                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-accent-light opacity-0 group-hover:opacity-100 transition-opacity">
-                          {val}
-                        </span>
-                      </motion.div>
-                      <span className="text-[10px] text-foreground-subtle">{WEEK_LABELS[i]}</span>
-                    </div>
-                  );
-                })}
+              <div className="flex items-end justify-between gap-2 h-32 pt-4">
+                {isLoading ? (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-foreground-muted">Loading chart...</div>
+                ) : weeklySubmissions.length === 0 ? (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-foreground-muted">No weekly data available</div>
+                ) : (
+                  weeklySubmissions.map((s: any, i: number) => {
+                    const pct = maxSubmission > 0 ? (s.count / maxSubmission) * 100 : 0;
+                    return (
+                      <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                        <motion.div
+                          initial={{ height: 0 }}
+                          animate={{ height: `${pct}%` }}
+                          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: i * 0.05 }}
+                          className="w-full rounded-t-md min-h-[4px] relative group cursor-default"
+                          style={{ backgroundColor: "#6366f1", maxHeight: "100px" }}
+                        >
+                          <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-accent-light opacity-0 group-hover:opacity-100 transition-opacity">
+                            {s.count}
+                          </span>
+                        </motion.div>
+                        <span className="text-[10px] text-foreground-subtle">{s.dayLabel}</span>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </motion.div>
 
@@ -147,15 +166,21 @@ export default function TeacherAnalyticsPage() {
                 Grade Distribution
               </h2>
               <div className="space-y-3">
-                {GRADE_DIST.map((g) => (
-                  <div key={g.label}>
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-foreground-muted">{g.label}</span>
-                      <span className="font-semibold" style={{ color: g.color }}>{g.count} students</span>
+                {isLoading ? (
+                  <div className="py-8 text-center text-xs text-foreground-muted">Loading distribution...</div>
+                ) : gradeDistribution.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-foreground-muted">No graded submissions yet</div>
+                ) : (
+                  gradeDistribution.map((g: any) => (
+                    <div key={g.label}>
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-foreground-muted">{g.label}</span>
+                        <span className="font-semibold" style={{ color: g.color }}>{g.count} students</span>
+                      </div>
+                      <MiniBar value={g.count} max={maxGrade} color={g.color} />
                     </div>
-                    <MiniBar value={g.count} max={MAX_GRADE} color={g.color} />
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </motion.div>
 
@@ -166,21 +191,27 @@ export default function TeacherAnalyticsPage() {
                 Top Tools Used
               </h2>
               <div className="space-y-3">
-                {TOP_TOOLS.map((tool, i) => (
-                  <div key={tool.name}>
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-md flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0"
-                          style={{ backgroundColor: tool.color }}>
-                          {i + 1}
+                {isLoading ? (
+                  <div className="py-8 text-center text-xs text-foreground-muted">Loading tools stats...</div>
+                ) : topTools.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-foreground-muted">No tool activity logged</div>
+                ) : (
+                  topTools.map((tool: any, i: number) => (
+                    <div key={tool.name}>
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-md flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0"
+                            style={{ backgroundColor: tool.brandColor }}>
+                            {i + 1}
+                          </span>
+                          <span className="text-foreground-muted">{tool.name}</span>
                         </span>
-                        <span className="text-foreground-muted">{tool.name}</span>
-                      </span>
-                      <span className="font-semibold text-foreground">{tool.uses} uses</span>
+                        <span className="font-semibold text-foreground">{tool.usageCount} uses</span>
+                      </div>
+                      <MiniBar value={tool.usageCount} max={maxTool} color={tool.brandColor} />
                     </div>
-                    <MiniBar value={tool.uses} max={MAX_TOOL} color={tool.color} />
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </motion.div>
 
@@ -192,20 +223,36 @@ export default function TeacherAnalyticsPage() {
               </h2>
               <p className="text-xs text-foreground-muted mb-4">Students with low activity or missed assignments</p>
 
-              {data?.classInfo && data.classInfo.length > 0 ? (
+              {isLoading ? (
+                <div className="py-8 text-center text-xs text-foreground-muted">Loading alerts...</div>
+              ) : atRiskStudents.length > 0 ? (
                 <div className="space-y-2">
-                  {data.classInfo.map((cls) => (
-                    <a
-                      key={cls.id}
-                      href={`/dashboard/teacher/classes/${cls.id}`}
-                      className="flex items-center justify-between p-3 rounded-xl border border-card-border hover:border-card-border-hover hover:bg-surface/40 transition-all group"
+                  {atRiskStudents.map((student: any) => (
+                    <div
+                      key={student.id}
+                      className="flex items-center justify-between p-3 rounded-xl border border-card-border bg-surface/20 hover:bg-surface/40 transition-colors"
                     >
-                      <div>
-                        <p className="text-sm font-medium">{cls.name}</p>
-                        <p className="text-xs text-foreground-subtle">{cls._count?.members ?? 0} students</p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-white/5 border border-white/5 flex items-center justify-center font-bold text-xs uppercase text-foreground-subtle overflow-hidden">
+                          {student.image ? (
+                            <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
+                          ) : (
+                            student.name[0]
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{student.name}</p>
+                          <p className="text-xs text-foreground-subtle">{student.reason}</p>
+                        </div>
                       </div>
-                      <ExternalLink className="w-4 h-4 text-foreground-subtle opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </a>
+                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md border ${
+                        student.level === "CRITICAL"
+                          ? "text-red-400 border-red-400/25 bg-red-400/10"
+                          : "text-amber-400 border-amber-400/25 bg-amber-400/10"
+                      }`}>
+                        {student.level}
+                      </span>
+                    </div>
                   ))}
                 </div>
               ) : (

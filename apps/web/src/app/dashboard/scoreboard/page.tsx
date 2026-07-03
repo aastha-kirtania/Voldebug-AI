@@ -7,6 +7,7 @@ import { api } from "@web/lib/api";
 import { Trophy, Crown, Flame, Medal, Sparkles } from "lucide-react";
 import { GradientMesh } from "@web/components/ui/background";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "@web/context/language-context";
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
@@ -83,6 +84,8 @@ export default function ScoreboardPage() {
   const { data, isLoading } = useLeaderboard();
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
 
   const top3 = useMemo(
     () => data?.leaderboard?.slice(0, 3) ?? [],
@@ -118,10 +121,10 @@ export default function ScoreboardPage() {
             <Trophy className="w-10 h-10 text-accent-light" />
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-            Hall of Fame
+            {isHindi ? "हॉल ऑफ फेम" : "Hall of Fame"}
           </h1>
           <p className="text-base text-foreground-subtle font-medium tracking-wide max-w-md mx-auto">
-            Compete with your classmates, earn XP, and climb to the top of the leaderboard!
+            {isHindi ? "अपने सहपाठियों के साथ प्रतिस्पर्धा करें, एक्सपी अर्जित करें, और लीडरबोर्ड के शीर्ष पर पहुंचें!" : "Compete with your classmates, earn XP, and climb to the top of the leaderboard!"}
           </p>
         </motion.div>
 
@@ -171,10 +174,10 @@ export default function ScoreboardPage() {
             ) : (
               <div className="space-y-2">
                 <div className="flex items-center px-4 py-2 text-[10px] font-bold text-foreground-subtle uppercase tracking-widest">
-                  <span className="w-12 text-center">Rank</span>
-                  <span className="flex-1 ml-4">Student</span>
-                  <span className="text-right w-24">Level</span>
-                  <span className="text-right w-24 hidden md:block">Total XP</span>
+                  <span className="w-12 text-center">{isHindi ? "रैंक" : "Rank"}</span>
+                  <span className="flex-1 ml-4">{isHindi ? "छात्र" : "Student"}</span>
+                  <span className="text-right w-24">{isHindi ? "स्तर" : "Level"}</span>
+                  <span className="text-right w-24 hidden md:block">{isHindi ? "कुल एक्सपी" : "Total XP"}</span>
                 </div>
 
                 <AnimatePresence>
@@ -193,7 +196,7 @@ export default function ScoreboardPage() {
                   !rest.find((e) => e.userId === userId) &&
                   !top3.find((e) => e.userId === userId) && (
                     <div className="mt-4 pt-4 border-t border-white/10">
-                      <p className="text-[10px] font-bold text-accent-light uppercase tracking-widest mb-3 ml-4">Your Current Rank</p>
+                      <p className="text-[10px] font-bold text-accent-light uppercase tracking-widest mb-3 ml-4">{isHindi ? "आपकी वर्तमान रैंक" : "Your Current Rank"}</p>
                       {/* Note: We need the actual entry data for the pinned row, falling back to a placeholder if not in memory */}
                       <LeaderboardRow
                         entry={{
@@ -305,6 +308,9 @@ function LeaderboardRow({
   delay?: number;
   pinned?: boolean;
 }) {
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
+
   return (
     <motion.div
       variants={rowVariants}
@@ -340,7 +346,7 @@ function LeaderboardRow({
         </span>
         {isCurrentUser && (
           <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-accent-light bg-accent/20 px-2 py-0.5 rounded-md">
-            You
+            {isHindi ? "आप" : "You"}
           </span>
         )}
       </div>
@@ -364,14 +370,17 @@ function LeaderboardRow({
 }
 
 function EmptyScoreboard() {
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
+
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
         <Trophy className="w-8 h-8 text-foreground-subtle opacity-50" />
       </div>
-      <p className="text-lg font-bold text-foreground">No rankings yet</p>
+      <p className="text-lg font-bold text-foreground">{isHindi ? "अभी तक कोई रैंकिंग नहीं" : "No rankings yet"}</p>
       <p className="text-sm font-medium text-foreground-subtle mt-1 max-w-sm mx-auto">
-        Complete assignments to earn XP and be the first to climb the leaderboard!
+        {isHindi ? "रैंकिंग शुरू करने और लीडरबोर्ड पर चढ़ने के लिए असाइनमेंट पूरे करें!" : "Complete assignments to earn XP and be the first to climb the leaderboard!"}
       </p>
     </div>
   );

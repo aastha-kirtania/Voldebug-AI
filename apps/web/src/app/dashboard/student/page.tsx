@@ -9,6 +9,7 @@ import { Progress } from "@web/components/ui/progress";
 import { GradientMesh } from "@web/components/ui/background";
 import ReactConfetti from "react-confetti";
 import { sound } from "@web/lib/audio";
+import { useTranslation } from "@web/context/language-context";
 import {
   Flame,
   Trophy,
@@ -50,11 +51,11 @@ const itemVariants = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
-function getGreeting() {
+function getGreeting(t: any) {
   const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
+  if (hour < 12) return t("dashboard.greetingMorning");
+  if (hour < 17) return t("dashboard.greetingAfternoon");
+  return t("dashboard.greetingEvening");
 }
 
 function getDaysUntilDue(dueDate: string): number {
@@ -68,6 +69,8 @@ function getDaysUntilDue(dueDate: string): number {
 export default function StudentDashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.role === "TEACHER") {
@@ -262,11 +265,11 @@ export default function StudentDashboardPage() {
             </motion.div>
             <div>
               <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                {getGreeting()}, {userName}!
+                {getGreeting(t)}, {userName}!
               </h1>
               <p className="text-sm text-foreground-subtle mt-1 flex items-center gap-1.5 flex-wrap">
-                <span>{userAvatar.name} says:</span>
-                <span className="text-accent-light font-bold">"Hey! Let's learn AI!"</span>
+                <span>{userAvatar.name} {isHindi ? "कहता है:" : "says:"}</span>
+                <span className="text-accent-light font-bold">"{isHindi ? "अरे! चलो एआई सीखते हैं!" : "Hey! Let's learn AI!"}"</span>
                 {stats?.user?.schoolName && (
                   <>
                     <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
@@ -274,7 +277,7 @@ export default function StudentDashboardPage() {
                   </>
                 )}
                 <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                <span className="text-foreground-muted">Grade {stats?.user?.gradeLevel ?? gradeLevel}</span>
+                <span className="text-foreground-muted">{isHindi ? "कक्षा" : "Grade"} {stats?.user?.gradeLevel ?? gradeLevel}</span>
               </p>
             </div>
           </div>
@@ -288,7 +291,7 @@ export default function StudentDashboardPage() {
               className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-accent text-white font-semibold text-sm shadow-md shadow-accent/20 hover:bg-accent-light transition-all active:scale-[0.98] border border-white/5 h-14"
             >
               <Plus className="w-4.5 h-4.5" />
-              <span>Join Class</span>
+              <span>{isHindi ? "कक्षा में शामिल हों" : "Join Class"}</span>
             </button>
 
             <div className="flex items-center gap-4 bg-surface/30 backdrop-blur-xl border border-white/5 px-5 py-3 rounded-2xl shadow-xl h-14">
@@ -296,7 +299,7 @@ export default function StudentDashboardPage() {
                 <Sparkles className="w-4 h-4 text-accent-light" />
               </div>
               <div>
-                <p className="text-[10px] text-foreground-subtle font-medium uppercase tracking-wider mb-0.5">Current Level</p>
+                <p className="text-[10px] text-foreground-subtle font-medium uppercase tracking-wider mb-0.5">{isHindi ? "वर्तमान स्तर" : "Current Level"}</p>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-lg font-semibold leading-none">{stats?.xp.level ?? 1}</span>
                   <span className="text-[10px] text-accent-light font-medium">({stats?.xp.total ?? 0} XP)</span>
@@ -319,14 +322,14 @@ export default function StudentDashboardPage() {
               <div className="flex items-start justify-between mb-8">
                 <div>
                   <h3 className="text-sm font-semibold text-foreground-subtle uppercase tracking-wider mb-1">
-                    Next Milestone
+                    {isHindi ? "अगला मील का पत्थर" : "Next Milestone"}
                   </h3>
                   <p className="text-2xl font-medium text-foreground">
-                    Level {stats?.xp.level ? stats.xp.level + 1 : 2}
+                    {isHindi ? "स्तर" : "Level"} {stats?.xp.level ? stats.xp.level + 1 : 2}
                   </p>
                 </div>
                 <div className="px-4 py-1.5 rounded-full bg-surface-hover border border-white/5 text-xs font-medium text-foreground-muted">
-                  +{stats?.xp.thisWeek ?? 0} XP this week
+                  +{stats?.xp.thisWeek ?? 0} {isHindi ? "इस सप्ताह एक्सपी" : "XP this week"}
                 </div>
               </div>
 
@@ -338,9 +341,9 @@ export default function StudentDashboardPage() {
                 className="cursor-pointer group relative pt-4 pb-2"
               >
                 <div className="flex justify-between text-xs font-medium text-foreground-muted mb-3 select-none">
-                  <span>Progress</span>
+                  <span>{isHindi ? "प्रगति" : "Progress"}</span>
                   <span className="group-hover:text-accent-light transition-colors">
-                    {stats?.xp.toNextLevel ?? 100} XP remaining (Click to view!)
+                    {stats?.xp.toNextLevel ?? 100} {isHindi ? "एक्सपी शेष (देखने के लिए क्लिक करें!)" : "XP remaining (Click to view!)"}
                   </span>
                 </div>
                 {statsLoading ? (
@@ -366,7 +369,7 @@ export default function StudentDashboardPage() {
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       className="absolute -top-12 left-1/2 -translate-x-1/2 bg-accent px-4 py-2 rounded-xl shadow-xl border border-accent-light text-white text-xs font-bold whitespace-nowrap z-30"
                     >
-                      🏆 You're {stats?.xp.toNextLevel ?? 100} XP away from Level {stats?.xp.level ? stats.xp.level + 1 : 2}!
+                      🏆 {isHindi ? `आप स्तर ${stats?.xp.level ? stats.xp.level + 1 : 2} से ${stats?.xp.toNextLevel ?? 100} एक्सपी दूर हैं!` : `You're {stats?.xp.toNextLevel ?? 100} XP away from Level {stats?.xp.level ? stats.xp.level + 1 : 2}!`}
                       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-accent" />
                     </motion.div>
                   )}
@@ -392,12 +395,12 @@ export default function StudentDashboardPage() {
                     🎯
                   </motion.div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-foreground-subtle">Today's Mission</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-foreground-subtle">{isHindi ? "आज का मिशन" : "Today's Mission"}</p>
                     {challenge?.completed ? (
-                      <span className="text-[10px] font-bold text-success">✓ Mission Complete!</span>
+                      <span className="text-[10px] font-bold text-success">{isHindi ? "✓ मिशन पूरा हुआ!" : "✓ Mission Complete!"}</span>
                     ) : (
                       <span className="text-[10px] font-semibold text-warning flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> Resets at midnight
+                        <Clock className="w-3 h-3" /> {isHindi ? "आधी रात को रीसेट होगा" : "Resets at midnight"}
                       </span>
                     )}
                   </div>
@@ -411,7 +414,7 @@ export default function StudentDashboardPage() {
                       : "text-amber-400 border-amber-400/30 bg-amber-400/10"
                   }`}
                 >
-                  {challenge?.completed ? "🌟 Done!" : "🔥 Active"}
+                  {challenge?.completed ? (isHindi ? "🌟 समाप्त!" : "🌟 Done!") : (isHindi ? "🔥 सक्रिय" : "🔥 Active")}
                 </motion.div>
               </div>
 
@@ -427,8 +430,8 @@ export default function StudentDashboardPage() {
                   </h3>
                   <p className="text-xs text-foreground-subtle leading-relaxed mb-4">
                     {challenge?.completed
-                      ? "🎉 Volt Robot says: \"Amazing work today! You're unstoppable!\""
-                      : "🤖 Volt Robot says: \"Complete this mission to earn your daily XP bonus!\""}
+                      ? (isHindi ? "🎉 वोल्ट रोबोट कहता है: \"आज कमाल का काम किया! आप अजेय हैं!\"" : "🎉 Volt Robot says: \"Amazing work today! You're unstoppable!\"")
+                      : (isHindi ? "🤖 वोल्ट रोबोट कहता है: \"दैनिक एक्सपी बोनस अर्जित करने के लिए इस मिशन को पूरा करें!\"" : "🤖 Volt Robot says: \"Complete this mission to earn your daily XP bonus!\"")}
                   </p>
                 </div>
               )}
@@ -449,7 +452,7 @@ export default function StudentDashboardPage() {
                       : "text-accent-light hover:text-white hover:bg-accent/20"
                   }`}
                 >
-                  {challenge?.completed ? "See more missions" : "Start Mission →"}
+                  {challenge?.completed ? (isHindi ? "अधिक मिशन देखें" : "See more missions") : (isHindi ? "मिशन शुरू करें →" : "Start Mission →")}
                 </a>
               </div>
             </GlassCard>
@@ -475,10 +478,10 @@ export default function StudentDashboardPage() {
                 </motion.div>
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">Day Streak</p>
+                <p className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">{isHindi ? "दैनिक निरंतरता" : "Day Streak"}</p>
                 <p className="text-xl font-bold text-foreground mt-0.5 flex items-baseline gap-1.5">
                   <span>{stats?.streak.current ?? 0}</span>
-                  <span className="text-xs font-semibold text-warning">days 🔥</span>
+                  <span className="text-xs font-semibold text-warning">{isHindi ? "दिन" : "days"} 🔥</span>
                 </p>
               </div>
             </GlassCard>
@@ -498,7 +501,7 @@ export default function StudentDashboardPage() {
                 <Trophy className="w-5 h-5 text-amber-400" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">Class Rank</p>
+                <p className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">{isHindi ? "कक्षा रैंक" : "Class Rank"}</p>
                 <p className="text-xl font-bold text-foreground mt-0.5">
                   #{stats?.classRank ?? "—"}
                 </p>
@@ -521,7 +524,7 @@ export default function StudentDashboardPage() {
                 <Award className="w-5 h-5 text-accent-light" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">Badges Earned</p>
+                <p className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">{isHindi ? "अर्जित बैज" : "Badges Earned"}</p>
                 <p className="text-xl font-bold text-foreground mt-0.5">
                   {stats?.badges.earned ?? 0}
                 </p>
@@ -535,10 +538,10 @@ export default function StudentDashboardPage() {
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
                 <div className="flex items-center gap-3">
                   <BookOpen className="w-5 h-5 text-foreground-muted" />
-                  <h2 className="text-base font-medium text-foreground tracking-wide">Active Assignments</h2>
+                  <h2 className="text-base font-medium text-foreground tracking-wide">{isHindi ? "सक्रिय असाइनमेंट" : "Active Assignments"}</h2>
                 </div>
                 <a href="/dashboard/classroom" className="text-xs font-medium text-foreground-subtle hover:text-foreground transition-colors flex items-center gap-1">
-                  View all <ArrowRight className="w-3 h-3" />
+                  {isHindi ? "सभी देखें" : "View all"} <ArrowRight className="w-3 h-3" />
                 </a>
               </div>
 
@@ -547,7 +550,7 @@ export default function StudentDashboardPage() {
                   {[1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-white/5 animate-pulse" />)}
                 </div>
               ) : activeAssignments.length === 0 ? (
-                <EmptyState icon={<CheckCircle2 className="w-6 h-6 text-foreground-subtle" />} message="All caught up. No pending assignments." />
+                <EmptyState icon={<CheckCircle2 className="w-6 h-6 text-foreground-subtle" />} message={isHindi ? "सब पूरा हो गया। कोई लंबित असाइनमेंट नहीं।" : "All caught up. No pending assignments."} />
               ) : (
                 <div className="space-y-2">
                   {activeAssignments.map((a) => (
@@ -567,12 +570,12 @@ export default function StudentDashboardPage() {
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
                     <BookOpen className="w-5 h-5 text-foreground-muted" />
-                    <h2 className="text-base font-medium text-foreground tracking-wide">My Classes</h2>
+                    <h2 className="text-base font-medium text-foreground tracking-wide">{isHindi ? "मेरी कक्षाएं" : "My Classes"}</h2>
                   </div>
                 </div>
 
                 {!stats?.classes || stats.classes.length === 0 ? (
-                  <EmptyState icon={<BookOpen className="w-5 h-5 text-foreground-subtle" />} message="You haven't joined any classes yet." />
+                  <EmptyState icon={<BookOpen className="w-5 h-5 text-foreground-subtle" />} message={isHindi ? "आप अभी तक किसी भी कक्षा में शामिल नहीं हुए हैं।" : "You haven't joined any classes yet."} />
                 ) : (
                   <div className="space-y-2">
                     {stats.classes.map((cls) => (
@@ -601,12 +604,12 @@ export default function StudentDashboardPage() {
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
                     <LayoutGrid className="w-5 h-5 text-foreground-muted" />
-                    <h2 className="text-base font-medium text-foreground tracking-wide">Quick Tools</h2>
+                    <h2 className="text-base font-medium text-foreground tracking-wide">{isHindi ? "त्वरित टूल्स" : "Quick Tools"}</h2>
                   </div>
                 </div>
 
                 {!tools || tools.length === 0 ? (
-                  <EmptyState icon={<LayoutGrid className="w-5 h-5 text-foreground-subtle" />} message="No tools accessed yet." />
+                  <EmptyState icon={<LayoutGrid className="w-5 h-5 text-foreground-subtle" />} message={isHindi ? "अभी तक किसी टूल का उपयोग नहीं किया गया।" : "No tools accessed yet."} />
                 ) : (
                   <div className="grid grid-cols-2 gap-3">
                     {quickTools.map((tool) => (
@@ -623,7 +626,7 @@ export default function StudentDashboardPage() {
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
                     <Activity className="w-5 h-5 text-foreground-muted" />
-                    <h2 className="text-base font-medium text-foreground tracking-wide">Activity</h2>
+                    <h2 className="text-base font-medium text-foreground tracking-wide">{isHindi ? "गतिविधि" : "Activity"}</h2>
                   </div>
                 </div>
 
@@ -631,7 +634,7 @@ export default function StudentDashboardPage() {
                   {recentActivity.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-6 text-center">
                       <Activity className="w-8 h-8 text-foreground-subtle mb-2 opacity-50" />
-                      <p className="text-xs font-medium text-foreground-subtle">No recent activity logged.</p>
+                      <p className="text-xs font-medium text-foreground-subtle">{isHindi ? "कोई हाल की गतिविधि लॉग नहीं की गई।" : "No recent activity logged."}</p>
                     </div>
                   ) : (
                     recentActivity.map((item, i) => (
@@ -758,10 +761,10 @@ export default function StudentDashboardPage() {
             >
               <div className="text-8xl animate-bounce select-none">🏆</div>
               <div className="space-y-2">
-                <h2 className="text-gradient font-display text-4xl font-extrabold tracking-tight">LEVEL UP!</h2>
-                <p className="text-lg text-white font-semibold">You reached Level {showLevelUp}!</p>
+                <h2 className="text-gradient font-display text-4xl font-extrabold tracking-tight">{isHindi ? "स्तर बढ़ा!" : "LEVEL UP!"}</h2>
+                <p className="text-lg text-white font-semibold">{isHindi ? `आप स्तर ${showLevelUp} पर पहुंच गए हैं!` : `You reached Level ${showLevelUp}!`}</p>
                 <p className="text-sm text-foreground-subtle leading-relaxed">
-                  Outstanding job! Keep using AI tools and finishing assignments to rise to the top.
+                  {isHindi ? "उत्कृष्ट कार्य! शीर्ष पर पहुंचने के लिए एआई टूल्स का उपयोग करना और असाइनमेंट पूरा करना जारी रखें।" : "Outstanding job! Keep using AI tools and finishing assignments to rise to the top."}
                 </p>
               </div>
               <button
@@ -771,7 +774,7 @@ export default function StudentDashboardPage() {
                 }}
                 className="px-6 py-3 rounded-2xl bg-accent text-white font-bold hover:bg-accent-light shadow-lg shadow-accent/25 transition-all text-sm w-full"
               >
-                Awesome!
+                {isHindi ? "बहुत बढ़िया!" : "Awesome!"}
               </button>
             </motion.div>
           </motion.div>
@@ -807,6 +810,8 @@ function MiniStat({ title, value, icon }: { title: string; value: string | numbe
 
 function AssignmentRow({ assignment, daysUntilDue }: { assignment: any; daysUntilDue: number }) {
   const isUrgent = daysUntilDue <= 1;
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
 
   return (
     <a href={`/dashboard/classroom/${assignment.id}`} className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 -mx-4 rounded-2xl hover:bg-white/5 transition-colors duration-300 gap-4">
@@ -816,9 +821,9 @@ function AssignmentRow({ assignment, daysUntilDue }: { assignment: any; daysUnti
         </h4>
         <div className="flex items-center gap-3">
           <span className="text-[11px] text-foreground-muted">{assignment.className}</span>
-          <span className="w-1 h-1 rounded-full bg-white/10" />
+          <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
           <span className={`text-[11px] font-medium ${isUrgent ? 'text-error/90' : 'text-foreground-subtle'}`}>
-            {daysUntilDue === 0 ? "Due today" : `${daysUntilDue} days left`}
+            {daysUntilDue === 0 ? (isHindi ? "आज देय" : "Due today") : (isHindi ? `${daysUntilDue} दिन शेष` : `${daysUntilDue} days left`)}
           </span>
         </div>
       </div>
