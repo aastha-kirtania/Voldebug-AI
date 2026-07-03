@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAssignmentList } from "@web/hooks/use-classroom";
 import { useDashboardStats } from "@web/hooks/use-dashboard";
+import { useTranslation } from "@web/context/language-context";
 import { GradientMesh } from "@web/components/ui/background";
 import {
   BookOpen, Clock, CheckCircle2, AlertTriangle, ChevronRight,
@@ -70,22 +71,41 @@ function dueBadgeStyle(days: number, isCompleted: boolean) {
   return "bg-white/5 border-white/10 text-foreground-subtle";
 }
 
-function dueBadgeLabel(days: number, isCompleted: boolean) {
-  if (isCompleted) return "Completed";
-  if (days < 0) return `${Math.abs(days)}d overdue`;
-  if (days === 0) return "Due today";
-  if (days === 1) return "Due tomorrow";
-  return `${days} days left`;
+function dueBadgeLabel(days: number, isCompleted: boolean, isHindi: boolean) {
+  if (isCompleted) return isHindi ? "पूर्ण" : "Completed";
+  if (days < 0) return isHindi ? `${Math.abs(days)} दिन देरी` : `${Math.abs(days)}d overdue`;
+  if (days === 0) return isHindi ? "आज देय" : "Due today";
+  if (days === 1) return isHindi ? "कल देय" : "Due tomorrow";
+  return isHindi ? `${days} दिन बचे हैं` : `${days} days left`;
 }
 
 // ─── Premium UI Sub-components ────────────────────────────────────────────
 
 function EmptyState({ tab }: { tab: Tab }) {
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
+
   const messages: Record<Tab, { title: string; desc: string; icon: React.ElementType }> = {
-    all: { title: "No assignments yet", desc: "Your teacher hasn't posted any assignments. Check back soon!", icon: BookOpen },
-    active: { title: "All caught up!", desc: "You have no active assignments right now. Great work!", icon: CheckCircle2 },
-    completed: { title: "No submissions yet", desc: "Complete your first assignment to see it here.", icon: Zap },
-    overdue: { title: "No overdue assignments", desc: "You're on top of everything. Keep it up!", icon: CheckCircle2 },
+    all: { 
+      title: isHindi ? "अभी तक कोई असाइनमेंट नहीं" : "No assignments yet", 
+      desc: isHindi ? "आपके शिक्षक ने अभी तक कोई असाइनमेंट पोस्ट नहीं किया है। जल्द ही वापस जाँचें!" : "Your teacher hasn't posted any assignments. Check back soon!", 
+      icon: BookOpen 
+    },
+    active: { 
+      title: isHindi ? "सब पूरा हो गया!" : "All caught up!", 
+      desc: isHindi ? "आपके पास अभी कोई सक्रिय असाइनमेंट नहीं है। बहुत बढ़िया!" : "You have no active assignments right now. Great work!", 
+      icon: CheckCircle2 
+    },
+    completed: { 
+      title: isHindi ? "अभी तक कोई सबमिशन नहीं" : "No submissions yet", 
+      desc: isHindi ? "इसे यहाँ देखने के लिए अपना पहला असाइनमेंट पूरा करें।" : "Complete your first assignment to see it here.", 
+      icon: Zap 
+    },
+    overdue: { 
+      title: isHindi ? "कोई देरी वाला असाइनमेंट नहीं" : "No overdue assignments", 
+      desc: isHindi ? "आप हर चीज़ में सबसे आगे हैं। इसे बनाए रखें!" : "You're on top of everything. Keep it up!", 
+      icon: CheckCircle2 
+    },
   };
   const { title, desc, icon: Icon } = messages[tab];
 
@@ -107,10 +127,13 @@ function EmptyState({ tab }: { tab: Tab }) {
 }
 
 function AssignmentCard({ assignment }: { assignment: any }) {
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
+
   const isCompleted = assignment.submissions && assignment.submissions.length > 0;
   const days = getDaysLeft(assignment.dueDate);
   const badgeStyle = dueBadgeStyle(days, isCompleted);
-  const badgeLabel = dueBadgeLabel(days, isCompleted);
+  const badgeLabel = dueBadgeLabel(days, isCompleted, isHindi);
   const toolColor = assignment.suggestedTool?.brandColor || "var(--color-accent)";
 
   return (
@@ -167,7 +190,7 @@ function AssignmentCard({ assignment }: { assignment: any }) {
         {isCompleted ? (
           <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-success mt-1">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            Submitted
+            {isHindi ? "प्रस्तुत" : "Submitted"}
             {assignment.submissions[0]?.score != null && (
               <span className="text-foreground-muted ml-1 lowercase tracking-normal">
                 ({assignment.submissions[0].score}%)
@@ -194,6 +217,15 @@ function ClassroomPageContent() {
 
   const { data: stats } = useDashboardStats();
   const { data: assignments, isLoading } = useAssignmentList();
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
+
+  const tabLabels: Record<Tab, string> = {
+    all: isHindi ? "सभी" : "All",
+    active: isHindi ? "सक्रिय" : "Active",
+    completed: isHindi ? "पूरे किए गए" : "Completed",
+    overdue: isHindi ? "देरी वाले" : "Overdue"
+  };
 
   const filtered = useMemo(() => {
     if (!assignments) return [];
@@ -260,10 +292,10 @@ function ClassroomPageContent() {
             </div>
             <div>
               <h1 className="font-display text-4xl font-medium tracking-tight text-foreground">
-                Classroom
+                {isHindi ? "कक्षा" : "Classroom"}
               </h1>
               <p className="text-sm font-medium text-foreground-subtle mt-1 tracking-wide">
-                <span className="text-foreground">{counts.active}</span> active quests · <span className="text-success">{counts.completed}</span> completed
+                <span className="text-foreground">{counts.active}</span> {isHindi ? "सक्रिय खोज" : "active quests"} · <span className="text-success">{counts.completed}</span> {isHindi ? "पूर्ण" : "completed"}
               </p>
             </div>
           </div>
@@ -294,7 +326,7 @@ function ClassroomPageContent() {
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
-                <span className="relative z-10">{tab.label}</span>
+                <span className="relative z-10">{tabLabels[tab.key]}</span>
                 {counts[tab.key] > 0 && (
                   <span
                     className={`relative z-10 ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-md text-[10px] font-black ${activeTab === tab.key ? "bg-white/20 text-white" : "bg-white/10 text-foreground-muted"
@@ -315,7 +347,7 @@ function ClassroomPageContent() {
               transition={{ duration: 0.6, ease: smoothEase, delay: 0.15 }}
               className="flex items-center gap-2 bg-surface/30 backdrop-blur-xl border border-white/5 px-4 py-2.5 rounded-2xl shadow-lg shrink-0 self-start sm:self-center"
             >
-              <span className="text-[10px] font-black text-foreground-subtle uppercase tracking-wider">Class Filter:</span>
+              <span className="text-[10px] font-black text-foreground-subtle uppercase tracking-wider">{isHindi ? "कक्षा फ़िल्टर:" : "Class Filter:"}</span>
               <select
                 value={classIdParam || ""}
                 onChange={(e) => {
@@ -328,7 +360,7 @@ function ClassroomPageContent() {
                 }}
                 className="bg-transparent text-xs font-semibold text-foreground focus:outline-none cursor-pointer pr-4"
               >
-                <option value="" className="bg-[#0b0c16] text-foreground">All Classes</option>
+                <option value="" className="bg-[#0b0c16] text-foreground">{isHindi ? "सभी कक्षाएं" : "All Classes"}</option>
                 {stats.classes.map((cls) => (
                   <option key={cls.id} value={cls.id} className="bg-[#0b0c16] text-foreground">
                     {cls.name}

@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useRoadmap } from "@web/hooks/use-dashboard";
+import { useTranslation } from "@web/context/language-context";
 import { GradientMesh } from "@web/components/ui/background";
 import {
   Lock,
@@ -44,6 +45,8 @@ const itemVariants = {
 export default function StudentRoadmapPage() {
   const { data: session } = useSession();
   const { data: roadmapData, isLoading, error } = useRoadmap();
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
 
   const userName = session?.user?.name?.split(" ")[0] || "Student";
 
@@ -81,9 +84,9 @@ export default function StudentRoadmapPage() {
           <div className="w-12 h-12 rounded-full bg-error/10 border border-error/25 flex items-center justify-center mx-auto text-error">
             <Info className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-foreground">Failed to Load Roadmap</h2>
+          <h2 className="text-xl font-bold text-foreground">{isHindi ? "रोडमैप लोड करने में विफल" : "Failed to Load Roadmap"}</h2>
           <p className="text-sm text-foreground-subtle">
-            There was a problem retrieving your visual learning roadmap. Please check back later.
+            {isHindi ? "आपके विज़ुअल लर्निंग रोडमैप को पुनः प्राप्त करने में समस्या थी। कृपया बाद में पुनः प्रयास करें।" : "There was a problem retrieving your visual learning roadmap. Please check back later."}
           </p>
         </div>
       </div>
@@ -116,10 +119,13 @@ export default function StudentRoadmapPage() {
           <div>
             <h1 className="font-display text-4xl font-medium tracking-tight text-foreground flex items-center gap-3">
               <Milestone className="w-8 h-8 text-accent-light" />
-              <span>Learning Roadmap</span>
+              <span>{isHindi ? "सीखने का रोडमैप" : "Learning Roadmap"}</span>
             </h1>
             <p className="text-sm md:text-base text-foreground-subtle mt-2 font-medium tracking-wide">
-              Level up to unlock new tools and complete your learning goals, {userName}.
+              {isHindi 
+                ? `नए उपकरण अनलॉक करने और अपने सीखने के लक्ष्यों को पूरा करने के लिए स्तर बढ़ाएं, ${userName}।`
+                : `Level up to unlock new tools and complete your learning goals, ${userName}.`
+              }
             </p>
           </div>
         </motion.div>
@@ -137,11 +143,11 @@ export default function StudentRoadmapPage() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider mb-1">
-                    Your Current Level
+                    {isHindi ? "आपका वर्तमान स्तर" : "Your Current Level"}
                   </h3>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold leading-none">{studentProgress.currentLevel}</span>
-                    <span className="text-xs text-foreground-muted font-medium">({studentProgress.totalXP} total XP)</span>
+                    <span className="text-xs text-foreground-muted font-medium">({studentProgress.totalXP} {isHindi ? "कुल एक्सपी" : "total XP"})</span>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-accent-surface flex items-center justify-center text-accent-light border border-accent/20">
@@ -151,8 +157,8 @@ export default function StudentRoadmapPage() {
 
               <div>
                 <div className="flex justify-between text-xs font-medium text-foreground-muted mb-2">
-                  <span>Level {studentProgress.currentLevel} Progress</span>
-                  <span>{studentProgress.xpNeededForNextLevel} XP to Level {studentProgress.currentLevel + 1}</span>
+                  <span>{isHindi ? `स्तर ${studentProgress.currentLevel} प्रगति` : `Level ${studentProgress.currentLevel} Progress`}</span>
+                  <span>{studentProgress.xpNeededForNextLevel} {isHindi ? `एक्सपी स्तर ${studentProgress.currentLevel + 1} के लिए` : `XP to Level ${studentProgress.currentLevel + 1}`}</span>
                 </div>
                 <div className="h-2.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
                   <motion.div
@@ -175,9 +181,12 @@ export default function StudentRoadmapPage() {
                 <Sparkles className="w-6 h-6 animate-pulse" />
               </div>
               <div>
-                <h4 className="font-semibold text-foreground text-sm">Path Progression</h4>
+                <h4 className="font-semibold text-foreground text-sm">{isHindi ? "पथ प्रगति" : "Path Progression"}</h4>
                 <p className="text-xs text-foreground-subtle mt-1.5 leading-relaxed">
-                  Earn XP by completing assignments. Higher levels unlock specialized writing, design, and research AI.
+                  {isHindi 
+                    ? "असाइनमेंट पूरे करके एक्सपी कमाएं। उच्च स्तर विशिष्ट लेखन, डिज़ाइन और अनुसंधान एआई को अनलॉक करते हैं।"
+                    : "Earn XP by completing assignments. Higher levels unlock specialized writing, design, and research AI."
+                  }
                 </p>
               </div>
             </GlassCard>
@@ -197,16 +206,20 @@ export default function StudentRoadmapPage() {
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-3">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-[10px] font-bold text-accent-light uppercase tracking-wider">
-                    <Zap className="w-3.5 h-3.5 animate-bounce" /> Recommended Next Step
+                    <Zap className="w-3.5 h-3.5 animate-bounce" /> {isHindi ? "अनुशंसित अगला कदम" : "Recommended Next Step"}
                   </span>
                   <div>
                     <h3 className="text-xl font-bold text-foreground">
-                      Use {recommendedTool.name}
+                      {isHindi ? `उपयोग करें ${recommendedTool.name}` : `Use ${recommendedTool.name}`}
                     </h3>
                     <p className="text-sm text-foreground-subtle mt-1.5 max-w-xl">
                       {recommendedTool.isLocked 
-                        ? `This tool is locked. Reach Level ${recommendedTool.requiredLevel} to unlock and start experimenting!`
-                        : `You haven't completed this step yet. Try running an unflagged query inside ${recommendedTool.name} to earn roadmap progress.`
+                        ? (isHindi 
+                            ? `यह टूल लॉक है। अनलॉक करने और प्रयोग शुरू करने के लिए स्तर ${recommendedTool.requiredLevel} पर पहुंचें!`
+                            : `This tool is locked. Reach Level ${recommendedTool.requiredLevel} to unlock and start experimenting!`)
+                        : (isHindi 
+                            ? `आपने अभी तक यह कदम पूरा नहीं किया है। रोडमैप प्रगति अर्जित करने के लिए ${recommendedTool.name} के अंदर एक गैर-ध्वजांकित क्वेरी चलाने का प्रयास करें।`
+                            : `You haven't completed this step yet. Try running an unflagged query inside ${recommendedTool.name} to earn roadmap progress.`)
                       }
                     </p>
                   </div>
@@ -217,7 +230,7 @@ export default function StudentRoadmapPage() {
                     href={`/dashboard/tools/${recommendedTool.id}`}
                     className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-accent text-white font-semibold text-sm shadow-lg shadow-accent/20 hover:bg-accent-light hover:shadow-accent/30 transition-all active:scale-[0.98] w-full md:w-auto h-12"
                   >
-                    <span>Launch Tool</span>
+                    <span>{isHindi ? "टूल लॉन्च करें" : "Launch Tool"}</span>
                     <Play className="w-4 h-4 fill-white" />
                   </a>
                 )}
@@ -295,19 +308,19 @@ export default function StudentRoadmapPage() {
                       </span>
                       {isLocked ? (
                         <span className="text-[10px] font-semibold text-error/90 flex items-center gap-1">
-                          <Lock className="w-3 h-3" /> Unlocks at Lvl {tool.requiredLevel}
+                          <Lock className="w-3 h-3" /> {isHindi ? `स्तर ${tool.requiredLevel} पर अनलॉक होगा` : `Unlocks at Lvl ${tool.requiredLevel}`}
                         </span>
                       ) : isCompleted ? (
                         <span className="text-[10px] font-bold text-success flex items-center gap-1.5">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Completed
+                          <CheckCircle2 className="w-3.5 h-3.5" /> {isHindi ? "पूर्ण" : "Completed"}
                         </span>
                       ) : isRecommended ? (
                         <span className="text-[10px] font-bold text-accent-light animate-pulse flex items-center gap-1">
-                          ● Next Up
+                          ● {isHindi ? "अगला" : "Next Up"}
                         </span>
                       ) : (
                         <span className="text-[10px] font-bold text-foreground-muted flex items-center gap-1">
-                          Unused
+                          {isHindi ? "अप्रयुक्त" : "Unused"}
                         </span>
                       )}
                     </div>
@@ -353,7 +366,7 @@ export default function StudentRoadmapPage() {
                           href={`/dashboard/tools/${tool.id}`}
                           className="inline-flex items-center gap-1 text-xs font-semibold text-accent-light hover:text-accent transition-colors"
                         >
-                          <span>{isCompleted ? "Explore again" : "Start path"}</span>
+                          <span>{isCompleted ? (isHindi ? "पुनः एक्सप्लोर करें" : "Explore again") : (isHindi ? "पथ शुरू करें" : "Start path")}</span>
                           <ChevronRight className="w-3.5 h-3.5" />
                         </a>
                       </div>
