@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useTeacherDashboard } from "@web/hooks/use-teacher";
+import { useTranslation } from "@web/context/language-context";
 import { GradientMesh } from "@web/components/ui/background";
 import { Search, Filter, CheckCircle2, FileText, ChevronRight, AlertCircle, Clock } from "lucide-react";
 
@@ -10,6 +11,8 @@ export default function GradingDashboardPage() {
   const { data, isLoading } = useTeacherDashboard();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "SUBMITTED" | "GRADED">("SUBMITTED");
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
 
   // Mocking all submissions from recentSubmissions for now, plus graded ones if available
   const allSubmissions = data?.recentSubmissions ?? [];
@@ -42,18 +45,18 @@ export default function GradingDashboardPage() {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="pt-8 pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">Grading Center</h1>
-            <p className="text-foreground-muted text-sm mt-1.5">Review and grade student submissions</p>
+            <h1 className="font-display text-3xl font-bold tracking-tight">{isHindi ? "ग्रेडिंग केंद्र" : "Grading Center"}</h1>
+            <p className="text-foreground-muted text-sm mt-1.5">{isHindi ? "छात्र सबमिशन की समीक्षा और ग्रेड करें" : "Review and grade student submissions"}</p>
           </div>
           
           <div className="flex items-center gap-3 bg-surface/30 px-4 py-2 rounded-xl border border-white/5 shadow-sm">
             <div className="flex flex-col items-center px-3 border-r border-white/10">
               <span className="text-xl font-bold text-accent-light">{data?.pendingSubmissions ?? 0}</span>
-              <span className="text-[10px] uppercase tracking-wider text-foreground-subtle font-medium">To Grade</span>
+              <span className="text-[10px] uppercase tracking-wider text-foreground-subtle font-medium">{isHindi ? "ग्रेड करना है" : "To Grade"}</span>
             </div>
             <div className="flex flex-col items-center px-3">
               <span className="text-xl font-bold text-success">{data?.averageGrade ? `${data.averageGrade.toFixed(1)}%` : '—'}</span>
-              <span className="text-[10px] uppercase tracking-wider text-foreground-subtle font-medium">Avg Class Grade</span>
+              <span className="text-[10px] uppercase tracking-wider text-foreground-subtle font-medium">{isHindi ? "औसत वर्ग ग्रेड" : "Avg Class Grade"}</span>
             </div>
           </div>
         </motion.div>
@@ -64,7 +67,7 @@ export default function GradingDashboardPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-foreground-subtle" />
             <input 
               value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by student or assignment..."
+              placeholder={isHindi ? "छात्र या असाइनमेंट खोजें..." : "Search by student or assignment..."}
               className="w-full bg-surface border border-card-border rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all"
             />
           </div>
@@ -73,19 +76,19 @@ export default function GradingDashboardPage() {
               onClick={() => setStatusFilter("SUBMITTED")} 
               className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${statusFilter === "SUBMITTED" ? "bg-accent/10 text-accent-light" : "text-foreground-muted hover:text-foreground"}`}
             >
-              Needs Grading
+              {isHindi ? "ग्रेड चाहिए" : "Needs Grading"}
             </button>
             <button 
               onClick={() => setStatusFilter("GRADED")} 
               className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${statusFilter === "GRADED" ? "bg-success/10 text-success" : "text-foreground-muted hover:text-foreground"}`}
             >
-              Graded
+              {isHindi ? "ग्रेडित" : "Graded"}
             </button>
             <button 
               onClick={() => setStatusFilter("ALL")} 
               className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${statusFilter === "ALL" ? "bg-white/10 text-foreground" : "text-foreground-muted hover:text-foreground"}`}
             >
-              All
+              {isHindi ? "सभी" : "All"}
             </button>
           </div>
         </motion.div>
@@ -97,9 +100,9 @@ export default function GradingDashboardPage() {
               <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mb-4">
                 <CheckCircle2 className="w-8 h-8 text-success" />
               </div>
-              <h3 className="font-display text-lg font-semibold">You're all caught up!</h3>
+              <h3 className="font-display text-lg font-semibold">{isHindi ? "आप सभी काम कर चुके हैं!" : "You're all caught up!"}</h3>
               <p className="text-sm text-foreground-muted mt-1 max-w-sm">
-                {statusFilter === "SUBMITTED" ? "There are no pending submissions that need grading right now." : "No submissions found matching your filters."}
+                {statusFilter === "SUBMITTED" ? (isHindi ? "अभी ग्रेड करने के लिए कोई सबमिशन नहीं है।" : "There are no pending submissions that need grading right now.") : (isHindi ? "आपके फ़िल्टर से मेल खाने वाला कोई सबमिशन नहीं मिला।" : "No submissions found matching your filters.")}
               </p>
             </div>
           ) : (
@@ -119,7 +122,7 @@ export default function GradingDashboardPage() {
                         {sub.assignmentTitle}
                       </h4>
                       <p className="text-xs text-foreground-subtle mt-0.5">
-                        Submitted by <span className="font-medium text-foreground-muted">{sub.studentName}</span>
+                        {isHindi ? "द्वारा सबमिट" : "Submitted by"} <span className="font-medium text-foreground-muted">{sub.studentName}</span>
                       </p>
                     </div>
                   </div>
@@ -132,11 +135,11 @@ export default function GradingDashboardPage() {
                     
                     {sub.status === "SUBMITTED" ? (
                       <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-warning/10 text-warning text-xs font-medium border border-warning/20">
-                        <AlertCircle className="w-3.5 h-3.5" /> Needs Grade
+                        <AlertCircle className="w-3.5 h-3.5" /> {isHindi ? "ग्रेड चाहिए" : "Needs Grade"}
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-success/10 text-success text-xs font-medium border border-success/20">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Graded{sub.grade ? `: ${sub.grade}` : sub.score != null ? ` (${sub.score}%)` : ""}
+                        <CheckCircle2 className="w-3.5 h-3.5" /> {isHindi ? "ग्रेडित" : "Graded"}{sub.grade ? `: ${sub.grade}` : sub.score != null ? ` (${sub.score}%)` : ""}
                       </div>
                     )}
                     

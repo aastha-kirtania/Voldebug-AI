@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTeacherDashboard, useCreateClass } from "@web/hooks/use-teacher";
+import { useTranslation } from "@web/context/language-context";
 import { GradientMesh } from "@web/components/ui/background";
 import {
   GraduationCap,
@@ -76,25 +77,30 @@ function MiniStat({ title, value, icon, colorClass = "text-accent-light", bgClas
   );
 }
 
-function getGreeting() {
+function getGreeting(isHindi: boolean) {
   const h = new Date().getHours();
+  if (isHindi) {
+    if (h < 12) return "सुप्रभात";
+    if (h < 17) return "नमस्कार";
+    return "शुभ संध्या";
+  }
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
   return "Good evening";
 }
 
-function timeAgo(dateStr: string): string {
+function timeAgo(dateStr: string, isHindi: boolean): string {
   const now = new Date();
   const date = new Date(dateStr);
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.round(diffMs / 60000);
 
-  if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 1) return isHindi ? "अभी" : "Just now";
+  if (diffMin < 60) return isHindi ? `${diffMin} मिनट पहले` : `${diffMin}m ago`;
   const diffH = Math.round(diffMin / 60);
-  if (diffH < 24) return `${diffH}h ago`;
+  if (diffH < 24) return isHindi ? `${diffH} घंटे पहले` : `${diffH}h ago`;
   const diffD = Math.round(diffH / 24);
-  return `${diffD}d ago`;
+  return isHindi ? `${diffD} दिन पहले` : `${diffD}d ago`;
 }
 
 // ─── Main Page ───────────────────────────────────────────────────────────
@@ -111,6 +117,8 @@ export default function TeacherDashboardPage() {
 
   const userName = session?.user?.name?.split(" ")[0] || "Teacher";
   const { data, isLoading } = useTeacherDashboard();
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
 
   const [isCreateClassOpen, setIsCreateClassOpen] = useState(false);
   const [classNameInput, setClassNameInput] = useState("");
@@ -160,10 +168,10 @@ export default function TeacherDashboardPage() {
           <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <h1 className="font-display text-4xl md:text-5xl font-medium tracking-tight text-foreground">
-                {getGreeting()}, <span className="text-foreground-muted">{userName}.</span>
+                {getGreeting(isHindi)}, <span className="text-foreground-muted">{userName}.</span>
               </h1>
               <p className="text-sm md:text-base text-foreground-subtle mt-3 font-medium tracking-wide">
-                Welcome to your dashboard. Here is your classes and students safety overview.
+                {isHindi ? "आपके डैशबोर्ड में आपका स्वागत है। यहाँ आपकी कक्षाओं और छात्रों की सुरक्षा का अवलोकन है।" : "Welcome to your dashboard. Here is your classes and students safety overview."}
               </p>
               {data?.schoolName && (
                 <div className="flex flex-wrap items-center gap-2 mt-2 text-xs md:text-sm text-foreground-subtle font-medium">
@@ -177,9 +185,9 @@ export default function TeacherDashboardPage() {
                 <GraduationCap className="w-5 h-5 text-accent-light" />
               </div>
               <div>
-                <p className="text-xs text-foreground-subtle font-medium uppercase tracking-wider mb-0.5">Role</p>
+                <p className="text-xs text-foreground-subtle font-medium uppercase tracking-wider mb-0.5">{isHindi ? "भूमिका" : "Role"}</p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-semibold leading-none text-accent-light">Educator</span>
+                  <span className="text-sm font-semibold leading-none text-accent-light">{isHindi ? "शिक्षक" : "Educator"}</span>
                 </div>
               </div>
             </div>
@@ -191,28 +199,28 @@ export default function TeacherDashboardPage() {
             className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
           >
             <MiniStat
-              title="Total Students"
+              title={isHindi ? "कुल छात्र" : "Total Students"}
               value={isLoading ? "—" : (data?.totalStudents ?? 0)}
               icon={<Users className="w-5 h-5" />}
               colorClass="text-accent-light"
               bgClass="bg-accent/15"
             />
             <MiniStat
-              title="Active Today"
+              title={isHindi ? "आज सक्रिय" : "Active Today"}
               value={isLoading ? "—" : (data?.activeStudentsToday ?? 0)}
               icon={<Activity className="w-5 h-5" />}
               colorClass="text-success"
               bgClass="bg-success/15"
             />
             <MiniStat
-              title="Pending Review"
+              title={isHindi ? "समीक्षा प्रतीक्षित" : "Pending Review"}
               value={isLoading ? "—" : (data?.pendingSubmissions ?? 0)}
               icon={<Clock className="w-5 h-5" />}
               colorClass="text-warning"
               bgClass="bg-warning/15"
             />
             <MiniStat
-              title="Safety Alerts"
+              title={isHindi ? "सुरक्षा अलर्ट" : "Safety Alerts"}
               value={isLoading ? "—" : (data?.safetyAlertsCount ?? 0)}
               icon={<AlertTriangle className="w-5 h-5" />}
               colorClass="text-error"
@@ -230,7 +238,7 @@ export default function TeacherDashboardPage() {
                   <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
                     <div className="flex items-center gap-3">
                       <Activity className="w-5 h-5 text-foreground-muted" />
-                      <h2 className="text-base font-medium text-foreground tracking-wide">Recent Student Activity</h2>
+                      <h2 className="text-base font-medium text-foreground tracking-wide">{isHindi ? "हाल की छात्र गतिविधि" : "Recent Student Activity"}</h2>
                     </div>
                   </div>
 
@@ -242,7 +250,7 @@ export default function TeacherDashboardPage() {
                     </div>
                   ) : !data?.recentActivity || data.recentActivity.length === 0 ? (
                     <div className="text-center py-12 text-foreground-muted">
-                      No student activity logged recently.
+                      {isHindi ? "हाल ही में कोई छात्र गतिविधि दर्ज नहीं हुई।" : "No student activity logged recently."}
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -276,7 +284,7 @@ export default function TeacherDashboardPage() {
                                 <p className="text-sm font-medium text-foreground truncate">
                                   <span className="font-semibold text-foreground-muted">{act.studentName}</span> {act.detail}
                                 </p>
-                                <p className="text-[10px] text-foreground-subtle mt-0.5">{timeAgo(act.timestamp)}</p>
+                                <p className="text-[10px] text-foreground-subtle mt-0.5">{timeAgo(act.timestamp, isHindi)}</p>
                               </div>
                             </div>
                             <span className="text-[11px] font-bold uppercase tracking-widest text-foreground-subtle hidden sm:inline-block">
@@ -295,7 +303,7 @@ export default function TeacherDashboardPage() {
             <motion.div variants={itemVariants}>
               <GlassCard className="h-full flex flex-col">
                 <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6">
-                  Quick Actions
+                  {isHindi ? "त्वरित क्रियाएं" : "Quick Actions"}
                 </h3>
                 <div className="grid grid-cols-1 gap-3.5 flex-1">
                   <a
@@ -304,7 +312,7 @@ export default function TeacherDashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <PlusCircle className="w-5 h-5 text-accent-light" />
-                      <span className="text-sm font-medium text-foreground">Create Assignment</span>
+                      <span className="text-sm font-medium text-foreground">{isHindi ? "असाइनमेंट बनाएं" : "Create Assignment"}</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-foreground-subtle group-hover:text-foreground transition-colors" />
                   </a>
@@ -315,7 +323,7 @@ export default function TeacherDashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <CheckSquare className="w-5 h-5 text-warning" />
-                      <span className="text-sm font-medium text-foreground">Review Submissions</span>
+                      <span className="text-sm font-medium text-foreground">{isHindi ? "सबमिशन समीक्षा करें" : "Review Submissions"}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {data?.pendingSubmissions != null && data.pendingSubmissions > 0 && (
@@ -333,7 +341,7 @@ export default function TeacherDashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <Megaphone className="w-5 h-5 text-info" />
-                      <span className="text-sm font-medium text-foreground">Send Announcement</span>
+                      <span className="text-sm font-medium text-foreground">{isHindi ? "सूचना भेजें" : "Send Announcement"}</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-foreground-subtle group-hover:text-foreground transition-colors" />
                   </a>
@@ -344,7 +352,7 @@ export default function TeacherDashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <FileText className="w-5 h-5 text-success" />
-                      <span className="text-sm font-medium text-foreground">View Reports</span>
+                      <span className="text-sm font-medium text-foreground">{isHindi ? "रिपोर्ट देखें" : "View Reports"}</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-foreground-subtle group-hover:text-foreground transition-colors" />
                   </a>
@@ -362,7 +370,7 @@ export default function TeacherDashboardPage() {
                 <div>
                   <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6 flex items-center gap-2">
                     <BrainCircuit className="w-4 h-4 text-accent-light" />
-                    AI Usage Summary
+                    {isHindi ? "AI उपयोग सारांश" : "AI Usage Summary"}
                   </h3>
 
                   {isLoading ? (
@@ -370,7 +378,7 @@ export default function TeacherDashboardPage() {
                       {[1, 2, 3].map((i) => <div key={i} className="h-8 rounded bg-white/5 animate-pulse" />)}
                     </div>
                   ) : !data?.aiUsage || data.aiUsage.mostUsedTools.length === 0 ? (
-                    <div className="text-center py-8 text-foreground-subtle text-xs">No AI usage logged.</div>
+                    <div className="text-center py-8 text-foreground-subtle text-xs">{isHindi ? "कोई AI उपयोग दर्ज नहीं।" : "No AI usage logged."}</div>
                   ) : (
                     <div className="space-y-4">
                       {data.aiUsage.mostUsedTools.map((tool) => {
@@ -380,7 +388,7 @@ export default function TeacherDashboardPage() {
                           <div key={tool.name} className="space-y-1.5">
                             <div className="flex items-center justify-between text-xs font-medium">
                               <span className="text-foreground-muted">{tool.name}</span>
-                              <span className="text-foreground font-semibold">{tool.count} uses</span>
+                              <span className="text-foreground font-semibold">{tool.count} {isHindi ? "बार" : "uses"}</span>
                             </div>
                             <div className="h-2 bg-surface rounded-full overflow-hidden border border-white/5">
                               <motion.div
@@ -401,11 +409,11 @@ export default function TeacherDashboardPage() {
                 {!isLoading && data?.aiUsage && (
                   <div className="grid grid-cols-2 gap-4 mt-6 pt-5 border-t border-white/5 text-center">
                     <div>
-                      <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">Daily Count</p>
+                      <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">{isHindi ? "दैनिक" : "Daily Count"}</p>
                       <p className="text-xl font-semibold text-foreground">{data.aiUsage.dailyUsage}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">Weekly Count</p>
+                      <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">{isHindi ? "साप्ताहिक" : "Weekly Count"}</p>
                       <p className="text-xl font-semibold text-foreground">{data.aiUsage.weeklyUsage}</p>
                     </div>
                   </div>
@@ -418,7 +426,7 @@ export default function TeacherDashboardPage() {
               <GlassCard className="h-full flex flex-col">
                 <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6 flex items-center gap-2">
                   <HelpCircle className="w-4 h-4 text-warning" />
-                  Frequently Asked Doubts
+                  {isHindi ? "अक्सर पूछे गए संदेह" : "Frequently Asked Doubts"}
                 </h3>
 
                 {isLoading ? (
@@ -427,7 +435,7 @@ export default function TeacherDashboardPage() {
                   </div>
                 ) : !data?.frequentDoubts || data.frequentDoubts.length === 0 ? (
                   <div className="text-center py-8 text-foreground-subtle text-xs flex-1 flex items-center justify-center">
-                    No doubts analyzed yet.
+                    {isHindi ? "अभी तक कोई संदेह विश्लेषण नहीं।" : "No doubts analyzed yet."}
                   </div>
                 ) : (
                   <div className="flex flex-wrap gap-2 flex-1 items-start">
@@ -453,14 +461,14 @@ export default function TeacherDashboardPage() {
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest flex items-center gap-2">
                     <GraduationCap className="w-4 h-4 text-info" />
-                    Your Classes
+                    {isHindi ? "आपकी कक्षाएं" : "Your Classes"}
                   </h3>
                   <button
                     onClick={() => setIsCreateClassOpen(true)}
                     className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-accent text-white font-semibold text-xs shadow-md shadow-accent/20 hover:bg-accent-light transition-all active:scale-[0.98]"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>Create</span>
+                    <span>{isHindi ? "बनाएं" : "Create"}</span>
                   </button>
                 </div>
 
@@ -470,7 +478,7 @@ export default function TeacherDashboardPage() {
                   </div>
                 ) : !data?.classInfo || data.classInfo.length === 0 ? (
                   <div className="text-center py-8 text-foreground-subtle text-xs flex-1 flex items-center justify-center">
-                    No classes assigned yet.
+                    {isHindi ? "अभी तक कोई कक्षा निर्धारित नहीं।" : "No classes assigned yet."}
                   </div>
                 ) : (
                   <div className="space-y-2 flex-1 overflow-y-auto">
@@ -490,7 +498,7 @@ export default function TeacherDashboardPage() {
                             </span>
                           )}
                           <span className="text-[10px] font-semibold text-foreground-subtle bg-surface px-2 py-0.5 rounded-md border border-white/5">
-                            {cls._count?.members ?? 0} students
+                            {cls._count?.members ?? 0} {isHindi ? "छात्र" : "students"}
                           </span>
                           <ExternalLink className="w-3.5 h-3.5 text-foreground-subtle opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
@@ -508,13 +516,13 @@ export default function TeacherDashboardPage() {
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
                 <div className="flex items-center gap-3">
                   <ShieldAlert className="w-5 h-5 text-error" />
-                  <h2 className="text-base font-medium text-foreground tracking-wide">Safety Alerts Preview</h2>
+                  <h2 className="text-base font-medium text-foreground tracking-wide">{isHindi ? "सुरक्षा अलर्ट" : "Safety Alerts Preview"}</h2>
                 </div>
                 <a
                   href="/dashboard/teacher/analytics"
                   className="text-xs font-medium text-foreground-subtle hover:text-foreground transition-colors flex items-center gap-1"
                 >
-                  View full history <ArrowUpRight className="w-3.5 h-3.5" />
+                  {isHindi ? "पूरा इतिहास देखें" : "View full history"} <ArrowUpRight className="w-3.5 h-3.5" />
                 </a>
               </div>
 
@@ -524,27 +532,27 @@ export default function TeacherDashboardPage() {
                 </div>
               ) : !data?.safetyAlertsPreview || data.safetyAlertsPreview.length === 0 ? (
                 <div className="text-center py-8 text-foreground-muted text-xs">
-                  No safety flags triggered recently. All students are following academic integrity rules.
+                  {isHindi ? "हाल ही में कोई सुरक्षा झंडा नहीं। सभी छात्र शैक्षणिक ईमानदारी के नियमों का पालन कर रहे हैं।" : "No safety flags triggered recently. All students are following academic integrity rules."}
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="border-b border-white/5 text-[10px] font-bold text-foreground-subtle uppercase tracking-wider">
-                        <th className="pb-3 pr-4">Student</th>
-                        <th className="pb-3 pr-4">Grade</th>
-                        <th className="pb-3 pr-4">Flagged Query</th>
-                        <th className="pb-3 pr-4">AI Tool</th>
-                        <th className="pb-3 pr-4">Category</th>
-                        <th className="pb-3 pr-4">Severity</th>
-                        <th className="pb-3">Timestamp</th>
+                        <th className="pb-3 pr-4">{isHindi ? "छात्र" : "Student"}</th>
+                        <th className="pb-3 pr-4">{isHindi ? "ग्रेड" : "Grade"}</th>
+                        <th className="pb-3 pr-4">{isHindi ? "चिह्नित प्रश्न" : "Flagged Query"}</th>
+                        <th className="pb-3 pr-4">{isHindi ? "AI टूल" : "AI Tool"}</th>
+                        <th className="pb-3 pr-4">{isHindi ? "श्रेणी" : "Category"}</th>
+                        <th className="pb-3 pr-4">{isHindi ? "गंभीरता" : "Severity"}</th>
+                        <th className="pb-3">{isHindi ? "समय" : "Timestamp"}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 text-xs text-foreground-muted font-medium">
                       {data.safetyAlertsPreview.map((alert) => (
                         <tr key={alert.id} className="hover:bg-white/[0.01] transition-all">
                           <td className="py-3.5 pr-4 text-foreground font-semibold">{alert.studentName}</td>
-                          <td className="py-3.5 pr-4">Grade {alert.gradeLevel || "—"}</td>
+                          <td className="py-3.5 pr-4">{isHindi ? "कक्षा" : "Grade"} {alert.gradeLevel || "—"}</td>
                           <td className="py-3.5 pr-4 italic max-w-xs truncate" title={alert.promptText}>
                             "{alert.promptText}"
                           </td>
@@ -559,7 +567,7 @@ export default function TeacherDashboardPage() {
                               {alert.severity}
                             </span>
                           </td>
-                          <td className="py-3.5 text-foreground-subtle">{timeAgo(alert.timestamp)}</td>
+                          <td className="py-3.5 text-foreground-subtle">{timeAgo(alert.timestamp, isHindi)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -599,9 +607,9 @@ export default function TeacherDashboardPage() {
                 <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-2">
                   <Plus className="w-6 h-6 text-accent-light" />
                 </div>
-                <h3 className="font-display text-xl font-bold text-foreground">Create a New Class</h3>
+                <h3 className="font-display text-xl font-bold text-foreground">{isHindi ? "नई कक्षा बनाएं" : "Create a New Class"}</h3>
                 <p className="text-sm text-foreground-subtle">
-                  A unique 6-character code will be generated instantly
+                  {isHindi ? "एक अद्वितीय 6-अक्षर कोड तुरंत बनाया जाएगा" : "A unique 6-character code will be generated instantly"}
                 </p>
               </div>
 
@@ -623,7 +631,7 @@ export default function TeacherDashboardPage() {
                 <form onSubmit={handleCreateClassSubmit} className="space-y-4">
                   <div className="space-y-1.5">
                     <label htmlFor="modalClassName" className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">
-                      Class / Course Name
+                      {isHindi ? "कक्षा / पाठ्यक्रम का नाम" : "Class / Course Name"}
                     </label>
                     <input
                       id="modalClassName"
@@ -645,7 +653,7 @@ export default function TeacherDashboardPage() {
                     {createClassMutation.isPending && (
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
                     )}
-                    Generate Class Code
+                    {isHindi ? "कक्षा कोड बनाएं" : "Generate Class Code"}
                   </button>
                 </form>
               )}

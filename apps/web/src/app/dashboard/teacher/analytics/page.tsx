@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { GradientMesh } from "@web/components/ui/background";
 import { useTeacherDashboard, useTeacherAnalytics } from "@web/hooks/use-teacher";
+import { useTranslation } from "@web/context/language-context";
 import {
   BarChart3, TrendingUp, Users, BookOpen, Award,
   AlertTriangle, CheckCircle2, Zap, ExternalLink
@@ -57,6 +58,8 @@ export default function TeacherAnalyticsPage() {
   const { data: analyticsData, isLoading: isAnalyticsLoading } = useTeacherAnalytics();
 
   const isLoading = isDashboardLoading || isAnalyticsLoading;
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
 
   const weeklySubmissions = analyticsData?.weeklySubmissions ?? [];
   const maxSubmission = Math.max(...weeklySubmissions.map((s: any) => s.count), 0);
@@ -92,10 +95,10 @@ export default function TeacherAnalyticsPage() {
         >
           <h1 className="font-display text-2xl font-bold flex items-center gap-2">
             <BarChart3 className="w-5.5 h-5.5 text-accent-light" />
-            Class Analytics
+            {isHindi ? "कक्षा विश्लेषण" : "Class Analytics"}
           </h1>
           <p className="text-sm text-foreground-muted mt-0.5">
-            Performance insights, completion rates, and student activity
+            {isHindi ? "प्रदर्शन स्तर, पूर्णता दर, और छात्र गतिविधि" : "Performance insights, completion rates, and student activity"}
           </p>
         </motion.div>
 
@@ -108,10 +111,10 @@ export default function TeacherAnalyticsPage() {
           {/* Overview stats */}
           <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: "Total Students", value: dashboardData?.totalStudents ?? 0, icon: Users, color: "#6366f1" },
-              { label: "Completion Rate", value: dashboardData ? `${Math.round(dashboardData.completionRate)}%` : "—", icon: CheckCircle2, color: "#22c55e" },
-              { label: "Average Grade", value: dashboardData?.averageGrade != null ? `${Math.round(dashboardData.averageGrade)}%` : "—", icon: TrendingUp, color: "#f59e0b" },
-              { label: "Active Assignments", value: dashboardData?.activeAssignments ?? 0, icon: BookOpen, color: "#06b6d4" },
+              { label: isHindi ? "कुल छात्र" : "Total Students", value: dashboardData?.totalStudents ?? 0, icon: Users, color: "#6366f1" },
+              { label: isHindi ? "पूर्णता दर" : "Completion Rate", value: dashboardData ? `${Math.round(dashboardData.completionRate)}%` : "—", icon: CheckCircle2, color: "#22c55e" },
+              { label: isHindi ? "औसत ग्रेड" : "Average Grade", value: dashboardData?.averageGrade != null ? `${Math.round(dashboardData.averageGrade)}%` : "—", icon: TrendingUp, color: "#f59e0b" },
+              { label: isHindi ? "सक्रिय असाइनमेंट" : "Active Assignments", value: dashboardData?.activeAssignments ?? 0, icon: BookOpen, color: "#06b6d4" },
             ].map((s) => (
               <div key={s.label} className="card p-4">
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-3" style={{ backgroundColor: `${s.color}18` }}>
@@ -128,13 +131,13 @@ export default function TeacherAnalyticsPage() {
             <motion.div variants={itemVariants} className="card p-5">
               <h2 className="font-display text-base font-semibold mb-5 flex items-center gap-2">
                 <TrendingUp className="w-4.5 h-4.5 text-accent-light" />
-                Weekly Submissions
+                {isHindi ? "साप्ताहिक सबमिशन" : "Weekly Submissions"}
               </h2>
               <div className="flex items-end justify-between gap-2 h-32 pt-4">
                 {isLoading ? (
                   <div className="w-full h-full flex items-center justify-center text-xs text-foreground-muted">Loading chart...</div>
                 ) : weeklySubmissions.length === 0 ? (
-                  <div className="w-full h-full flex items-center justify-center text-xs text-foreground-muted">No weekly data available</div>
+                  <div className="w-full h-full flex items-center justify-center text-xs text-foreground-muted">{isHindi ? "साप्ताहिक डेटा उपलब्ध नहीं" : "No weekly data available"}</div>
                 ) : (
                   weeklySubmissions.map((s: any, i: number) => {
                     const pct = maxSubmission > 0 ? (s.count / maxSubmission) * 100 : 0;
@@ -163,19 +166,19 @@ export default function TeacherAnalyticsPage() {
             <motion.div variants={itemVariants} className="card p-5">
               <h2 className="font-display text-base font-semibold mb-5 flex items-center gap-2">
                 <Award className="w-4.5 h-4.5 text-yellow-400" />
-                Grade Distribution
+                {isHindi ? "ग्रेड वितरण" : "Grade Distribution"}
               </h2>
               <div className="space-y-3">
                 {isLoading ? (
                   <div className="py-8 text-center text-xs text-foreground-muted">Loading distribution...</div>
                 ) : gradeDistribution.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-foreground-muted">No graded submissions yet</div>
+                  <div className="py-8 text-center text-xs text-foreground-muted">{isHindi ? "अभी तक कोई ग्रेडेड सबमिशन नहीं" : "No graded submissions yet"}</div>
                 ) : (
                   gradeDistribution.map((g: any) => (
                     <div key={g.label}>
                       <div className="flex items-center justify-between text-xs mb-1">
                         <span className="text-foreground-muted">{g.label}</span>
-                        <span className="font-semibold" style={{ color: g.color }}>{g.count} students</span>
+                        <span className="font-semibold" style={{ color: g.color }}>{g.count} {isHindi ? "छात्र" : "students"}</span>
                       </div>
                       <MiniBar value={g.count} max={maxGrade} color={g.color} />
                     </div>
@@ -188,13 +191,13 @@ export default function TeacherAnalyticsPage() {
             <motion.div variants={itemVariants} className="card p-5">
               <h2 className="font-display text-base font-semibold mb-5 flex items-center gap-2">
                 <Zap className="w-4.5 h-4.5 text-accent-light" />
-                Top Tools Used
+                {isHindi ? "शीर्ष टूल" : "Top Tools Used"}
               </h2>
               <div className="space-y-3">
                 {isLoading ? (
                   <div className="py-8 text-center text-xs text-foreground-muted">Loading tools stats...</div>
                 ) : topTools.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-foreground-muted">No tool activity logged</div>
+                  <div className="py-8 text-center text-xs text-foreground-muted">{isHindi ? "कोई टूल गतिविधि दर्ज नहीं" : "No tool activity logged"}</div>
                 ) : (
                   topTools.map((tool: any, i: number) => (
                     <div key={tool.name}>
@@ -206,7 +209,7 @@ export default function TeacherAnalyticsPage() {
                           </span>
                           <span className="text-foreground-muted">{tool.name}</span>
                         </span>
-                        <span className="font-semibold text-foreground">{tool.usageCount} uses</span>
+                        <span className="font-semibold text-foreground">{tool.usageCount} {isHindi ? "बार" : "uses"}</span>
                       </div>
                       <MiniBar value={tool.usageCount} max={maxTool} color={tool.brandColor} />
                     </div>
@@ -219,9 +222,9 @@ export default function TeacherAnalyticsPage() {
             <motion.div variants={itemVariants} className="card p-5">
               <h2 className="font-display text-base font-semibold mb-4 flex items-center gap-2">
                 <AlertTriangle className="w-4.5 h-4.5 text-warning" />
-                Activity Flags
+                {isHindi ? "गतिविधि चिह्न" : "Activity Flags"}
               </h2>
-              <p className="text-xs text-foreground-muted mb-4">Students with low activity or missed assignments</p>
+              <p className="text-xs text-foreground-muted mb-4">{isHindi ? "कम गतिविधि या छूटी असाइनमेंट वाले छात्र" : "Students with low activity or missed assignments"}</p>
 
               {isLoading ? (
                 <div className="py-8 text-center text-xs text-foreground-muted">Loading alerts...</div>
@@ -258,8 +261,8 @@ export default function TeacherAnalyticsPage() {
               ) : (
                 <div className="flex flex-col items-center py-8 text-center">
                   <CheckCircle2 className="w-8 h-8 text-success opacity-40 mb-2" />
-                  <p className="text-sm text-foreground-muted">No activity concerns right now</p>
-                  <p className="text-xs text-foreground-subtle">All students are on track</p>
+                  <p className="text-sm text-foreground-muted">{isHindi ? "अभी कोई गतिविधि समस्या नहीं" : "No activity concerns right now"}</p>
+                  <p className="text-xs text-foreground-subtle">{isHindi ? "सभी छात्र सही रास्ते पर हैं" : "All students are on track"}</p>
                 </div>
               )}
             </motion.div>

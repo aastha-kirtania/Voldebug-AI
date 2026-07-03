@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useAdminDashboard, useAuditLogs } from "@web/hooks/use-admin";
+import { useTranslation } from "@web/context/language-context";
 import { GradientMesh } from "@web/components/ui/background";
 import {
   Shield,
@@ -69,25 +70,30 @@ function MiniStat({ title, value, icon }: { title: string; value: string | numbe
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
-function getGreeting() {
+function getGreeting(isHindi: boolean) {
   const h = new Date().getHours();
+  if (isHindi) {
+    if (h < 12) return "सुप्रभात";
+    if (h < 17) return "नमस्कार";
+    return "शुभ संध्या";
+  }
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
   return "Good evening";
 }
 
-function timeAgo(dateStr: string): string {
+function timeAgo(dateStr: string, isHindi: boolean): string {
   const now = new Date();
   const date = new Date(dateStr);
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.round(diffMs / 60000);
 
-  if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 1) return isHindi ? "अभी" : "Just now";
+  if (diffMin < 60) return isHindi ? `${diffMin} मिनट पहले` : `${diffMin}m ago`;
   const diffH = Math.round(diffMin / 60);
-  if (diffH < 24) return `${diffH}h ago`;
+  if (diffH < 24) return isHindi ? `${diffH} घंटे पहले` : `${diffH}h ago`;
   const diffD = Math.round(diffH / 24);
-  return `${diffD}d ago`;
+  return isHindi ? `${diffD} दिन पहले` : `${diffD}d ago`;
 }
 
 function truncateText(text: string, maxLen: number): string {
@@ -150,6 +156,8 @@ export default function PrincipalDashboardPage() {
 
   const { data: overview, isLoading: overviewLoading } = useAdminDashboard();
   const { data: auditData, isLoading: auditLoading } = useAuditLogs({ limit: 10, flagged: true });
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
 
   const flaggedAlerts = useMemo(() => auditData?.logs ?? [], [auditData]);
 
@@ -171,14 +179,14 @@ export default function PrincipalDashboardPage() {
             </div>
             <div>
               <p className="text-sm text-foreground-subtle font-medium mb-0.5">
-                {getGreeting()}, {userName}
+                {getGreeting(isHindi)}, {userName}
               </p>
               <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight">
-                Principal Command Center
+                {isHindi ? "प्रिंसिपल कमांड सेंटर" : "Principal Command Center"}
               </h1>
               <p className="text-foreground-subtle text-sm mt-1 max-w-lg">
-                School-wide data and CBSE safety compliance —{" "}
-                {overview?.school?.name ?? "Loading…"}
+                {isHindi ? "स्कूल-व्यापी डेटा और CBSE सुरक्षा अनुपालन —" : "School-wide data and CBSE safety compliance —"}{" "}
+                {overview?.school?.name ?? (isHindi ? "लोड हो रहा है…" : "Loading…")}
               </p>
             </div>
           </div>
@@ -196,22 +204,22 @@ export default function PrincipalDashboardPage() {
           ) : (
             <>
               <MiniStat
-                title="Total Students"
+                title={isHindi ? "कुल छात्र" : "Total Students"}
                 value={overview?.totalStudents ?? 0}
                 icon={<Users className="w-5 h-5 text-sky-400" />}
               />
               <MiniStat
-                title="Active Teachers"
+                title={isHindi ? "सक्रिय शिक्षक" : "Active Teachers"}
                 value={overview?.totalTeachers ?? 0}
                 icon={<GraduationCap className="w-5 h-5 text-emerald-400" />}
               />
               <MiniStat
-                title="AI Sessions"
+                title={isHindi ? "AI सत्र" : "AI Sessions"}
                 value={overview?.auditLogs?.total ?? 0}
                 icon={<Activity className="w-5 h-5 text-violet-400" />}
               />
               <MiniStat
-                title="Safety Interventions"
+                title={isHindi ? "सुरक्षा हस्तक्षेप" : "Safety Interventions"}
                 value={overview?.auditLogs?.flagged ?? 0}
                 icon={<ShieldAlert className="w-5 h-5 text-red-400" />}
               />
@@ -226,7 +234,7 @@ export default function PrincipalDashboardPage() {
               <div className="w-9 h-9 rounded-xl bg-[#0D1B2A] border border-[#1B2B40] flex items-center justify-center">
                 <BookOpen className="w-4 h-4 text-sky-400" />
               </div>
-              <p className="text-xs font-bold text-foreground-subtle uppercase tracking-widest">Assignments</p>
+              <p className="text-xs font-bold text-foreground-subtle uppercase tracking-widest">{isHindi ? "असाइनमेंट" : "Assignments"}</p>
             </div>
             <p className="text-3xl font-bold">{overview?.totalAssignments ?? "—"}</p>
             <p className="text-xs text-foreground-subtle mt-1">
@@ -239,7 +247,7 @@ export default function PrincipalDashboardPage() {
               <div className="w-9 h-9 rounded-xl bg-[#0D1B2A] border border-[#1B2B40] flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 text-emerald-400" />
               </div>
-              <p className="text-xs font-bold text-foreground-subtle uppercase tracking-widest">Average Score</p>
+              <p className="text-xs font-bold text-foreground-subtle uppercase tracking-widest">{isHindi ? "औसत अंक" : "Average Score"}</p>
             </div>
             <p className="text-3xl font-bold">
               {overview?.averageScore != null ? `${overview.averageScore}%` : "—"}
@@ -254,7 +262,7 @@ export default function PrincipalDashboardPage() {
               <div className="w-9 h-9 rounded-xl bg-[#0D1B2A] border border-[#1B2B40] flex items-center justify-center">
                 <Building2 className="w-4 h-4 text-amber-400" />
               </div>
-              <p className="text-xs font-bold text-foreground-subtle uppercase tracking-widest">This Week</p>
+              <p className="text-xs font-bold text-foreground-subtle uppercase tracking-widest">{isHindi ? "इस सप्ताह" : "This Week"}</p>
             </div>
             <p className="text-3xl font-bold">{overview?.recentSubmissions ?? 0}</p>
             <p className="text-xs text-foreground-subtle mt-1">
@@ -272,8 +280,8 @@ export default function PrincipalDashboardPage() {
                   <FileWarning className="w-5 h-5 text-red-400" />
                 </div>
                 <div>
-                  <h2 className="font-display text-lg font-semibold">Recent Safety Alerts</h2>
-                  <p className="text-xs text-foreground-subtle">Blocked inappropriate prompts flagged by AI safety filters</p>
+                  <h2 className="font-display text-lg font-semibold">{isHindi ? "हाल की सुरक्षा सूचनाएं" : "Recent Safety Alerts"}</h2>
+                  <p className="text-xs text-foreground-subtle">{isHindi ? "AI सुरक्षा फ़िल्टर द्वारा चिह्नित अनुचित प्रॉम्प्ट" : "Blocked inappropriate prompts flagged by AI safety filters"}</p>
                 </div>
               </div>
               <span className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest">
@@ -292,8 +300,8 @@ export default function PrincipalDashboardPage() {
                 <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-8 h-8 text-emerald-400" />
                 </div>
-                <p className="text-foreground-subtle text-sm font-medium">All Clear</p>
-                <p className="text-foreground-subtle/60 text-xs mt-1">No safety violations detected</p>
+                <p className="text-foreground-subtle text-sm font-medium">{isHindi ? "सब ठीक है" : "All Clear"}</p>
+                <p className="text-foreground-subtle/60 text-xs mt-1">{isHindi ? "कोई सुरक्षा उल्लंघन नहीं मिला" : "No safety violations detected"}</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -316,7 +324,7 @@ export default function PrincipalDashboardPage() {
                           </p>
                           <div className="flex items-center gap-2 text-[11px] text-foreground-subtle">
                             <Clock className="w-3 h-3" />
-                            <span>{timeAgo(log.timestamp)}</span>
+                            <span>{timeAgo(log.timestamp, isHindi)}</span>
                             <span className="text-white/10">|</span>
                             <span className="text-violet-400/80">{log.toolUsed}</span>
                           </div>
@@ -326,7 +334,7 @@ export default function PrincipalDashboardPage() {
                     </div>
                     <div className="pl-11">
                       <p className="text-xs text-foreground-subtle/80 leading-relaxed bg-red-500/[0.04] border border-red-500/10 rounded-lg px-3 py-2">
-                        <span className="font-semibold text-red-400/90">Prompt: </span>
+                        <span className="font-semibold text-red-400/90">{isHindi ? "प्रॉम्प्ट: " : "Prompt: "}</span>
                         {truncateText(log.promptText, 180)}
                       </p>
                     </div>
