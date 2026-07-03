@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSubmissionHistory } from "@web/hooks/use-classroom";
+import { useTranslation } from "@web/context/language-context";
 import { GradientMesh } from "@web/components/ui/background";
 import {
   History, CheckCircle2, Clock, Star, FileText, ChevronRight,
@@ -13,40 +14,34 @@ import {
 
 type StatusFilter = "" | "SUBMITTED" | "GRADED" | "RETURNED";
 
-const FILTERS: { key: StatusFilter; label: string }[] = [
-  { key: "", label: "All" },
-  { key: "SUBMITTED", label: "Submitted" },
-  { key: "GRADED", label: "Graded" },
-  { key: "RETURNED", label: "Returned" },
-];
-
-function statusConfig(status: string) {
+function statusConfig(status: string, isHindi: boolean) {
   switch (status) {
     case "GRADED":
-      return { label: "Graded", color: "text-success", bg: "bg-success/10 border-success/20", icon: CheckCircle2 };
+      return { label: isHindi ? "मूल्यांकित" : "Graded", color: "text-success", bg: "bg-success/10 border-success/20", icon: CheckCircle2 };
     case "RETURNED":
-      return { label: "Returned", color: "text-info", bg: "bg-info/10 border-info/20", icon: Star };
+      return { label: isHindi ? "वापस किया" : "Returned", color: "text-info", bg: "bg-info/10 border-info/20", icon: Star };
     default:
-      return { label: "Awaiting grade", color: "text-warning", bg: "bg-warning/10 border-warning/20", icon: Clock };
+      return { label: isHindi ? "ग्रेड की प्रतीक्षा" : "Awaiting grade", color: "text-warning", bg: "bg-warning/10 border-warning/20", icon: Clock };
   }
 }
 
-function timeAgo(dateStr: string): string {
+function timeAgo(dateStr: string, isHindi: boolean): string {
   const now = new Date();
   const date = new Date(dateStr);
   const diff = now.getTime() - date.getTime();
   const minutes = Math.round(diff / 60000);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return isHindi ? `${minutes} मिनट पहले` : `${minutes}m ago`;
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return isHindi ? `${hours} घंटे पहले` : `${hours}h ago`;
   const days = Math.round(hours / 24);
-  return days === 1 ? "Yesterday" : `${days} days ago`;
+  if (days === 1) return isHindi ? "कल" : "Yesterday";
+  return isHindi ? `${days} दिन पहले` : `${days} days ago`;
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────
 
-function SubmissionCard({ sub, index }: { sub: any; index: number }) {
-  const { label, color, bg, icon: Icon } = statusConfig(sub.status);
+function SubmissionCard({ sub, index, isHindi }: { sub: any; index: number; isHindi: boolean }) {
+  const { label, color, bg, icon: Icon } = statusConfig(sub.status, isHindi);
   const toolColor = sub.assignment?.suggestedTool?.brandColor || "#6366f1";
 
   return (
@@ -70,9 +65,9 @@ function SubmissionCard({ sub, index }: { sub: any; index: number }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="font-display font-semibold text-sm truncate">
-                {sub.assignment?.title ?? "Assignment"}
+                {sub.assignment?.title ?? (isHindi ? "असाइनमेंट" : "Assignment")}
               </p>
-              <p className="text-xs text-foreground-subtle mt-0.5">{timeAgo(sub.submittedAt)}</p>
+              <p className="text-xs text-foreground-subtle mt-0.5">{timeAgo(sub.submittedAt, isHindi)}</p>
             </div>
             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border flex-shrink-0 ${bg} ${color}`}>
               <Icon className="w-3 h-3" />
@@ -98,7 +93,7 @@ function SubmissionCard({ sub, index }: { sub: any; index: number }) {
             {sub.fileUrls?.length > 0 && (
               <div className="flex items-center gap-1 text-xs text-foreground-subtle">
                 <FileText className="w-3 h-3" />
-                {sub.fileUrls.length} file{sub.fileUrls.length !== 1 ? "s" : ""}
+                {sub.fileUrls.length} {isHindi ? "फ़ाइल" : `file${sub.fileUrls.length !== 1 ? "s" : ""}`}
               </div>
             )}
           </div>
@@ -106,7 +101,7 @@ function SubmissionCard({ sub, index }: { sub: any; index: number }) {
           {/* Feedback */}
           {sub.feedback && (
             <div className="mt-3 pt-3 border-t border-card-border">
-              <p className="text-xs font-medium text-foreground-subtle mb-1">Teacher Feedback</p>
+              <p className="text-xs font-medium text-foreground-subtle mb-1">{isHindi ? "शिक्षक की प्रतिक्रिया" : "Teacher Feedback"}</p>
               <p className="text-xs text-foreground/80 leading-relaxed line-clamp-3">
                 {sub.feedback}
               </p>
@@ -118,18 +113,18 @@ function SubmissionCard({ sub, index }: { sub: any; index: number }) {
   );
 }
 
-function EmptyState() {
+function EmptyState({ isHindi }: { isHindi: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center mb-4">
         <History className="w-8 h-8 text-foreground-subtle opacity-40" />
       </div>
-      <p className="font-display text-base font-semibold mb-1">No submissions yet</p>
+      <p className="font-display text-base font-semibold mb-1">{isHindi ? "अभी तक कोई सबमिशन नहीं" : "No submissions yet"}</p>
       <p className="text-sm text-foreground-subtle max-w-xs">
-        Submit your first assignment to see your history here.
+        {isHindi ? "अपनी पहली असाइनमेंट यहाँ देखने के लिए सबमिट करें।" : "Submit your first assignment to see your history here."}
       </p>
       <a href="/dashboard/classroom" className="mt-4 inline-flex items-center gap-1.5 text-sm text-accent-light hover:underline">
-        View assignments <ChevronRight className="w-4 h-4" />
+        {isHindi ? "असाइनमेंट देखें" : "View assignments"} <ChevronRight className="w-4 h-4" />
       </a>
     </div>
   );
@@ -137,7 +132,7 @@ function EmptyState() {
 
 // ─── Stats bar ────────────────────────────────────────────────────────────
 
-function StatsBar({ submissions }: { submissions: any[] }) {
+function StatsBar({ submissions, isHindi }: { submissions: any[]; isHindi: boolean }) {
   const graded = submissions.filter((s) => s.status === "GRADED");
   const totalXP = submissions.reduce((a, s) => a + (s.xpAwarded ?? 0), 0);
   const avgScore = graded.length > 0
@@ -147,9 +142,9 @@ function StatsBar({ submissions }: { submissions: any[] }) {
   return (
     <div className="grid grid-cols-3 gap-3 mb-5">
       {[
-        { label: "Submitted", value: submissions.length, icon: FileText, color: "text-accent-light" },
-        { label: "Avg Score", value: avgScore != null ? `${avgScore}%` : "—", icon: Star, color: "text-yellow-400" },
-        { label: "XP Earned", value: `${totalXP.toLocaleString()}`, icon: Zap, color: "text-success" },
+        { label: isHindi ? "सबमिट किए गए" : "Submitted", value: submissions.length, icon: FileText, color: "text-accent-light" },
+        { label: isHindi ? "औसत अंक" : "Avg Score", value: avgScore != null ? `${avgScore}%` : "—", icon: Star, color: "text-yellow-400" },
+        { label: isHindi ? "एक्सपी अर्जित" : "XP Earned", value: `${totalXP.toLocaleString()}`, icon: Zap, color: "text-success" },
       ].map((s) => (
         <div key={s.label} className="card p-4 text-center">
           <s.icon className={`w-4 h-4 mx-auto mb-1 ${s.color}`} />
@@ -166,6 +161,15 @@ function StatsBar({ submissions }: { submissions: any[] }) {
 export default function SubmissionsPage() {
   const [activeFilter, setActiveFilter] = useState<StatusFilter>("");
   const { data: submissions, isLoading } = useSubmissionHistory(activeFilter || undefined);
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
+
+  const FILTERS: { key: StatusFilter; label: string }[] = [
+    { key: "", label: isHindi ? "सभी" : "All" },
+    { key: "SUBMITTED", label: isHindi ? "सबमिट किए गए" : "Submitted" },
+    { key: "GRADED", label: isHindi ? "मूल्यांकित" : "Graded" },
+    { key: "RETURNED", label: isHindi ? "वापस किए गए" : "Returned" },
+  ];
 
   return (
     <div className="min-h-screen relative">
@@ -180,16 +184,16 @@ export default function SubmissionsPage() {
         >
           <h1 className="font-display text-2xl font-bold flex items-center gap-2">
             <History className="w-5.5 h-5.5 text-accent-light" />
-            Grades & Submissions
+            {isHindi ? "ग्रेड और सबमिशन" : "Grades & Submissions"}
           </h1>
           <p className="text-sm text-foreground-muted mt-0.5">
-            All your past assignment submissions and grades
+            {isHindi ? "आपके सभी पिछले असाइनमेंट सबमिशन और ग्रेड" : "All your past assignment submissions and grades"}
           </p>
         </motion.div>
 
         {/* Stats */}
         {!isLoading && submissions && submissions.length > 0 && (
-          <StatsBar submissions={submissions} />
+          <StatsBar submissions={submissions} isHindi={isHindi} />
         )}
 
         {/* Filter tabs */}
@@ -222,11 +226,11 @@ export default function SubmissionsPage() {
             ))}
           </div>
         ) : !submissions || submissions.length === 0 ? (
-          <EmptyState />
+          <EmptyState isHindi={isHindi} />
         ) : (
           <div className="space-y-3">
             {submissions.map((sub, i) => (
-              <SubmissionCard key={sub.id} sub={sub} index={i} />
+              <SubmissionCard key={sub.id} sub={sub} index={i} isHindi={isHindi} />
             ))}
           </div>
         )}
