@@ -142,6 +142,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (updateData.onboardingStatus != null) token.onboardingStatus = updateData.onboardingStatus;
         if (updateData.hasPassword != null) token.hasPassword = updateData.hasPassword;
         if (updateData.image !== undefined) token.image = updateData.image;
+        if (updateData.name !== undefined) token.name = updateData.name;
       }
       return token;
     },

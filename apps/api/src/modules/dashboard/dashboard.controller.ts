@@ -16,6 +16,7 @@ export async function handleDashboardStats(req: Request, res: Response) {
           select: {
             name: true,
             role: true,
+            image: true,
             gradeLevel: true,
             parentEmail: true,
             parentReportingEnabled: true,

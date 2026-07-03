@@ -427,6 +427,12 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
       setParentEmail((stats.user as any).parentEmail || "");
       setParentEnabled((stats.user as any).parentReportingEnabled || false);
       setFrequency((stats.user as any).parentReportFrequency || "WEEKLY");
+      if (stats.user.name) {
+        setDisplayName(stats.user.name);
+      }
+      if (stats.user.image !== undefined) {
+        setDisplayImage(stats.user.image);
+      }
     }
   }, [stats]);
 

@@ -33,6 +33,7 @@ interface DashboardStats {
   user?: {
     name: string | null;
     role: string | null;
+    image: string | null;
     gradeLevel: number | null;
     schoolName: string | null;
   };
