@@ -146,13 +146,20 @@ export default function StudentDashboardPage() {
     ? session.user.image.split(":")[1] 
     : "robot";
 
-  const AVATAR_MAP: Record<string, { emoji: string; name: string }> = {
-    robot: { emoji: "🤖", name: "Volt Robot" },
-    lion: { emoji: "🦁", name: "Leo Lion" },
-    panda: { emoji: "🐼", name: "Pip Panda" },
-    fox: { emoji: "🦊", name: "Foxy Fox" },
-    unicorn: { emoji: "🦄", name: "Spark Unicorn" },
-    owl: { emoji: "🦉", name: "Ollie Owl" },
+  const AVATAR_MAP: Record<string, { emoji?: string; image?: string; name: string }> = {
+    "anime-boy": { image: "/avatars/anime-boy.png", name: "Gaming Boy" },
+    "anime-girl": { image: "/avatars/anime-girl.png", name: "Anime Girl" },
+    doge: { image: "/avatars/doge.png", name: "Doge Meme" },
+    "sigma-chad": { image: "/avatars/sigma-chad.png", name: "Sigma Chad" },
+    "gaming-noob": { image: "/avatars/gaming-noob.png", name: "Gaming Noob" },
+    "banana-cat": { image: "/avatars/banana-cat.png", name: "Banana Cat" },
+    // Backwards compatibility for old values
+    robot: { image: "/avatars/gaming-noob.png", name: "Volt Robot" },
+    lion: { image: "/avatars/sigma-chad.png", name: "Leo Lion" },
+    panda: { image: "/avatars/banana-cat.png", name: "Pip Panda" },
+    fox: { image: "/avatars/doge.png", name: "Foxy Fox" },
+    unicorn: { image: "/avatars/anime-girl.png", name: "Spark Unicorn" },
+    owl: { image: "/avatars/anime-boy.png", name: "Ollie Owl" },
   };
 
   const userAvatar = AVATAR_MAP[avatarId] || AVATAR_MAP.robot;
@@ -244,10 +251,14 @@ export default function StudentDashboardPage() {
             <motion.div
               animate={{ y: [0, -6, 0] }}
               transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-              className="text-5xl md:text-6xl select-none mascot-emoji cursor-pointer"
+              className="w-14 h-14 md:w-16 md:h-16 rounded-2xl overflow-hidden flex items-center justify-center bg-accent/10 border border-accent/20 select-none mascot-emoji cursor-pointer"
               title={`${userAvatar.name} — click to wiggle!`}
             >
-              {userAvatar.emoji}
+              {userAvatar.image ? (
+                <img src={userAvatar.image} alt={userAvatar.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-5xl md:text-6xl">{userAvatar.emoji}</span>
+              )}
             </motion.div>
             <div>
               <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-foreground">

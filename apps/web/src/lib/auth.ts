@@ -91,6 +91,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // Credentials: user object has all fields from the authorize() return
           token.id = user.id;
           token.name = user.name;
+          token.image = (user as any).image;
           token.role = user.role ?? "STUDENT";
           token.onboardingStatus = user.onboardingStatus ?? "NOT_STARTED";
           token.hasPassword = true; // credentials users always have a password
@@ -113,6 +114,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (res.ok && json.data) {
               token.id = json.data.id ?? user.id;
               token.name = user.name;
+              token.image = json.data.image ?? user.image;
               token.role = json.data.role ?? "STUDENT";
               token.onboardingStatus = json.data.onboardingStatus ?? "NOT_STARTED";
               token.hasPassword = json.data.hasPassword ?? false;
@@ -139,6 +141,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (updateData.role != null) token.role = updateData.role;
         if (updateData.onboardingStatus != null) token.onboardingStatus = updateData.onboardingStatus;
         if (updateData.hasPassword != null) token.hasPassword = updateData.hasPassword;
+        if (updateData.image !== undefined) token.image = updateData.image;
       }
       return token;
     },
@@ -148,6 +151,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.name = token.name as string | undefined;
+        session.user.image = token.image as string | null | undefined;
         session.user.role = token.role as string;
         session.user.onboardingStatus = token.onboardingStatus as string;
         session.user.hasPassword = token.hasPassword as boolean;

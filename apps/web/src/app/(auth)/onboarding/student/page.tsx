@@ -37,12 +37,12 @@ const STEPS = [
 ];
 
 const AVATARS = [
-  { id: "robot", name: "Volt Robot", emoji: "🤖" },
-  { id: "lion", name: "Leo Lion", emoji: "🦁" },
-  { id: "panda", name: "Pip Panda", emoji: "🐼" },
-  { id: "fox", name: "Foxy Fox", emoji: "🦊" },
-  { id: "unicorn", name: "Spark Unicorn", emoji: "🦄" },
-  { id: "owl", name: "Ollie Owl", emoji: "🦉" },
+  { id: "anime-boy", name: "Gaming Boy", image: "/avatars/anime-boy.png" },
+  { id: "anime-girl", name: "Anime Girl", image: "/avatars/anime-girl.png" },
+  { id: "doge", name: "Doge Meme", image: "/avatars/doge.png" },
+  { id: "sigma-chad", name: "Sigma Chad", image: "/avatars/sigma-chad.png" },
+  { id: "gaming-noob", name: "Gaming Noob", image: "/avatars/gaming-noob.png" },
+  { id: "banana-cat", name: "Banana Cat", image: "/avatars/banana-cat.png" },
 ];
 
 function AvatarStep({
@@ -84,7 +84,13 @@ function AvatarStep({
                   : "bg-white/4 border-white/5 hover:border-white/10"
               }`}
             >
-              <div className="text-4xl">{av.emoji}</div>
+              <div className="w-16 h-16 flex items-center justify-center rounded-xl overflow-hidden bg-accent/5">
+                {av.image ? (
+                  <img src={av.image} alt={av.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-4xl">{(av as any).emoji}</span>
+                )}
+              </div>
               <span className={`text-xs font-semibold ${isSelected ? "text-accent-light" : "text-foreground-subtle"}`}>
                 {av.name}
               </span>
@@ -567,10 +573,11 @@ export default function StudentOnboarding() {
         throw new Error(json?.error?.message ?? "Setup failed. Please try again.");
       }
 
-      // Refresh session with new onboarding status and updated password state
+      // Refresh session with new onboarding status, password, and avatar image state
       await update({
         onboardingStatus: "COMPLETED",
         hasPassword: hasPassword || !!password,
+        image: `avatar:${selectedAvatar}`,
       });
 
       setShowConfetti(true);

@@ -32,12 +32,41 @@ export async function handleListTools(req: Request, res: Response) {
   }
 }
 
+const DEMO_TOOLS_FALLBACK: Record<string, { name: string; category: string; brandColor: string }> = {
+  "1": { name: "ChatGPT", category: "CHAT_AI", brandColor: "#10a37f" },
+  "2": { name: "GitHub Copilot", category: "CODE_AI", brandColor: "#1b1f24" },
+  "3": { name: "Midjourney", category: "IMAGE_AI", brandColor: "#000000" },
+  "4": { name: "Grammarly", category: "WRITING_AI", brandColor: "#15c39a" },
+  "5": { name: "Perplexity AI", category: "RESEARCH_AI", brandColor: "#20b2aa" },
+  "6": { name: "Claude", category: "CHAT_AI", brandColor: "#d97706" },
+  "7": { name: "Replit", category: "CODE_AI", brandColor: "#f26207" },
+  "8": { name: "Canva AI", category: "IMAGE_AI", brandColor: "#00c4cc" },
+  "9": { name: "QuillBot", category: "WRITING_AI", brandColor: "#4CAF50" },
+  "10": { name: "Elicit", category: "RESEARCH_AI", brandColor: "#5b21b6" },
+};
+
 export async function handleGetTool(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    const tool = await prisma.tool.findUnique({
+    let tool = await prisma.tool.findUnique({
       where: { id },
     });
+    if (!tool && DEMO_TOOLS_FALLBACK[id]) {
+      const demo = DEMO_TOOLS_FALLBACK[id];
+      tool = {
+        id,
+        name: demo.name,
+        category: demo.category,
+        description: `${demo.name} is a demo AI tool for testing.`,
+        logoUrl: "",
+        brandColor: demo.brandColor,
+        useCases: ["Explaining concepts", "Brainstorming"],
+        subjects: ["All subjects"],
+        usageCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any;
+    }
     if (!tool) {
       return apiError(res, { code: "NOT_FOUND", message: "Tool not found", status: 404 });
     }
@@ -50,6 +79,13 @@ export async function handleGetTool(req: Request, res: Response) {
 export async function handleTrackToolUsage(req: Request, res: Response) {
   try {
     const { id } = req.params;
+    const exists = await prisma.tool.findUnique({ where: { id } });
+    if (!exists) {
+      if (DEMO_TOOLS_FALLBACK[id]) {
+        return apiSuccess(res, { id, name: DEMO_TOOLS_FALLBACK[id].name, usageCount: 1 });
+      }
+      return apiError(res, { code: "NOT_FOUND", message: "Tool not found", status: 404 });
+    }
     const tool = await prisma.tool.update({
       where: { id },
       data: { usageCount: { increment: 1 } },
@@ -97,9 +133,26 @@ export async function handleToolChat(req: Request, res: Response) {
       return apiError(res, { code: "BAD_REQUEST", message: "Prompt cannot be empty", status: 400 });
     }
 
-    const tool = await prisma.tool.findUnique({
+    let tool = await prisma.tool.findUnique({
       where: { id },
     });
+
+    if (!tool && DEMO_TOOLS_FALLBACK[id]) {
+      const demo = DEMO_TOOLS_FALLBACK[id];
+      tool = {
+        id,
+        name: demo.name,
+        category: demo.category,
+        description: `${demo.name} is a demo AI tool.`,
+        logoUrl: "",
+        brandColor: demo.brandColor,
+        useCases: ["Explaining concepts", "Brainstorming"],
+        subjects: ["All subjects"],
+        usageCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any;
+    }
 
     if (!tool) {
       return apiError(res, { code: "NOT_FOUND", message: "Tool not found", status: 404 });
@@ -111,7 +164,7 @@ export async function handleToolChat(req: Request, res: Response) {
 
     const activeGrade = gradeLevel ?? student?.gradeLevel ?? 9;
 
-    const SAFETY_KEYWORDS = [
+    const CHEATING_KEYWORDS = [
       "cheat",
       "bypass",
       "bypass restriction",
@@ -126,17 +179,37 @@ export async function handleToolChat(req: Request, res: Response) {
       "bypass block"
     ];
 
-    const isCheating = SAFETY_KEYWORDS.some(keyword =>
-      prompt.toLowerCase().includes(keyword.toLowerCase())
-    );
+    const CRITICAL_SAFETY_KEYWORDS = [
+      "suicide",
+      "self-harm",
+      "kill myself",
+      "bomb",
+      "weapon",
+      "drugs",
+      "make bomb",
+      "buy drugs",
+      "bully",
+      "cyberbullying",
+      "harm myself"
+    ];
 
-    if (isCheating) {
+    const lowerPrompt = prompt.toLowerCase();
+    const isCriticalSafety = CRITICAL_SAFETY_KEYWORDS.some(keyword => lowerPrompt.includes(keyword));
+    const isCheating = CHEATING_KEYWORDS.some(keyword => lowerPrompt.includes(keyword));
+
+    if (isCriticalSafety || isCheating) {
+      const category = isCriticalSafety ? "SAFETY" : "CHEATING";
+      const severity = isCriticalSafety ? "CRITICAL" : "HIGH";
+      const message = isCriticalSafety
+        ? "Warning: Potential safety policy violation detected. This incident has been logged and reported to your teacher and school administration immediately."
+        : "Warning: Cheating/Restriction bypass attempt detected. This incident has been logged and reported to your teacher.";
+
       // 1. Block query and create flagged AuditLog
       const aiResponsePayload = JSON.stringify({
         blocked: true,
-        category: "CHEATING",
-        severity: "HIGH",
-        message: "Academic integrity check failed. Cheat query blocked."
+        category,
+        severity,
+        message
       });
 
       const auditLog = await prisma.auditLog.create({
@@ -163,17 +236,17 @@ export async function handleToolChat(req: Request, res: Response) {
         await createNotification({
           userId: tId,
           type: "TEACHER_MESSAGE",
-          title: `[SAFETY ALERT] Cheating Attempted`,
-          body: `${studentName} tried a cheat query: "${prompt}" in ${tool.name}. Severity: HIGH.`,
+          title: `[${severity} ALERT] ${category} Violation`,
+          body: `${studentName} triggered a ${category.toLowerCase()} policy alert: "${prompt}" in ${tool.name}. Severity: ${severity}.`,
         });
       }
 
       // Return response with flagged block info
       return apiSuccess(res, {
         blocked: true,
-        category: "CHEATING",
-        severity: "HIGH",
-        message: "Warning: Cheating/Restriction bypass attempt detected. This incident has been logged and reported to your teacher.",
+        category,
+        severity,
+        message,
         auditLogId: auditLog.id
       });
     }
@@ -195,11 +268,14 @@ export async function handleToolChat(req: Request, res: Response) {
     // Complete Daily Challenge if applicable
     completeDailyChallenge(studentId, "Use an AI Tool today").catch(console.error);
 
-    // Increment tool usage count
-    await prisma.tool.update({
-      where: { id },
-      data: { usageCount: { increment: 1 } }
-    });
+    // Increment tool usage count if tool exists in database
+    const toolExists = await prisma.tool.findUnique({ where: { id } });
+    if (toolExists) {
+      await prisma.tool.update({
+        where: { id },
+        data: { usageCount: { increment: 1 } }
+      });
+    }
 
     return apiSuccess(res, {
       blocked: false,

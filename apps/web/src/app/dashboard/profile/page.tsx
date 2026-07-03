@@ -46,19 +46,29 @@ function xpForLevel(level: number) {
 
 // ─── Avatar options ───────────────────────────────────────────────────────
 const AVATAR_OPTIONS = [
-  { id: "robot",   emoji: "🤖", label: "Volt Robot" },
-  { id: "lion",    emoji: "🦁", label: "Leo Lion" },
-  { id: "panda",   emoji: "🐼", label: "Pip Panda" },
-  { id: "fox",     emoji: "🦊", label: "Foxy Fox" },
-  { id: "unicorn", emoji: "🦄", label: "Spark Unicorn" },
-  { id: "owl",     emoji: "🦉", label: "Ollie Owl" },
+  { id: "anime-boy",   image: "/avatars/anime-boy.png",   label: "Gaming Boy" },
+  { id: "anime-girl",  image: "/avatars/anime-girl.png",  label: "Anime Girl" },
+  { id: "doge",        image: "/avatars/doge.png",        label: "Doge Meme" },
+  { id: "sigma-chad",  image: "/avatars/sigma-chad.png",  label: "Sigma Chad" },
+  { id: "gaming-noob", image: "/avatars/gaming-noob.png", label: "Gaming Noob" },
+  { id: "banana-cat",  image: "/avatars/banana-cat.png",  label: "Banana Cat" },
 ];
+
+const OLD_AVATAR_FALLBACK: Record<string, string> = {
+  robot: "/avatars/gaming-noob.png",
+  lion: "/avatars/sigma-chad.png",
+  panda: "/avatars/banana-cat.png",
+  fox: "/avatars/doge.png",
+  unicorn: "/avatars/anime-girl.png",
+  owl: "/avatars/anime-boy.png",
+};
 
 function getAvatarDisplay(image: string | null | undefined, name: string) {
   if (image?.startsWith("avatar:")) {
     const id = image.slice(7);
     const found = AVATAR_OPTIONS.find(a => a.id === id);
-    if (found) return { type: "emoji" as const, value: found.emoji };
+    if (found) return { type: "image" as const, value: found.image };
+    if (OLD_AVATAR_FALLBACK[id]) return { type: "image" as const, value: OLD_AVATAR_FALLBACK[id] };
   }
   return { type: "initial" as const, value: name[0]?.toUpperCase() ?? "U" };
 }
@@ -105,6 +115,7 @@ function EditProfileModal({
     if (currentImage?.startsWith("avatar:")) return currentImage.slice(7);
     return "";
   });
+  const { update } = useSession();
   const [toast, setToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const updateProfile = useUpdateProfile();
 
@@ -120,6 +131,7 @@ function EditProfileModal({
     }
     try {
       await updateProfile.mutateAsync({ name: nameInput.trim() });
+      await update({ name: nameInput.trim() });
       onSaved(nameInput.trim());
       showToast("success", "Name updated successfully!");
       setTimeout(onClose, 1200);
@@ -131,6 +143,7 @@ function EditProfileModal({
   const handleSaveAvatar = async () => {
     try {
       await updateProfile.mutateAsync({ avatar: selectedAvatar });
+      await update({ image: `avatar:${selectedAvatar}` });
       onSaved(currentName, selectedAvatar);
       showToast("success", "Avatar updated!");
       setTimeout(onClose, 1000);
@@ -242,7 +255,11 @@ function EditProfileModal({
                           : "border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04]"
                       }`}
                     >
-                      <span className="text-3xl">{av.emoji}</span>
+                      {(av as any).image ? (
+                        <img src={(av as any).image} alt={av.label} className="w-12 h-12 rounded-xl object-cover" />
+                      ) : (
+                        <span className="text-3xl">{(av as any).emoji}</span>
+                      )}
                       <span className="text-[11px] font-semibold text-foreground-muted">{av.label}</span>
                       {selectedAvatar === av.id && (
                         <CheckCircle2 className="w-3.5 h-3.5 text-accent-light absolute top-2 right-2" />
@@ -289,10 +306,12 @@ function EditProfileModal({
 // ─── Avatar Display component ─────────────────────────────────────────────
 function AvatarDisplay({ image, name, size = "large" }: { image?: string | null; name: string; size?: "large" | "small" }) {
   const display = getAvatarDisplay(image, name);
-  const sizeClass = size === "large" ? "w-24 h-24 text-4xl rounded-[2rem]" : "w-10 h-10 text-lg rounded-xl";
+  const sizeClass = size === "large" ? "w-24 h-24 text-4xl rounded-[2rem] overflow-hidden" : "w-10 h-10 text-lg rounded-xl overflow-hidden";
   return (
     <div className={`${sizeClass} bg-gradient-to-br from-accent to-accent-light flex items-center justify-center font-medium shadow-2xl border border-white/10`}>
-      {display.type === "emoji" ? display.value : (
+      {display.type === "image" ? (
+        <img src={display.value} alt={name} className="w-full h-full object-cover" />
+      ) : (
         <span className="text-white">{display.value}</span>
       )}
     </div>
