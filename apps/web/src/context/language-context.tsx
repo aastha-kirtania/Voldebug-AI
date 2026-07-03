@@ -21,53 +21,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       if (stored === "en" || stored === "hi") {
         setLanguageState(stored);
       }
-
-      // Inject Google Translate script dynamically if not present
-      if (!document.getElementById("google-translate-script")) {
-        const script = document.createElement("script");
-        script.id = "google-translate-script";
-        script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-        script.async = true;
-        document.body.appendChild(script);
-
-        // Define global callback
-        (window as any).googleTranslateElementInit = () => {
-          new (window as any).google.translate.TranslateElement({
-            pageLanguage: "en",
-            includedLanguages: "en,hi",
-            layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false
-          }, "google_translate_element");
-        };
-
-        // Inject custom styles to hide the Google Translate widget header banner and highlights
-        const style = document.createElement("style");
-        style.innerHTML = `
-          .goog-te-banner-frame.skiptranslate,
-          .goog-te-banner-frame,
-          .goog-te-balloon-frame {
-            display: none !important;
-          }
-          body {
-            top: 0px !important;
-          }
-          .goog-tooltip {
-            display: none !important;
-          }
-          .goog-tooltip:hover {
-            display: none !important;
-          }
-          .goog-text-highlight {
-            background-color: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-          }
-          #google_translate_element {
-            display: none !important;
-          }
-        `;
-        document.head.appendChild(style);
-      }
     }
   }, []);
 
@@ -75,26 +28,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLanguageState(lang);
     if (typeof window !== "undefined") {
       localStorage.setItem("voldebug_lang", lang);
-
-      // Manage cookie values to direct Google Translate element behavior
-      const domain = window.location.hostname;
-      if (lang === "hi") {
-        document.cookie = `googtrans=/en/hi; path=/; domain=${domain}`;
-        document.cookie = `googtrans=/en/hi; path=/`;
-      } else {
-        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain}`;
-        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-      }
-      
-      // Reload page to apply full translation seamlessly
-      window.location.reload();
     }
   };
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage }}>
-      {/* Hidden container needed by Google Translate script */}
-      <div id="google_translate_element" style={{ display: "none" }} />
       {children}
     </LanguageContext.Provider>
   );
@@ -106,8 +44,6 @@ export function useTranslation() {
     throw new Error("useTranslation must be used within a LanguageProvider");
   }
 
-  // Returns English fallback translation. Google Translate translates this dynamically to Hindi.
-  // Maintains 100% backward compatibility with t() keys in profile & navigation components.
   const t = (keyPath: string, replacements?: Record<string, string | number>) => {
     const enDictionary: Record<string, any> = {
       nav: {
@@ -156,8 +92,56 @@ export function useTranslation() {
       }
     };
 
+    const hiDictionary: Record<string, any> = {
+      nav: {
+        home: "होम",
+        dashboard: "डैशबोर्ड",
+        classroom: "कक्षा",
+        assignments: "असाइनमेंट",
+        analytics: "विश्लेषण",
+        grades: "ग्रेड",
+        scores: "अंक",
+        profile: "प्रोफ़ाइल",
+        tools: "टूल्स",
+        roadmap: "रोडमैप",
+        signOut: "लॉग आउट",
+      },
+      profile: {
+        title: "छात्र प्रोफ़ाइल",
+        level: "स्तर",
+        xp: "एक्सपी",
+        edit: "प्रोफ़ाइल संपादित करें",
+        statsTitle: "सीखने के आँकड़े",
+        statsAssignments: "असाइनमेंट",
+        statsAvgScore: "औसत अंक",
+        statsDayStreak: "दैनिक निरंतरता",
+        statsTotalXP: "कुल एक्सपी",
+        badges: "अर्जित बैज",
+        badgesTotal: `${replacements?.count ?? ""} कुल`,
+        badgesNone: "बैज अर्जित करने के लिए अपना पहला असाइनमेंट पूरा करें!",
+        milestones: "स्तर के मील के पत्थर",
+        milestoneReached: "मील का पत्थर हासिल किया!",
+        milestoneLocked: `लॉक (स्तर ${replacements?.current}/${replacements?.required})`,
+        parentReporting: "अभिभावक प्रगति रिपोर्टिंग",
+        parentShare: "मेरी शैक्षणिक प्रगति मेरे अभिभावक के साथ साझा करें",
+        parentShareSub: "सक्षम होने पर, ईमेल विवरण के लिए एक नियमित शैक्षणिक सारांश उत्पन्न किया जाएगा और लॉग किया जाएगा।",
+        parentEmail: "अभिभावक का ईमेल",
+        parentFrequency: "रिपोर्टिंग आवृत्ति",
+        parentFreqWeekly: "साप्ताहिक (हर रविवार)",
+        parentFreqMonthly: "मासिक (महीने की 1 तारीख)",
+        parentPrivacyNote: "🔒 गोपनीयता अलगाव गारंटी: आपकी शैक्षणिक गोपनीयता की रक्षा के लिए, यह रिपोर्ट कभी भी आपके खोज प्रश्नों, एआई चैट लॉग, या चेतावनी लॉग को उजागर नहीं करती है। केवल उच्च-स्तरीय शैक्षणिक डेटा भेजा जाता है।",
+        saveSettings: "सेटिंग्स सहेजें",
+        sendTestReport: "अभी परीक्षण रिपोर्ट भेजें",
+        saveSuccess: "अभिभावक रिपोर्टिंग सेटिंग्स सफलतापूर्वक सहेजी गईं!",
+        saveFail: "सेटिंग्स सहेजने में विफल। कृपया सुनिश्चित करें कि ईमेल मान्य है।",
+        testSuccess: `सफलता! रिपोर्ट संकलित की गई और सर्वर लॉग में मुद्रित की गई। (सत्यापन लॉग आईडी: ${replacements?.id})`,
+        testFail: "प्रगति रिपोर्ट संकलित करने में विफल। सुनिश्चित करें कि आपने पहले अपनी सेटिंग्स सहेज ली हैं।",
+      }
+    };
+
+    const dictionary = context.language === "hi" ? hiDictionary : enDictionary;
     const keys = keyPath.split(".");
-    let current: any = enDictionary;
+    let current: any = dictionary;
 
     for (const key of keys) {
       if (current && typeof current === "object" && key in current) {
