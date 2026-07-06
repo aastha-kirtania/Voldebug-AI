@@ -1,7 +1,6 @@
-"use client";
-
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import {
   Home, Zap, GraduationCap, Trophy, UserCircle,
   History, Shield, BookOpen, BarChart3, Map
@@ -17,7 +16,17 @@ const STUDENT_NAV = [
   { label: "Classroom", key: "nav.classroom", href: "/dashboard/classroom", icon: GraduationCap },
   { label: "Tools", key: "nav.tools", href: "/dashboard/tools", icon: Zap },
   { label: "Scores", key: "nav.scores", href: "/dashboard/scoreboard", icon: Trophy },
+  { label: "Roadmap", key: "nav.roadmap", href: "/dashboard/student/roadmap", icon: Map },
   { label: "Profile", key: "nav.profile", href: "/dashboard/profile", icon: UserCircle },
+];
+
+const KIDS_STUDENT_NAV = [
+  { label: "My Kingdom", key: "nav.home_kids", href: "/dashboard/student", icon: "🏰" },
+  { label: "My Quests", key: "nav.classroom_kids", href: "/dashboard/classroom", icon: "🌲" },
+  { label: "Magic Workshop", key: "nav.tools_kids", href: "/dashboard/tools", icon: "🤖" },
+  { label: "Hall of Fame", key: "nav.scores_kids", href: "/dashboard/scoreboard", icon: "🏆" },
+  { label: "Adventure Map", key: "nav.roadmap_kids", href: "/dashboard/student/roadmap", icon: "🗺️" },
+  { label: "Myself", key: "nav.profile_kids", href: "/dashboard/profile", icon: "👤" },
 ];
 
 const TEACHER_NAV = [
@@ -34,10 +43,7 @@ const ADMIN_NAV = [
   { label: "Profile", key: "nav.profile", href: "/dashboard/profile", icon: UserCircle },
 ];
 
-const SIDEBAR_EXTRA_STUDENT = [
-  { label: "Tools", key: "nav.tools", href: "/dashboard/tools", icon: Zap },
-  { label: "Roadmap", key: "nav.roadmap", href: "/dashboard/student/roadmap", icon: Map },
-];
+
 
 // ─── Component ────────────────────────────────────────────────────────────
 
@@ -45,11 +51,32 @@ export function Navigation({ variant }: { variant: "sidebar" | "mobile" }) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { t } = useTranslation();
+  const [kidsMode, setKidsMode] = useState(false);
 
   const role = session?.user?.role;
   const isTeacher = role === "TEACHER";
   const isAdmin = role === "ADMIN";
-  const navItems = isAdmin ? ADMIN_NAV : (isTeacher ? TEACHER_NAV : STUDENT_NAV);
+
+  useEffect(() => {
+    const checkKidsMode = () => {
+      const saved = localStorage.getItem("kids-mode");
+      if (saved !== null) {
+        setKidsMode(saved === "true");
+      } else {
+        setKidsMode(role === "STUDENT");
+      }
+    };
+    
+    checkKidsMode();
+    const interval = setInterval(checkKidsMode, 1000);
+    return () => clearInterval(interval);
+  }, [role]);
+
+  const activeNavItems = isAdmin 
+    ? ADMIN_NAV 
+    : (isTeacher 
+        ? TEACHER_NAV 
+        : (kidsMode ? KIDS_STUDENT_NAV : STUDENT_NAV));
 
   function isActive(href: string) {
     if (href === "/dashboard/student" || href === "/dashboard/teacher") {
@@ -58,54 +85,61 @@ export function Navigation({ variant }: { variant: "sidebar" | "mobile" }) {
     return pathname.startsWith(href);
   }
 
+  function getLabel(item: { label: string; key: string; href: string; icon: any }) {
+    const translated = t(item.key);
+    if (translated && translated !== item.key) {
+      return translated;
+    }
+    return item.label;
+  }
+
+  function renderIcon(icon: any, active = false) {
+    if (typeof icon === "string") {
+      return (
+        <span className={cn(
+          "text-xl flex-shrink-0 flex items-center justify-center select-none transition-all duration-300",
+          active ? "scale-125" : "group-hover:scale-110"
+        )}>
+          {icon}
+        </span>
+      );
+    }
+    const IconComp = icon;
+    return <IconComp className="w-4.5 h-4.5 flex-shrink-0" />;
+  }
+
   if (variant === "sidebar") {
     return (
-      <nav className="flex flex-col gap-0.5 flex-1">
-        {navItems.map((item) => (
-          <Link
-            key={item.key}
-            href={item.href}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
-              isActive(item.href)
-                ? "bg-accent-surface text-accent-light border border-accent/15 shadow-sm"
-                : "text-foreground-muted hover:bg-surface/60 hover:text-foreground"
-            )}
-          >
-            <item.icon className="w-4.5 h-4.5 flex-shrink-0" />
-            <span>{t(item.key)}</span>
-          </Link>
-        ))}
+      <nav className="flex flex-col gap-1 flex-1">
+        {activeNavItems.map((item) => {
+          const active = isActive(item.href);
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group",
+                active
+                  ? (kidsMode 
+                      ? "bg-violet-100/80 text-violet-600 border-2 border-violet-200 shadow-md"
+                      : "bg-accent-surface text-accent-light border border-accent/15 shadow-sm")
+                  : (kidsMode
+                      ? "text-foreground-muted hover:bg-amber-50 hover:text-[#7c3aed]"
+                      : "text-foreground-muted hover:bg-surface/60 hover:text-foreground")
+              )}
+            >
+              {renderIcon(item.icon, active)}
+              <span className={cn(kidsMode ? "font-bold text-base" : "")}>{getLabel(item)}</span>
+            </Link>
+          );
+        })}
 
-        {/* Student-only extras in sidebar */}
-        {role === "STUDENT" && (
-          <>
-            <div className="mt-2 mb-1 px-3">
-              <p className="text-[10px] font-semibold text-foreground-subtle uppercase tracking-widest">More</p>
-            </div>
-            {SIDEBAR_EXTRA_STUDENT.map((item) => (
-              <Link
-                key={item.key}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
-                  isActive(item.href)
-                    ? "bg-accent-surface text-accent-light border border-accent/15"
-                    : "text-foreground-muted hover:bg-surface/60 hover:text-foreground"
-                )}
-              >
-                <item.icon className="w-4.5 h-4.5 flex-shrink-0" />
-                <span>{t(item.key)}</span>
-              </Link>
-            ))}
-          </>
-        )}
       </nav>
     );
   }
 
-  // Mobile bottom tab bar — show 5 items max
-  const mobileItems = navItems.slice(0, 5);
+  // Mobile bottom tab bar — show all items
+  const mobileItems = activeNavItems;
 
   return (
     <nav className="flex items-center justify-around w-full h-full px-2">
@@ -116,17 +150,24 @@ export function Navigation({ variant }: { variant: "sidebar" | "mobile" }) {
             key={item.key}
             href={item.href}
             className={cn(
-              "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all min-w-0 flex-1",
-              active ? "text-accent-light" : "text-foreground-muted hover:text-foreground"
+              "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all min-w-0 flex-1 group",
+              active 
+                ? (kidsMode ? "text-violet-600" : "text-accent-light") 
+                : "text-foreground-muted hover:text-foreground"
             )}
           >
             <div className={cn(
               "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
-              active ? "bg-accent-surface" : "transparent"
+              active 
+                ? (kidsMode ? "bg-violet-100 scale-110" : "bg-accent-surface") 
+                : "transparent"
             )}>
-              <item.icon className="w-4.5 h-4.5" />
+              {renderIcon(item.icon, active)}
             </div>
-            <span className="text-[10px] font-medium truncate max-w-full">{t(item.key)}</span>
+            <span className={cn(
+              "text-[10px] font-medium truncate max-w-full",
+              kidsMode && active ? "font-bold" : ""
+            )}>{getLabel(item)}</span>
           </Link>
         );
       })}

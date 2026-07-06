@@ -43,19 +43,13 @@ export default function ForgotPasswordPage() {
   }, [email]);
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-background">
-      {/* Decorative background gradients */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-accent/10 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 rounded-full bg-accent-light/5 blur-[100px] pointer-events-none" />
-
+    <div className="w-full max-w-md mx-auto">
       <motion.div
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-md p-8 md:p-10 rounded-3xl border border-card-border bg-card/60 backdrop-blur-xl shadow-xl space-y-6 relative overflow-hidden"
+        className="bg-card border border-card-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-6"
       >
-        {/* Top Accent Line */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent via-accent-light to-accent" />
 
         {/* Header & Logo */}
         <div className="text-center space-y-4">

@@ -3,6 +3,8 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@web/lib/api";
 import { useDashboardStats, useSaveParentSettings, useTriggerParentReport, useUpdateProfile } from "@web/hooks/use-dashboard";
 import { useTranslation } from "@web/context/language-context";
 import { useTeacherDashboard } from "@web/hooks/use-teacher";
@@ -103,11 +105,13 @@ function EditProfileModal({
   currentImage,
   onClose,
   onSaved,
+  showAvatarTab = true,
 }: {
   currentName: string;
   currentImage: string | null | undefined;
   onClose: () => void;
   onSaved: (name: string, avatar?: string) => void;
+  showAvatarTab?: boolean;
 }) {
   const [tab, setTab] = useState<"name" | "avatar">("name");
   const [nameInput, setNameInput] = useState(currentName);
@@ -173,28 +177,30 @@ function EditProfileModal({
         </div>
 
         {/* Tabs */}
-        <div className="flex px-6 pt-4 gap-2">
-          <button
-            onClick={() => setTab("name")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-              tab === "name"
-                ? "bg-accent/15 text-accent-light border border-accent/25"
-                : "text-foreground-muted hover:text-foreground hover:bg-white/5"
-            }`}
-          >
-            <Edit3 className="w-3.5 h-3.5" /> Change Name
-          </button>
-          <button
-            onClick={() => setTab("avatar")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-              tab === "avatar"
-                ? "bg-accent/15 text-accent-light border border-accent/25"
-                : "text-foreground-muted hover:text-foreground hover:bg-white/5"
-            }`}
-          >
-            <SmilePlus className="w-3.5 h-3.5" /> Choose Avatar
-          </button>
-        </div>
+        {showAvatarTab && (
+          <div className="flex px-6 pt-4 gap-2">
+            <button
+              onClick={() => setTab("name")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                tab === "name"
+                  ? "bg-accent/15 text-accent-light border border-accent/25"
+                  : "text-foreground-muted hover:text-foreground hover:bg-white/5"
+              }`}
+            >
+              <Edit3 className="w-3.5 h-3.5" /> Change Name
+            </button>
+            <button
+              onClick={() => setTab("avatar")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                tab === "avatar"
+                  ? "bg-accent/15 text-accent-light border border-accent/25"
+                  : "text-foreground-muted hover:text-foreground hover:bg-white/5"
+              }`}
+            >
+              <SmilePlus className="w-3.5 h-3.5" /> Choose Avatar
+            </button>
+          </div>
+        )}
 
         <div className="p-6 pt-4 space-y-4">
           <AnimatePresence mode="wait">
@@ -318,6 +324,116 @@ function AvatarDisplay({ image, name, size = "large" }: { image?: string | null;
   );
 }
 
+// ─── Admin Profile ────────────────────────────────────────────────────────
+interface SchoolInfo {
+  id: string;
+  name: string;
+  _count: { members: number; classes: number };
+}
+
+interface SchoolOverview {
+  school: { id: string; name: string };
+  totalStudents: number;
+  totalTeachers: number;
+  totalClasses: number;
+  totalAssignments: number;
+  totalSubmissions: number;
+  recentSubmissions: number;
+  averageScore: number | null;
+  gradedCount: number;
+  auditLogs: {
+    total: number;
+    flagged: number;
+  };
+}
+
+function AdminProfile({ name: initialName, email, image: initialImage }: { name: string; email: string; image?: string | null }) {
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [displayName, setDisplayName] = useState(initialName);
+  const [displayImage, setDisplayImage] = useState(initialImage);
+
+  const { data: school } = useQuery({
+    queryKey: ["admin-school"],
+    queryFn: () => api.get<SchoolInfo>("/v1/admin/school"),
+    retry: false,
+  });
+
+  const { data: overview } = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: () => api.get<SchoolOverview>("/v1/admin/overview"),
+    retry: false,
+  });
+
+  const handleSaved = (name: string, avatar?: string) => {
+    setDisplayName(name);
+    if (avatar !== undefined) setDisplayImage(`avatar:${avatar}`);
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto pb-24 lg:pb-12 px-4 md:px-8 pt-8 relative z-10">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
+
+        {/* Profile Hero */}
+        <motion.div variants={itemVariants}>
+          <GlassCard className="relative overflow-hidden">
+            <div className="absolute top-0 left-8 w-48 h-48 bg-accent/20 blur-[80px] rounded-full pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+              <div className="relative flex-shrink-0">
+                <AvatarDisplay image={displayImage} name={displayName} size="large" />
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 flex-wrap mb-1">
+                  <h1 className="font-display text-3xl font-medium tracking-tight text-foreground">{displayName}</h1>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-accent-light border border-accent/20 bg-accent/10 px-2.5 py-1 rounded-full">
+                    Administrator
+                  </span>
+                </div>
+                {email && <p className="text-sm font-medium text-foreground-subtle">{email}</p>}
+                {school && <p className="text-xs font-semibold text-foreground-muted mt-1">Managed School: {school.name}</p>}
+              </div>
+
+              <button
+                onClick={() => setIsEditOpen(true)}
+                className="w-full md:w-auto mt-4 md:mt-0 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-white/10 bg-white/5 text-foreground text-sm font-medium hover:bg-white/10 transition-colors"
+              >
+                <Edit3 className="w-4 h-4" />
+                Edit Profile
+              </button>
+            </div>
+          </GlassCard>
+        </motion.div>
+
+        {/* Administrative Overview */}
+        <motion.div variants={itemVariants}>
+          <h2 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-4 ml-2">Administrative Overview</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <MiniStat title="Total Students" value={overview?.totalStudents ?? 0} icon={<Users className="w-5 h-5 text-indigo-400" />} />
+            <MiniStat title="Total Teachers" value={overview?.totalTeachers ?? 0} icon={<Users className="w-5 h-5 text-amber-400" />} />
+            <MiniStat title="Total Classes" value={overview?.totalClasses ?? 0} icon={<BookOpen className="w-5 h-5 text-emerald-400" />} />
+            <MiniStat title="Total Assignments" value={overview?.totalAssignments ?? 0} icon={<FileText className="w-5 h-5 text-cyan-400" />} />
+          </div>
+        </motion.div>
+
+      </motion.div>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {isEditOpen && (
+          <EditProfileModal
+            currentName={displayName}
+            currentImage={displayImage}
+            onClose={() => setIsEditOpen(false)}
+            onSaved={handleSaved}
+            showAvatarTab={false}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 // ─── Teacher Profile ──────────────────────────────────────────────────────
 function TeacherProfile({ name: initialName, email, image: initialImage }: { name: string; email: string; image?: string | null }) {
   const { data: stats } = useTeacherDashboard();
@@ -340,11 +456,8 @@ function TeacherProfile({ name: initialName, email, image: initialImage }: { nam
             <div className="absolute top-0 left-8 w-48 h-48 bg-accent/20 blur-[80px] rounded-full pointer-events-none" />
 
             <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
-              <div className="relative flex-shrink-0 cursor-pointer group" onClick={() => setIsEditOpen(true)}>
+              <div className="relative flex-shrink-0">
                 <AvatarDisplay image={displayImage} name={displayName} size="large" />
-                <div className="absolute inset-0 rounded-[2rem] bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <SmilePlus className="w-7 h-7 text-white" />
-                </div>
               </div>
 
               <div className="flex-1 min-w-0">
@@ -389,6 +502,7 @@ function TeacherProfile({ name: initialName, email, image: initialImage }: { nam
             currentImage={displayImage}
             onClose={() => setIsEditOpen(false)}
             onSaved={handleSaved}
+            showAvatarTab={false}
           />
         )}
       </AnimatePresence>
@@ -610,75 +724,14 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
         {/* Stats Overview */}
         <motion.div variants={itemVariants}>
           <h2 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-4 ml-2">{t("profile.statsTitle")}</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            <MiniStat title={t("profile.statsAssignments")} value={submissionStats.total} icon={<BookOpen className="w-5 h-5 text-indigo-400" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+            <MiniStat title={t("profile.statsAssignments")} value={stats?.submissionCount ?? 0} icon={<BookOpen className="w-5 h-5 text-indigo-400" />} />
             <MiniStat title={t("profile.statsAvgScore")} value={submissionStats.avgScore != null ? `${submissionStats.avgScore}%` : "—"} icon={<Star className="w-5 h-5 text-amber-400" />} />
-            <MiniStat title={t("profile.statsDayStreak")} value={stats?.streak.current ?? 0} icon={<Flame className="w-5 h-5 text-orange-400" />} />
             <MiniStat title={t("profile.statsTotalXP")} value={(stats?.xp.total ?? 0).toLocaleString()} icon={<Zap className="w-5 h-5 text-emerald-400" />} />
           </div>
         </motion.div>
 
-        {/* Badges */}
-        <motion.div variants={itemVariants}>
-          <GlassCard>
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
-              <div className="flex items-center gap-3">
-                <Award className="w-5 h-5 text-yellow-400" />
-                <h2 className="text-base font-medium text-foreground tracking-wide">{t("profile.badges")}</h2>
-              </div>
-              <span className="text-xs font-medium text-foreground-subtle bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                {t("profile.badgesTotal", { count: stats?.badges?.earned ?? 0 })}
-              </span>
-            </div>
 
-            {downloadError && (
-              <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-error/10 border border-error/20 text-error text-xs font-semibold">
-                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" /> {downloadError}
-              </div>
-            )}
-
-            {!stats?.badges?.items || stats.badges.items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
-                  <Award className="w-6 h-6 text-foreground-subtle" />
-                </div>
-                <p className="text-sm font-medium text-foreground-subtle">{t("profile.badgesNone")}</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {stats.badges.items.map((badge: any, i: number) => (
-                  <motion.div
-                    key={badge.key}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.2 + i * 0.05, duration: 0.5, ease: smoothEase }}
-                    className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/5 hover:border-accent/20 transition-all text-center group [perspective:1000px] cursor-default"
-                  >
-                    <div className="w-14 h-14 rounded-[1.25rem] flex items-center justify-center text-2xl border border-white/10 bg-gradient-to-b from-white/10 to-transparent transition-all duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(360deg)] group-hover:border-accent/30 shadow-lg select-none">
-                      {badge.icon.startsWith('/') ? <img src={badge.icon} alt={badge.name} className="w-8 h-8 object-contain" /> : badge.icon || '🏅'}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground mb-0.5">{badge.name}</p>
-                      <p className="text-[10px] text-foreground-subtle leading-tight px-2 mb-2">{badge.desc}</p>
-                      <button
-                        onClick={() => handleDownloadBadge(badge.id, badge.name)}
-                        disabled={downloadingBadgeId === badge.id}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 text-[10px] font-semibold text-accent-light hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-50"
-                      >
-                        {downloadingBadgeId === badge.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <FileText className="w-3.5 h-3.5" />
-                        )}
-                        <span>Certificate</span>
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </GlassCard>
-        </motion.div>
 
         {/* Level Milestones */}
         <motion.div variants={itemVariants}>
@@ -900,14 +953,16 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
 export default function ProfilePage() {
   const { data: session } = useSession();
   const user = session?.user as any;
-  const name = user?.name ?? (user?.role === "TEACHER" ? "Teacher" : "Student");
+  const name = user?.name ?? (user?.role === "TEACHER" ? "Teacher" : (user?.role === "ADMIN" ? "Admin" : "Student"));
   const email = user?.email ?? "";
   const image = user?.image ?? null;
 
   return (
     <div className="min-h-screen relative selection:bg-accent/30">
       <GradientMesh className="opacity-40" />
-      {user?.role === "TEACHER" ? (
+      {user?.role === "ADMIN" ? (
+        <AdminProfile name={name} email={email} image={image} />
+      ) : user?.role === "TEACHER" ? (
         <TeacherProfile name={name} email={email} image={image} />
       ) : (
         <StudentProfile name={name} email={email} image={image} />

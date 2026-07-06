@@ -161,7 +161,10 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
 
     // AI Usage Summary
     const auditLogsForAI = await prisma.auditLog.findMany({
-      where: { studentId: { in: studentIds } },
+      where: {
+        studentId: { in: studentIds },
+        isFlagged: false,
+      },
       select: { toolUsed: true, timestamp: true },
     });
 
@@ -185,11 +188,11 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
       .slice(0, 5);
 
     const dailyUsage = auditLogsForAI.filter(
-      (log) => log.timestamp >= new Date(Date.now() - 24 * 60 * 60 * 1000)
+      (log) => new Date(log.timestamp).getTime() >= Date.now() - 24 * 60 * 60 * 1000
     ).length;
 
     const weeklyUsage = auditLogsForAI.filter(
-      (log) => log.timestamp >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      (log) => new Date(log.timestamp).getTime() >= Date.now() - 7 * 24 * 60 * 60 * 1000
     ).length;
 
     const aiUsage = {
@@ -201,11 +204,24 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
     // Frequently Asked Doubts
     const wordCounts: Record<string, number> = {};
     const stopwords = new Set([
-      "what", "how", "why", "who", "the", "a", "an", "is", "are", "of", "to", "in", "for", "on", "with", "at", "by", "from", "that", "this", "these", "those", "explain", "help", "me", "solve", "about", "using", "your", "mine", "some", "them", "then", "there", "their"
+      "what", "whats", "how", "why", "who", "whom", "whose", "which", "where", "when", 
+      "the", "a", "an", "is", "are", "was", "were", "been", "being", "have", "has", "had", 
+      "do", "does", "did", "done", "doing", "dont", "doesnt", "didnt", "cant", "cannot",
+      "wont", "should", "shouldnt", "could", "couldnt", "would", "wouldnt", "will", "shall",
+      "of", "to", "in", "for", "on", "with", "at", "by", "from", "about", "against", "between",
+      "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down",
+      "that", "this", "these", "those", "ths", "then", "there", "their", "theirs", "them", "they",
+      "explain", "help", "me", "solve", "using", "your", "yours", "mine", "some", "any", "no",
+      "every", "each", "other", "another", "more", "most", "some", "many", "much", "very",
+      "please", "question", "answer", "query", "find", "give", "show", "write", "make", "take",
+      "get", "tell", "ask", "like", "want", "need", "know", "think", "good", "best", "easy"
     ]);
 
     const logsForDoubts = await prisma.auditLog.findMany({
-      where: { studentId: { in: studentIds } },
+      where: {
+        studentId: { in: studentIds },
+        isFlagged: false,
+      },
       select: { promptText: true },
       take: 200,
     });
@@ -237,7 +253,7 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
         student: { select: { name: true, email: true, gradeLevel: true } },
       },
       orderBy: { timestamp: "desc" },
-      take: 5,
+      take: 100,
     });
 
     const safetyAlertsPreview = latestAlerts.map((a) => {
@@ -508,7 +524,10 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
     // 3. Top tools count from student audit logs, falling back to global
     const studentLogs = await prisma.auditLog.groupBy({
       by: ["toolUsed"],
-      where: { studentId: { in: studentIds } },
+      where: {
+        studentId: { in: studentIds },
+        isFlagged: false,
+      },
       _count: { toolUsed: true },
     });
 
@@ -566,13 +585,28 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
 
     // 5. Common doubts from search prompts
     const logs = await prisma.auditLog.findMany({
-      where: { studentId: { in: studentIds } },
+      where: {
+        studentId: { in: studentIds },
+        isFlagged: false,
+      },
       select: { promptText: true },
       take: 100
     });
 
     const wordCounts: Record<string, number> = {};
-    const stopwords = new Set(["what", "how", "why", "who", "the", "a", "an", "is", "are", "of", "to", "in", "for", "on", "with", "at", "by", "from", "that", "this", "these", "those", "explain", "help", "me", "solve", "about", "using"]);
+    const stopwords = new Set([
+      "what", "whats", "how", "why", "who", "whom", "whose", "which", "where", "when", 
+      "the", "a", "an", "is", "are", "was", "were", "been", "being", "have", "has", "had", 
+      "do", "does", "did", "done", "doing", "dont", "doesnt", "didnt", "cant", "cannot",
+      "wont", "should", "shouldnt", "could", "couldnt", "would", "wouldnt", "will", "shall",
+      "of", "to", "in", "for", "on", "with", "at", "by", "from", "about", "against", "between",
+      "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down",
+      "that", "this", "these", "those", "ths", "then", "there", "their", "theirs", "them", "they",
+      "explain", "help", "me", "solve", "using", "your", "yours", "mine", "some", "any", "no",
+      "every", "each", "other", "another", "more", "most", "some", "many", "much", "very",
+      "please", "question", "answer", "query", "find", "give", "show", "write", "make", "take",
+      "get", "tell", "ask", "like", "want", "need", "know", "think", "good", "best", "easy"
+    ]);
     logs.forEach(log => {
       const words = log.promptText
         .toLowerCase()

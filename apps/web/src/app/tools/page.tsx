@@ -75,7 +75,7 @@ function ToolCard({ tool, index }: { tool: ToolItem; index: number }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: Math.min(index * 0.04, 0.3) }}
-      className="group relative rounded-2xl border border-white/8 bg-white/4 p-5 flex flex-col gap-4 backdrop-blur-sm hover:border-white/15 hover:bg-white/6 transition-all duration-200"
+      className="group relative rounded-2xl border border-card-border bg-card p-5 flex flex-col gap-4 hover:border-card-border-hover hover:bg-card-hover hover:shadow-md transition-all duration-200"
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
@@ -86,7 +86,7 @@ function ToolCard({ tool, index }: { tool: ToolItem; index: number }) {
           {tool.name[0]}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm text-white truncate">{tool.name}</p>
+          <p className="font-semibold text-sm text-foreground truncate">{tool.name}</p>
           <span
             className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mt-0.5"
             style={{ backgroundColor: `${color}22`, color }}
@@ -94,23 +94,23 @@ function ToolCard({ tool, index }: { tool: ToolItem; index: number }) {
             {catLabel}
           </span>
         </div>
-        <ChevronRight className="w-4 h-4 text-white/30 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
+        <ChevronRight className="w-4 h-4 text-foreground-subtle opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
       </div>
 
       {/* Description */}
-      <p className="text-xs text-white/50 leading-relaxed line-clamp-2">{tool.description}</p>
+      <p className="text-xs text-foreground-muted leading-relaxed line-clamp-2">{tool.description}</p>
 
       {/* Use cases */}
       <div className="flex flex-wrap gap-1.5">
         {tool.useCases.slice(0, 2).map((uc) => (
-          <span key={uc} className="text-[10px] px-2 py-0.5 rounded-md bg-white/6 text-white/40 border border-white/8">
+          <span key={uc} className="text-[10px] px-2 py-0.5 rounded-md bg-surface text-foreground-muted border border-card-border">
             {uc}
           </span>
         ))}
       </div>
 
       {/* Footer */}
-      <div className="flex items-center gap-1 text-xs text-white/30 pt-1 border-t border-white/8">
+      <div className="flex items-center gap-1 text-xs text-foreground-subtle pt-1 border-t border-card-border">
         <TrendingUp className="w-3 h-3" />
         <span>{tool.usageCount.toLocaleString()} uses</span>
       </div>
@@ -127,7 +127,7 @@ function LockedToolCard({ tool, index }: { tool: ToolItem; index: number }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: Math.min(index * 0.04, 0.4) }}
-      className="relative rounded-2xl border border-white/8 bg-white/4 p-5 flex flex-col gap-4 overflow-hidden cursor-not-allowed select-none"
+      className="relative rounded-2xl border border-card-border bg-card p-5 flex flex-col gap-4 overflow-hidden cursor-not-allowed select-none"
     >
       {/* Blurred content */}
       <div className="filter blur-[3px] pointer-events-none">
@@ -139,7 +139,7 @@ function LockedToolCard({ tool, index }: { tool: ToolItem; index: number }) {
             {tool.name[0]}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm text-white truncate">{tool.name}</p>
+            <p className="font-semibold text-sm text-foreground truncate">{tool.name}</p>
             <span
               className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mt-0.5"
               style={{ backgroundColor: `${color}22`, color }}
@@ -148,26 +148,26 @@ function LockedToolCard({ tool, index }: { tool: ToolItem; index: number }) {
             </span>
           </div>
         </div>
-        <p className="text-xs text-white/50 leading-relaxed line-clamp-2 mt-4">{tool.description}</p>
+        <p className="text-xs text-foreground-muted leading-relaxed line-clamp-2 mt-4">{tool.description}</p>
         <div className="flex flex-wrap gap-1.5 mt-4">
           {tool.useCases.slice(0, 2).map((uc) => (
-            <span key={uc} className="text-[10px] px-2 py-0.5 rounded-md bg-white/6 text-white/40 border border-white/8">
+            <span key={uc} className="text-[10px] px-2 py-0.5 rounded-md bg-surface text-foreground-muted border border-card-border">
               {uc}
             </span>
           ))}
         </div>
-        <div className="flex items-center gap-1 text-xs text-white/30 pt-1 border-t border-white/8 mt-4">
+        <div className="flex items-center gap-1 text-xs text-foreground-subtle pt-1 border-t border-card-border mt-4">
           <TrendingUp className="w-3 h-3" />
           <span>{tool.usageCount.toLocaleString()} uses</span>
         </div>
       </div>
 
       {/* Lock overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0d0d1a]/60 backdrop-blur-[1px] rounded-2xl">
-        <div className="w-10 h-10 rounded-full bg-white/8 border border-white/12 flex items-center justify-center mb-2">
-          <Lock className="w-5 h-5 text-white/50" />
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#fefdf8]/75 backdrop-blur-[1px] rounded-2xl">
+        <div className="w-10 h-10 rounded-full bg-card border border-card-border flex items-center justify-center mb-2 shadow-sm">
+          <Lock className="w-5 h-5 text-foreground-muted" />
         </div>
-        <p className="text-xs text-white/50 font-medium">Sign up to unlock</p>
+        <p className="text-xs text-foreground-muted font-medium">Sign up to unlock</p>
       </div>
     </motion.div>
   );
@@ -181,22 +181,21 @@ function CtaBanner({ totalLocked }: { totalLocked: number }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="col-span-full relative rounded-2xl overflow-hidden border border-indigo-500/30 my-2"
+      className="col-span-full relative rounded-2xl overflow-hidden border border-accent/20 my-2"
     >
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-indigo-950/80 via-purple-950/80 to-indigo-950/80" />
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-accent/10 to-purple-600/10" />
 
       <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6 px-8 py-7">
         <div className="text-center sm:text-left">
           <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
-            <Zap className="w-5 h-5 text-indigo-400" />
-            <span className="text-xs font-semibold text-indigo-400 uppercase tracking-widest">Free Access</span>
+            <Zap className="w-5 h-5 text-accent-light" />
+            <span className="text-xs font-semibold text-accent-light uppercase tracking-widest">Free Access</span>
           </div>
-          <h2 className="text-xl font-bold text-white mb-1">
+          <h2 className="text-xl font-bold text-foreground mb-1">
             Unlock {totalLocked} more tools
           </h2>
-          <p className="text-sm text-white/50 max-w-sm">
+          <p className="text-sm text-foreground-muted max-w-sm">
             Create a free account to access the full AI tools library, track your usage, and get personalized recommendations.
           </p>
         </div>
@@ -204,14 +203,14 @@ function CtaBanner({ totalLocked }: { totalLocked: number }) {
         <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
           <Link
             href="/register"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-all shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent hover:bg-accent-light text-white text-sm font-semibold transition-all shadow-lg shadow-accent/20 hover:shadow-accent/30 hover:scale-[1.02] active:scale-[0.98]"
           >
             Get started free
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/12 bg-white/5 hover:bg-white/8 text-white text-sm font-semibold transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-card-border bg-surface hover:bg-surface-hover text-foreground-muted hover:text-foreground text-sm font-semibold transition-all"
           >
             Sign in
           </Link>
@@ -225,27 +224,27 @@ function CtaBanner({ totalLocked }: { totalLocked: number }) {
 
 function Navbar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0d0d1a]/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-card-border bg-card/80 backdrop-blur-xl">
       <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
-            <Zap className="w-4 h-4 text-indigo-400" />
+          <div className="w-7 h-7 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center">
+            <Zap className="w-4 h-4 text-accent" />
           </div>
-          <span className="font-bold text-sm tracking-tight">
-            <span className="text-white">VOLDEBUG</span>
-            <span className="text-white/40 text-xs ml-1 font-normal">AI</span>
+          <span className="font-bold text-sm tracking-tight text-foreground">
+            <span className="text-gradient">VOLDEBUG</span>
+            <span className="text-foreground-subtle text-xs ml-1 font-normal">AI</span>
           </span>
         </Link>
         <div className="flex items-center gap-2">
           <Link
             href="/login"
-            className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white/70 hover:text-white border border-white/10 hover:border-white/20 bg-white/4 hover:bg-white/7 transition-all"
+            className="px-4 py-1.5 rounded-lg text-xs font-semibold text-foreground-muted hover:text-foreground border border-card-border hover:border-card-border-hover bg-card hover:bg-card-hover transition-all"
           >
             Sign in
           </Link>
           <Link
             href="/register"
-            className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-500 hover:bg-indigo-400 text-white transition-all shadow-lg shadow-indigo-500/20"
+            className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-accent hover:bg-accent-light text-white transition-all shadow-lg shadow-accent/20"
           >
             Get started
           </Link>
@@ -302,71 +301,77 @@ export default function ToolsPreviewPage() {
   const totalLocked = lockedTools.length;
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ background: "linear-gradient(135deg, #0d0d1a 0%, #0f0f23 50%, #0d0d1a 100%)" }}
-    >
+    <div className="min-h-screen relative overflow-x-hidden kids-mode bg-[#fefdf8] text-[#3d3b30] selection:bg-violet-300/40 font-sans pb-20">
+      <div className="fixed inset-0 z-0 pointer-events-none bg-[#fefdf8]">
+        <div className="absolute -top-40 -right-40 w-[700px] h-[700px] rounded-full bg-violet-100/30 blur-[130px]" />
+        <div className="absolute top-1/2 -left-40 w-[500px] h-[500px] rounded-full bg-sky-100/20 blur-[110px]" />
+        <div className="absolute -bottom-40 right-1/3 w-[600px] h-[600px] rounded-full bg-amber-100/30 blur-[130px]" />
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(61,59,48,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(61,59,48,0.04) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+      </div>
+
       <Navbar />
 
-      {/* Page header */}
-      <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 pt-10 pb-4">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 pt-10 pb-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-10"
         >
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-indigo-500/25 bg-indigo-500/8 mb-5">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="text-xs font-semibold text-indigo-300">Free Preview — No account needed</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/25 bg-accent/8 text-accent-dark mb-5">
+            <Sparkles className="w-3.5 h-3.5 text-accent animate-pulse" />
+            <span className="text-xs font-semibold text-accent-dark uppercase tracking-wider">AI Tool Explorer</span>
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
-            AI Learning Worlds
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3 tracking-tight">
+            AI Tool Worlds
           </h1>
-          <p className="text-base text-white/45 max-w-lg mx-auto">
-            Explore {baseTools.length} curated learning worlds — browse the first {GUEST_VISIBLE_LIMIT} free, sign up to unlock the rest.
+          <p className="text-base text-foreground-muted max-w-lg mx-auto">
+            Discover and master {baseTools.length} curated AI tools tailored for school assignments and creative learning.
           </p>
 
-          {/* Quick stat pills */}
           <div className="flex items-center justify-center gap-4 mt-6 flex-wrap">
             {[
               { icon: Zap,            label: `${baseTools.length} Worlds`       },
               { icon: GraduationCap,  label: "For Students"                    },
               { icon: BookOpen,       label: "All Subjects"                    },
             ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-1.5 text-xs text-white/40">
-                <Icon className="w-3.5 h-3.5 text-indigo-400" />
+              <div key={label} className="flex items-center gap-1.5 text-xs text-foreground-muted">
+                <Icon className="w-3.5 h-3.5 text-accent" />
                 {label}
               </div>
             ))}
           </div>
         </motion.div>
 
-        {/* Search + filters */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.15 }}
           className="sticky top-14 z-30 py-4 -mx-4 px-4 md:-mx-6 md:px-6 space-y-3"
-          style={{ background: "linear-gradient(to bottom, #0d0d1a 70%, transparent)" }}
+          style={{ background: "linear-gradient(to bottom, #fefdf8 70%, transparent)" }}
         >
-          {/* Search */}
           <div className="relative max-w-xl">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-subtle pointer-events-none" />
             <input
               type="text"
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Search AI tools…"
-              className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white/6 border border-white/10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/50 focus:bg-white/8 transition-all"
+              className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-card border border-card-border text-sm text-foreground placeholder-foreground-subtle focus:outline-none focus:border-accent focus:bg-card-hover transition-all"
               aria-label="Search AI tools"
             />
             {search && (
               <button
                 onClick={() => { setSearch(""); setDebouncedSearch(""); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-subtle hover:text-foreground-muted transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -381,8 +386,8 @@ export default function ToolsPreviewPage() {
                 onClick={() => setActiveCategory(cat.key)}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                   activeCategory === cat.key
-                    ? "bg-indigo-500 text-white shadow-md shadow-indigo-500/20"
-                    : "bg-white/5 text-white/50 hover:text-white hover:bg-white/8 border border-white/8"
+                    ? "bg-accent text-white shadow-md shadow-accent/20"
+                    : "bg-card text-foreground-muted hover:text-foreground hover:bg-card-hover border border-card-border"
                 }`}
               >
                 <cat.icon className="w-3.5 h-3.5" />
@@ -394,11 +399,11 @@ export default function ToolsPreviewPage() {
 
         {/* Results count */}
         <div className="mt-2 mb-4 flex items-center justify-between">
-          <p className="text-xs text-white/30">
-            Showing <span className="text-white/60 font-medium">{visibleTools.length}</span> of{" "}
-            <span className="text-white/60 font-medium">{filtered.length}</span> tools
+          <p className="text-xs text-foreground-subtle">
+            Showing <span className="text-foreground-muted font-medium">{visibleTools.length}</span> of{" "}
+            <span className="text-foreground-muted font-medium">{filtered.length}</span> tools
             {totalLocked > 0 && (
-              <> — <span className="text-indigo-400 font-medium">{totalLocked} locked</span></>
+              <> — <span className="text-accent font-medium">{totalLocked} locked</span></>
             )}
           </p>
         </div>
@@ -410,11 +415,11 @@ export default function ToolsPreviewPage() {
             animate={{ opacity: 1 }}
             className="flex flex-col items-center justify-center py-20 text-center"
           >
-            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
-              <Search className="w-8 h-8 text-white/20" />
+            <div className="w-16 h-16 rounded-2xl bg-card border border-card-border flex items-center justify-center mb-4">
+              <Search className="w-8 h-8 text-foreground-subtle" />
             </div>
-            <p className="font-semibold text-white/60 mb-1">No tools found</p>
-            <p className="text-sm text-white/30">Try a different search or category</p>
+            <p className="font-semibold text-foreground-muted mb-1">No tools found</p>
+            <p className="text-sm text-foreground-subtle">Try a different search or category</p>
           </motion.div>
         ) : (
           <AnimatePresence mode="popLayout">
@@ -441,14 +446,14 @@ export default function ToolsPreviewPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            className="mt-10 text-center py-10 border-t border-white/8"
+            className="mt-10 text-center py-10 border-t border-card-border"
           >
-            <p className="text-white/40 text-sm mb-4">
+            <p className="text-foreground-muted text-sm mb-4">
               Ready to start using these tools in your studies?
             </p>
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-all shadow-lg shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-accent hover:bg-accent-light text-white text-sm font-semibold transition-all shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98]"
             >
               Create free account
               <ArrowRight className="w-4 h-4" />

@@ -152,7 +152,7 @@ function AlertSkeleton() {
 
 export default function PrincipalDashboardPage() {
   const { data: session } = useSession();
-  const userName = session?.user?.name?.split(" ")[0] || "Principal";
+  const userName = session?.user?.name || "Principal";
 
   const { data: overview, isLoading: overviewLoading } = useAdminDashboard();
   const { data: auditData, isLoading: auditLoading } = useAuditLogs({ limit: 10, flagged: true });

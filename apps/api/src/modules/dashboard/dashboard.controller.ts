@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { prisma } from "../../utils/prisma.js";
 import { apiSuccess, apiError } from "../../utils/api.js";
+import { evaluateBadges } from "../gamification/gamification.service.js";
 
 export async function handleDashboardStats(req: Request, res: Response) {
   const userId = req.userId;
@@ -9,6 +10,9 @@ export async function handleDashboardStats(req: Request, res: Response) {
   }
 
   try {
+    // Proactively catch up on badges calculation
+    await evaluateBadges(userId).catch(err => console.error("Error evaluating badges:", err));
+
     const [user, xpTransactions, streak, badgesCount, submissions, classMemberships] =
       await Promise.all([
         prisma.user.findUnique({
@@ -52,7 +56,7 @@ export async function handleDashboardStats(req: Request, res: Response) {
     // Calculate total XP and level
     const totalXP = xpTransactions.reduce((sum, t) => sum + t.amount, 0);
     const level = Math.floor(Math.sqrt(totalXP / 100)) + 1;
-    const xpToNextLevel = Math.pow(level, 2) * 100 - totalXP + 100;
+    const xpToNextLevel = Math.pow(level, 2) * 100 - totalXP;
 
     // Calculate this week's XP
     const oneWeekAgo = new Date();
@@ -63,30 +67,33 @@ export async function handleDashboardStats(req: Request, res: Response) {
 
     // Calculate class rank (first class)
     let classRank: number | null = null;
-    if (classMemberships.length > 0 && classMemberships[0].class.schoolId) {
-      const schoolId = classMemberships[0].class.schoolId;
+    if (classMemberships.length > 0) {
+      const classId = classMemberships[0].classId;
 
-      // Get all class members from all classes in this school
-      const allSchoolClasses = await prisma.class.findMany({
-        where: { schoolId },
-        select: { id: true, members: { select: { userId: true } } },
+      // Get all class members in this specific class
+      const classMembers = await prisma.classMember.findMany({
+        where: { classId },
+        select: { userId: true },
       });
 
-      const allUserIds = allSchoolClasses.flatMap((c) =>
-        c.members.map((m: { userId: string }) => m.userId),
-      );
+      const allUserIds = classMembers.map((m) => m.userId);
 
       const allStudentsXP = await prisma.xPTransaction.groupBy({
         by: ["userId"],
         _sum: { amount: true },
         where: {
-          userId: { in: Array.from(new Set(allUserIds)) },
+          userId: { in: allUserIds },
         },
       });
 
-      // Sort by total XP descending and find user's position
-      const ranked = allStudentsXP
-        .map((s) => ({ userId: s.userId, totalXP: s._sum.amount || 0 }))
+      const xpMap = new Map(
+        allStudentsXP.map((s) => [s.userId, s._sum.amount || 0])
+      );
+
+      // Sort by total XP descending and find user's position, ensuring all users have a rank
+      const uniqueUserIds = Array.from(new Set(allUserIds));
+      const ranked = uniqueUserIds
+        .map((uid) => ({ userId: uid, totalXP: xpMap.get(uid) || 0 }))
         .sort((a, b) => b.totalXP - a.totalXP);
 
       const userRank = ranked.findIndex((r) => r.userId === userId);

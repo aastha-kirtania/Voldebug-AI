@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { prisma } from "../../utils/prisma.js";
 import { apiSuccess, apiError } from "../../utils/api.js";
-import { completeDailyChallenge } from "../gamification/gamification.service.js";
+import { completeDailyChallenge, awardXP } from "../gamification/gamification.service.js";
 
 export async function handleCreateSubmission(req: Request, res: Response) {
   const userId = req.userId!;
@@ -62,14 +62,12 @@ export async function handleCreateSubmission(req: Request, res: Response) {
       totalXP += assignment.earlyBonus || 25;
     }
 
-    await prisma.xPTransaction.create({
-      data: {
-        userId,
-        amount: totalXP,
-        source: isEarly ? "EARLY_SUBMISSION" : "ASSIGNMENT_SUBMIT",
-        assignmentId,
-      },
-    });
+    await awardXP(
+      userId,
+      totalXP,
+      (isEarly ? "EARLY_SUBMISSION" : "ASSIGNMENT_SUBMIT") as any,
+      assignmentId
+    );
 
     const { createNotification } = await import("../notifications/notifications.service.js");
     const sessionUser = await prisma.user.findUnique({ where: { id: userId } });
@@ -222,14 +220,12 @@ export async function handleGradeSubmission(req: Request, res: Response) {
 
     // Award grade XP transaction
     if (xpAwarded && Number(xpAwarded) > 0) {
-      await prisma.xPTransaction.create({
-        data: {
-          userId: submission.studentId,
-          amount: Number(xpAwarded),
-          source: "ASSIGNMENT_GRADE",
-          assignmentId: submission.assignmentId,
-        },
-      });
+      await awardXP(
+        submission.studentId,
+        Number(xpAwarded),
+        "ASSIGNMENT_GRADE" as any,
+        submission.assignmentId
+      );
     }
 
     const { createNotification } = await import("../notifications/notifications.service.js");

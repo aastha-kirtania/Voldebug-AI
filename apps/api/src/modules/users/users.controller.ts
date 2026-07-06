@@ -158,17 +158,18 @@ export async function handleTeacherOnboarding(req: Request, res: Response) {
     }
     const schoolId = school.id;
 
-    const joinCode = await generateUniqueClassCode();
-
-    // Create class
-    await prisma.class.create({
-      data: {
-        name: className,
-        teacherId: userId,
-        schoolId,
-        joinCode,
-      },
-    });
+    if (className && className.trim()) {
+      const joinCode = await generateUniqueClassCode();
+      // Create class
+      await prisma.class.create({
+        data: {
+          name: className.trim(),
+          teacherId: userId,
+          schoolId,
+          joinCode,
+        },
+      });
+    }
 
     const existingUser = await prisma.user.findUnique({
       where: { id: userId },

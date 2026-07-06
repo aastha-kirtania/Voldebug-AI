@@ -3,6 +3,7 @@ import { prisma } from "../../utils/prisma.js";
 import { apiSuccess, apiError } from "../../utils/api.js";
 import { createNotification } from "../notifications/notifications.service.js";
 import { completeDailyChallenge } from "../gamification/gamification.service.js";
+import { askAI, checkPromptSafety } from "../../utils/ai.js";
 
 export async function handleListTools(req: Request, res: Response) {
   try {
@@ -96,28 +97,6 @@ export async function handleTrackToolUsage(req: Request, res: Response) {
   }
 }
 
-function getMockAIResponse(prompt: string, gradeLevel: number, toolName: string, subject?: string, topic?: string): string {
-  if (gradeLevel >= 1 && gradeLevel <= 5) {
-    return `⭐ HELLO BUDDY! ⭐ Here is a fun explanation for "${prompt}" using ${toolName}:\n\n` +
-      `Imagine you have a magic factory! 🏭 That's what we are doing here. ` +
-      `We take little pieces of ideas, mix them with cool tools, and BAM! We get awesome results!\n\n` +
-      `Keep exploring, you're doing amazing! 🎈✨`;
-  } else if (gradeLevel >= 6 && gradeLevel <= 8) {
-    return `### 💡 Study Guide: ${topic || "Concept Review"}\n\n` +
-      `Here is a balanced breakdown of your inquiry about "${prompt}" on ${toolName}:\n\n` +
-      `1. **Core Concept**: We analyze this query interactively to help you build a solid understanding.\n` +
-      `2. **Key Elements**: Using tools like this helps speed up research, outline paragraphs, and solve complex doubts.\n` +
-      `3. **Quiz Tip**: Always check the reasoning steps! Practice makes perfect.`;
-  } else {
-    return `#### Technical Explanation & Analysis\n\n` +
-      `**Subject**: ${subject || "General Study"}\n` +
-      `**Query Context**: "${prompt}" via ${toolName}\n\n` +
-      `**Abstract**: The system processed this query using natural language understanding models. Here is the structured summary:\n\n` +
-      `- **Methodology**: Analyze input variables, resolve ambiguity, and formulate logic flows.\n` +
-      `- **Application**: This paradigm helps model and verify advanced academic/code principles.\n` +
-      `- **Reference**: Cross-reference textbooks and documentation for empirical validation.`;
-  }
-}
 
 export async function handleToolChat(req: Request, res: Response) {
   try {
@@ -164,38 +143,12 @@ export async function handleToolChat(req: Request, res: Response) {
 
     const activeGrade = gradeLevel ?? student?.gradeLevel ?? 9;
 
-    const CHEATING_KEYWORDS = [
-      "cheat",
-      "bypass",
-      "bypass restriction",
-      "bypass restrictions",
-      "write code for test",
-      "plagiarize",
-      "hack",
-      "bypass lock",
-      "attendance bypass",
-      "exam answers",
-      "do my homework",
-      "bypass block"
-    ];
-
-    const CRITICAL_SAFETY_KEYWORDS = [
-      "suicide",
-      "self-harm",
-      "kill myself",
-      "bomb",
-      "weapon",
-      "drugs",
-      "make bomb",
-      "buy drugs",
-      "bully",
-      "cyberbullying",
-      "harm myself"
-    ];
-
-    const lowerPrompt = prompt.toLowerCase();
-    const isCriticalSafety = CRITICAL_SAFETY_KEYWORDS.some(keyword => lowerPrompt.includes(keyword));
-    const isCheating = CHEATING_KEYWORDS.some(keyword => lowerPrompt.includes(keyword));
+    // Context-aware safety check — uses Gemini to understand the *intent* of
+    // the prompt rather than naive keyword matching. Word problems, literary
+    // analysis, and historical questions that mention flagged vocabulary will
+    // NOT be blocked.
+    const safety = await checkPromptSafety(prompt);
+    const { isCriticalSafety, isCheating } = safety;
 
     if (isCriticalSafety || isCheating) {
       const category = isCriticalSafety ? "SAFETY" : "CHEATING";
@@ -251,15 +204,21 @@ export async function handleToolChat(req: Request, res: Response) {
       });
     }
 
-    // Unflagged path: return simulated AI response
-    const mockResponse = getMockAIResponse(prompt, activeGrade, tool.name, subject, topic);
+    // Unflagged path: return dynamic AI response
+    const aiResponseText = await askAI({
+      prompt,
+      gradeLevel: activeGrade,
+      subject,
+      topic,
+      toolName: tool.name
+    });
 
     // Save unflagged AuditLog
     const auditLog = await prisma.auditLog.create({
       data: {
         studentId,
         promptText: prompt,
-        aiResponse: mockResponse,
+        aiResponse: aiResponseText,
         toolUsed: tool.name,
         isFlagged: false,
       }
@@ -279,7 +238,7 @@ export async function handleToolChat(req: Request, res: Response) {
 
     return apiSuccess(res, {
       blocked: false,
-      response: mockResponse,
+      response: aiResponseText,
       auditLogId: auditLog.id
     });
   } catch (err: any) {

@@ -67,7 +67,7 @@ function WelcomeStep({ name }: { name: string }) {
       <div className="text-6xl animate-float">🏫</div>
       <div className="space-y-3">
         <h2 className="font-display text-2xl md:text-3xl font-bold">
-          Welcome{name ? `, ${name.split(" ")[0]}` : ""}!
+          Welcome{name ? `, ${name}` : ""}!
         </h2>
         <p className="text-foreground-muted text-base max-w-sm mx-auto leading-relaxed">
           You're joining a platform designed to make AI literacy accessible for every student. Let's get your classroom set up.
@@ -124,11 +124,7 @@ function FeaturesStep() {
 
 function SetupStep({
   schoolName,
-  className,
-  subject,
   setSchoolName,
-  setClassName,
-  setSubject,
   error,
   hasPassword,
   password,
@@ -141,11 +137,7 @@ function SetupStep({
   loadingSchools,
 }: {
   schoolName: string;
-  className: string;
-  subject: string;
   setSchoolName: (v: string) => void;
-  setClassName: (v: string) => void;
-  setSubject: (v: string) => void;
   error?: string;
   hasPassword: boolean;
   password: string;
@@ -157,11 +149,6 @@ function SetupStep({
   registeredSchools: { id: string; name: string }[];
   loadingSchools: boolean;
 }) {
-  const SUBJECTS = [
-    "Computer Science", "Mathematics", "Science", "English",
-    "History", "Art", "Business", "Other"
-  ];
-
   return (
     <motion.div
       key="setup"
@@ -171,8 +158,8 @@ function SetupStep({
       className="space-y-5"
     >
       <div className="text-center mb-4">
-        <h2 className="font-display text-2xl font-bold">Set Up Your Class</h2>
-        <p className="text-foreground-muted text-sm mt-1.5">Create your school profile and first classroom</p>
+        <h2 className="font-display text-2xl font-bold">Set Up Your Profile</h2>
+        <p className="text-foreground-muted text-sm mt-1.5">Link to your school and complete setup</p>
       </div>
 
       {error && (
@@ -214,41 +201,6 @@ function SetupStep({
               ⚠️ No schools have been registered by a Principal yet. Please ask your school administration to register first.
             </div>
           )}
-        </div>
-
-        <div className="space-y-1.5">
-          <label htmlFor="className" className="text-sm font-medium flex items-center gap-1.5">
-            <Users className="w-4 h-4 text-foreground-subtle" />
-            Class Name
-            <span className="text-error ml-auto text-xs font-normal">required</span>
-          </label>
-          <input
-            id="className"
-            type="text"
-            required
-            value={className}
-            onChange={(e) => setClassName(e.target.value)}
-            className="input-base"
-            placeholder="AI Explorers — Period 2"
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <label htmlFor="subject" className="text-sm font-medium flex items-center gap-1.5">
-            <BookOpen className="w-4 h-4 text-foreground-subtle" />
-            Subject
-          </label>
-          <select
-            id="subject"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            className="input-base"
-          >
-            <option value="">Select subject (optional)</option>
-            {SUBJECTS.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
         </div>
 
         {!hasPassword && (
@@ -327,8 +279,6 @@ export default function TeacherOnboarding() {
 
   const [step, setStep] = useState(0);
   const [schoolName, setSchoolName] = useState("");
-  const [className, setClassName] = useState("");
-  const [subject, setSubject] = useState("");
   const [registeredSchools, setRegisteredSchools] = useState<{ id: string; name: string }[]>([]);
   const [loadingSchools, setLoadingSchools] = useState(false);
   const [password, setPassword] = useState("");
@@ -369,8 +319,8 @@ export default function TeacherOnboarding() {
   const hasPassword = session?.user?.hasPassword ?? false;
 
   const handleSubmit = useCallback(async () => {
-    if (!schoolName.trim() || !className.trim()) {
-      setError("School name and class name are required.");
+    if (!schoolName.trim()) {
+      setError("School name is required.");
       return;
     }
     if (password && password.length < 8) {
@@ -393,8 +343,6 @@ export default function TeacherOnboarding() {
           },
           body: JSON.stringify({
             schoolName: schoolName.trim(),
-            className: className.trim(),
-            subject: subject || undefined,
             password: password || undefined,
           }),
         }
@@ -415,11 +363,11 @@ export default function TeacherOnboarding() {
     } finally {
       setSubmitting(false);
     }
-  }, [schoolName, className, subject, password, session, update, router, hasPassword]);
+  }, [schoolName, password, session, update, router, hasPassword]);
 
   const isLastStep = step === STEPS.length - 1;
   const canNext = step < STEPS.length - 1;
-  const isSetupValid = schoolName.trim().length > 0 && className.trim().length > 0;
+  const isSetupValid = schoolName.trim().length > 0;
 
   return (
     <div className="w-full max-w-lg mx-auto">
@@ -464,11 +412,7 @@ export default function TeacherOnboarding() {
               {step === 2 && (
                 <SetupStep
                   schoolName={schoolName}
-                  className={className}
-                  subject={subject}
                   setSchoolName={setSchoolName}
-                  setClassName={setClassName}
-                  setSubject={setSubject}
                   error={error}
                   hasPassword={hasPassword}
                   password={password}

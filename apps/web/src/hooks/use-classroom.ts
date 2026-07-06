@@ -16,7 +16,7 @@ export interface Assignment {
   classId: string;
   creatorId: string;
   creator: { id: string; name: string | null; email: string | null; image: string | null };
-  suggestedTool: { id: string; name: string; logoUrl: string; brandColor: string } | null;
+  suggestedTool: { id: string; name: string; logoUrl: string; brandColor: string; subjects?: string[]; category?: string } | null;
   submissions: Submission[];
   createdAt: string;
 }
@@ -96,7 +96,7 @@ export function useSubmissionHistory(status?: string) {
   const qs = status ? `?status=${status}` : "";
   return useQuery({
     queryKey: ["submissions", status],
-    queryFn: () => api.get<Submission[]>(`/v1/submissions${qs}`),
+    queryFn: () => api.get<Submission[]>(`/v1/submissions/history${qs}`),
     staleTime: 60_000,
   });
 }

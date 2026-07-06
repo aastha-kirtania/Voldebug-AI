@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { GradientMesh } from "@web/components/ui/background";
 import { useTeacherDashboard, useTeacherAnalytics } from "@web/hooks/use-teacher";
 import { useTranslation } from "@web/context/language-context";
 import {
   BarChart3, TrendingUp, Users, BookOpen, Award,
-  AlertTriangle, CheckCircle2, Zap, ExternalLink
+  AlertTriangle, CheckCircle2, Zap, ExternalLink,
+  ChevronDown, ChevronUp
 } from "lucide-react";
 
 // ─── Mini bar chart ───────────────────────────────────────────────────────
@@ -71,6 +73,7 @@ export default function TeacherAnalyticsPage() {
   const maxTool = Math.max(...topTools.map((t: any) => t.usageCount), 0);
 
   const atRiskStudents = analyticsData?.atRiskStudents ?? [];
+  const [showAllAlerts, setShowAllAlerts] = useState(false);
 
   const containerVariants = {
     hidden: {},
@@ -133,7 +136,7 @@ export default function TeacherAnalyticsPage() {
                 <TrendingUp className="w-4.5 h-4.5 text-accent-light" />
                 {isHindi ? "साप्ताहिक सबमिशन" : "Weekly Submissions"}
               </h2>
-              <div className="flex items-end justify-between gap-2 h-32 pt-4">
+              <div className="flex items-end justify-between gap-3 h-36 pt-4">
                 {isLoading ? (
                   <div className="w-full h-full flex items-center justify-center text-xs text-foreground-muted">Loading chart...</div>
                 ) : weeklySubmissions.length === 0 ? (
@@ -142,19 +145,21 @@ export default function TeacherAnalyticsPage() {
                   weeklySubmissions.map((s: any, i: number) => {
                     const pct = maxSubmission > 0 ? (s.count / maxSubmission) * 100 : 0;
                     return (
-                      <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                        <motion.div
-                          initial={{ height: 0 }}
-                          animate={{ height: `${pct}%` }}
-                          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: i * 0.05 }}
-                          className="w-full rounded-t-md min-h-[4px] relative group cursor-default"
-                          style={{ backgroundColor: "#6366f1", maxHeight: "100px" }}
-                        >
-                          <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-accent-light opacity-0 group-hover:opacity-100 transition-opacity">
-                            {s.count}
-                          </span>
-                        </motion.div>
-                        <span className="text-[10px] text-foreground-subtle">{s.dayLabel}</span>
+                      <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                        <div className="w-full h-24 flex items-end relative">
+                          <motion.div
+                            initial={{ height: 0 }}
+                            animate={{ height: `${pct}%` }}
+                            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: i * 0.05 }}
+                            className="w-full rounded-t-md min-h-[4px] relative group cursor-default"
+                            style={{ backgroundColor: "#6366f1" }}
+                          >
+                            <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-accent-light opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                              {s.count}
+                            </span>
+                          </motion.div>
+                        </div>
+                        <span className="text-[10px] text-foreground-subtle whitespace-nowrap">{s.dayLabel}</span>
                       </div>
                     );
                   })
@@ -230,7 +235,7 @@ export default function TeacherAnalyticsPage() {
                 <div className="py-8 text-center text-xs text-foreground-muted">Loading alerts...</div>
               ) : atRiskStudents.length > 0 ? (
                 <div className="space-y-2">
-                  {atRiskStudents.map((student: any) => (
+                  {(showAllAlerts ? atRiskStudents : atRiskStudents.slice(0, 3)).map((student: any) => (
                     <div
                       key={student.id}
                       className="flex items-center justify-between p-3 rounded-xl border border-card-border bg-surface/20 hover:bg-surface/40 transition-colors"
@@ -257,6 +262,24 @@ export default function TeacherAnalyticsPage() {
                       </span>
                     </div>
                   ))}
+                  {atRiskStudents.length > 3 && (
+                    <button
+                      onClick={() => setShowAllAlerts(!showAllAlerts)}
+                      className="w-full text-center py-2 mt-2 text-xs font-semibold text-accent-light hover:text-accent-light/80 transition-colors flex items-center justify-center gap-1 border border-dashed border-card-border rounded-xl hover:bg-surface/20"
+                    >
+                      {showAllAlerts ? (
+                        <>
+                          {isHindi ? "कम दिखाएं" : "Show Less"}
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        </>
+                      ) : (
+                        <>
+                          {isHindi ? `और दिखाएं (${atRiskStudents.length - 3} अधिक)` : `Show More (${atRiskStudents.length - 3} more)`}
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col items-center py-8 text-center">

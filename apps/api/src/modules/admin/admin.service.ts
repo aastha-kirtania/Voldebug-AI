@@ -21,8 +21,8 @@ export async function getSchoolOverview(adminUserId: string) {
     totalAuditLogs,
     recentSubmissions,
   ] = await Promise.all([
-    prisma.user.count({ where: { role: "STUDENT" } }),
-    prisma.user.count({ where: { role: "TEACHER" } }),
+    prisma.user.count({ where: { role: "STUDENT", schoolId: school.id } }),
+    prisma.user.count({ where: { role: "TEACHER", schoolId: school.id } }),
     prisma.class.count({ where: { schoolId: school.id } }),
     prisma.assignment.count({
       where: { class: { schoolId: school.id }, deletedAt: null },
@@ -33,8 +33,17 @@ export async function getSchoolOverview(adminUserId: string) {
         deletedAt: null,
       },
     }),
-    prisma.auditLog.count({ where: { isFlagged: true } }),
-    prisma.auditLog.count(),
+    prisma.auditLog.count({
+      where: {
+        isFlagged: true,
+        student: { schoolId: school.id },
+      },
+    }),
+    prisma.auditLog.count({
+      where: {
+        student: { schoolId: school.id },
+      },
+    }),
     prisma.submission.count({
       where: {
         assignment: { class: { schoolId: school.id } },
@@ -80,9 +89,9 @@ export async function getSchoolOverview(adminUserId: string) {
 export async function getAuditLogs(
   limit: number = 20,
   offset: number = 0,
-  filters?: { isFlagged?: boolean; studentId?: string; toolUsed?: string },
+  filters?: { isFlagged?: boolean; studentId?: string; toolUsed?: string; schoolId?: string },
 ) {
-  const where: Record<string, unknown> = {};
+  const where: Record<string, any> = {};
 
   if (filters?.isFlagged !== undefined) {
     where.isFlagged = filters.isFlagged;
@@ -92,6 +101,9 @@ export async function getAuditLogs(
   }
   if (filters?.toolUsed) {
     where.toolUsed = filters.toolUsed;
+  }
+  if (filters?.schoolId) {
+    where.student = { schoolId: filters.schoolId };
   }
 
   const [logs, total] = await Promise.all([

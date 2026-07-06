@@ -87,7 +87,7 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="w-full max-w-md p-8 md:p-10 rounded-3xl border border-card-border bg-card/60 backdrop-blur-xl shadow-xl space-y-6 relative text-center">
+      <div className="w-full max-w-md mx-auto bg-card border border-card-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 text-center">
         <div className="flex justify-center mb-2">
           <div className="w-12 h-12 rounded-full bg-error/15 border border-error/30 flex items-center justify-center text-error">
             <AlertCircle className="w-6 h-6" />
@@ -110,13 +110,11 @@ function ResetPasswordForm() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full max-w-md p-8 md:p-10 rounded-3xl border border-card-border bg-card/60 backdrop-blur-xl shadow-xl space-y-6 relative overflow-hidden"
+      className="bg-card border border-card-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-6"
     >
-      {/* Top Accent Line */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent via-accent-light to-accent" />
 
       {/* Header & Logo */}
       <div className="text-center space-y-4">
@@ -281,13 +279,9 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-background">
-      {/* Decorative background gradients */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-accent/10 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 rounded-full bg-accent-light/5 blur-[100px] pointer-events-none" />
-
+    <div className="w-full max-w-md mx-auto">
       <Suspense fallback={
-        <div className="w-full max-w-md p-8 md:p-10 rounded-3xl border border-card-border bg-card/60 backdrop-blur-xl shadow-xl flex items-center justify-center min-h-[300px]">
+        <div className="bg-card border border-card-border rounded-3xl p-6 sm:p-8 shadow-sm flex items-center justify-center min-h-[300px]">
           <div className="w-8 h-8 border-3 border-accent/30 border-t-accent rounded-full animate-spin" />
         </div>
       }>

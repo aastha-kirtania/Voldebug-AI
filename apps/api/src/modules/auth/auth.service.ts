@@ -92,6 +92,7 @@ export async function loginUser(input: { email: string; password: string }) {
     email: user.email,
     name: user.name ?? "",
     role: user.role,
+    image: user.image,
     onboardingStatus: user.onboardingStatus,
     hasPassword: true,
     token,
@@ -176,6 +177,7 @@ export async function createUserFromProvider(email: string, name: string, image?
     email: user.email,
     name: user.name,
     role: user.role,
+    image: user.image,
     onboardingStatus: user.onboardingStatus,
     hasPassword: user.passwordHash != null,
   };

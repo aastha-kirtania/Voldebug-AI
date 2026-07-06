@@ -156,7 +156,6 @@ export default function StudentDashboardPage() {
     "sigma-chad": { image: "/avatars/sigma-chad.png", name: "Sigma Chad" },
     "gaming-noob": { image: "/avatars/gaming-noob.png", name: "Gaming Noob" },
     "banana-cat": { image: "/avatars/banana-cat.png", name: "Banana Cat" },
-    // Backwards compatibility for old values
     robot: { image: "/avatars/gaming-noob.png", name: "Volt Robot" },
     lion: { image: "/avatars/sigma-chad.png", name: "Leo Lion" },
     panda: { image: "/avatars/banana-cat.png", name: "Pip Panda" },
@@ -231,10 +230,477 @@ export default function StudentDashboardPage() {
     gradeClass = "grade-middle";
   }
 
+  const [kidsMode, setKidsMode] = useState(false);
+
+  useEffect(() => {
+    const checkKidsMode = () => {
+      const saved = localStorage.getItem("kids-mode");
+      if (saved !== null) {
+        setKidsMode(saved === "true");
+      } else {
+        setKidsMode(session?.user?.role === "STUDENT");
+      }
+    };
+    checkKidsMode();
+    const interval = setInterval(checkKidsMode, 1000);
+    return () => clearInterval(interval);
+  }, [session]);
+
+  const mascotGreeting = useMemo(() => {
+    const greetings = [
+      isHindi ? "अरे दोस्त! आज हम क्या नया सीखेंगे? 🌟" : "Hey adventurer! What magical things will we explore today? 🌟",
+      isHindi ? "गलतियां केवल यह दर्शाती हैं कि आप कोशिश कर रहे हैं! 🧠" : "Mistakes just show that you are trying! Let's grow together! 🧠",
+      isHindi ? "आप बहुत अच्छा कर रहे हैं! चलो क्लास का रिकॉर्ड तोड़ते हैं! 🚀" : "You are doing fantastic! Let's beat our high scores today! 🚀",
+      isHindi ? "एआई टूल्स हमारी सुपरपावर हैं! चलो जादू शुरू करें! ⚡" : "AI tools are our superpowers! Let's create some magic! ⚡"
+    ];
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  }, [isHindi]);
+
   if (status === "loading" || session?.user?.role === "TEACHER") {
     return null;
   }
 
+  // Emojis and details for Kids Learning Worlds
+  const kidsWorlds = [
+    { name: isHindi ? "खजाना द्वीप" : "Treasure Island", subject: "Math", icon: "🏴‍☠️", desc: isHindi ? "गणित के पहेली नक्शे सुलझाएं!" : "Solve math puzzle maps & find gold!", color: "from-amber-300 via-yellow-400 to-orange-500", shadow: "shadow-amber-200/50 border-amber-300", path: "/dashboard/classroom?subject=math" },
+    { name: isHindi ? "अंतरिक्ष अन्वेषक" : "Space Explorer", subject: "Science", icon: "🚀", desc: isHindi ? "ब्रह्मांड में उड़ें और नए ग्रह खोजें!" : "Blast into orbit and explore stars!", color: "from-sky-300 via-sky-400 to-indigo-500", shadow: "shadow-sky-200/50 border-sky-300", path: "/dashboard/classroom?subject=science" },
+    { name: isHindi ? "कहानी का जंगल" : "Story Forest", subject: "English", icon: "🌲", desc: isHindi ? "बोलने वाले पेड़ों से मिलें और जादू लिखें!" : "Meet talking trees and write magic tales!", color: "from-emerald-300 via-green-400 to-teal-600", shadow: "shadow-emerald-200/50 border-emerald-300", path: "/dashboard/classroom?subject=english" },
+    { name: isHindi ? "समय यात्रा" : "Time Travel", subject: "History", icon: "⏰", desc: isHindi ? "डायनासोर और राजाओं से बात करें!" : "Hop in the time machine and meet dinos!", color: "from-purple-300 via-purple-400 to-violet-500", shadow: "shadow-purple-200/50 border-purple-300", path: "/dashboard/classroom?subject=history" },
+    { name: isHindi ? "दुनिया की सैर" : "Around the World", subject: "Geography", icon: "🗺️", desc: isHindi ? "बर्फ के पहाड़ों और विशाल महासागरों को पार करें!" : "Climb huge mountains and cross oceans!", color: "from-cyan-300 via-cyan-400 to-blue-500", shadow: "shadow-cyan-200/50 border-cyan-300", path: "/dashboard/classroom?subject=geography" },
+    { name: isHindi ? "रोबोट फैक्टरी" : "Robot Factory", subject: "Coding", icon: "🤖", desc: isHindi ? "अपने खुद के ड्रोन्स और रोबोट्स बनाएं!" : "Code cool robots & command metal friends!", color: "from-rose-300 via-rose-400 to-red-500", shadow: "shadow-rose-200/50 border-rose-300", path: "/dashboard/classroom?subject=coding" }
+  ];
+
+  if (kidsMode) {
+    return (
+      <div className={"min-h-screen relative selection:bg-violet-300/40 pb-20 kids-mode " + gradeClass}>
+        {/* Soft magical background blobs */}
+        <div className="absolute top-10 left-10 w-96 h-96 bg-[#7c3aed]/10 rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute top-1/2 right-10 w-96 h-96 bg-[#38bdf8]/10 rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-10 left-1/3 w-96 h-96 bg-[#fbbf24]/10 rounded-full blur-[80px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto space-y-10 pb-24 px-4 md:px-8 pt-8 relative z-10 font-sans">
+          
+          {/* Magical Kid Header Banner */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: smoothEase }}
+            className="kids-card p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 bg-white overflow-hidden relative"
+          >
+            <div className="flex flex-col sm:flex-row items-center gap-6 z-10">
+              {/* Interactive Mascot with jumping effect */}
+              <motion.div
+                animate={{ y: [0, -12, 0] }}
+                transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                onClick={() => {
+                  sound.playLevelUp();
+                }}
+                className="w-20 h-20 rounded-[2rem] overflow-hidden flex items-center justify-center bg-gradient-to-br from-violet-200 to-violet-300 border-4 border-white shadow-xl cursor-pointer select-none active:scale-90 transition-transform"
+                title="Click me for a surprise!"
+              >
+                {userAvatar.image ? (
+                  <img src={userAvatar.image} alt={userAvatar.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-6xl">{userAvatar.emoji}</span>
+                )}
+              </motion.div>
+
+              {/* Speech bubble */}
+              <div className="mascot-bubble max-w-md floating-element">
+                <h1 className="text-xl md:text-2xl font-black text-gray-800 tracking-tight">
+                  {isHindi ? "नमस्ते" : "Hey there"}, {userName}! 👋
+                </h1>
+                <p className="text-sm font-bold text-gray-500 mt-1">
+                  🤖 {userAvatar.name}: <span className="text-[#7c3aed]">{mascotGreeting}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Custom Interactive Action Buttons */}
+            <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap z-10">
+              <button
+                onClick={() => {
+                  setIsJoinOpen(true);
+                  sound.playClick();
+                }}
+                className="kids-btn-primary px-6 py-4 text-white text-base h-14 flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5 stroke-[3px]" />
+                <span>{isHindi ? "गुप्त कोड दर्ज करें" : "Enter Secret Code"}</span>
+              </button>
+
+              <div className="kids-card px-5 py-3 h-14 flex items-center gap-3 bg-[#fdfcee]">
+                <span className="text-2xl">🌟</span>
+                <div>
+                  <p className="text-[10px] text-gray-400 font-extrabold uppercase tracking-widest">{isHindi ? "वर्तमान स्तर" : "LEVEL"}</p>
+                  <p className="text-base font-black text-gray-700 leading-none">
+                    {stats?.xp.level ?? 1} <span className="text-xs text-violet-500">({stats?.xp.total ?? 0} XP)</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Gamification Stats Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <motion.div
+              whileHover={{ scale: 1.05, rotate: 1 }}
+              onClick={() => sound.playClick()}
+              className="kids-card p-5 flex items-center gap-4 bg-yellow-50 border-yellow-200 cursor-pointer"
+            >
+              <span className="text-4xl">🏆</span>
+              <div>
+                <p className="text-[10px] text-yellow-500 font-black uppercase tracking-widest">{isHindi ? "क्लास रैंक" : "RANK"}</p>
+                <p className="text-xl font-black text-yellow-600">#{stats?.classRank ?? "—"}</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05, rotate: 1 }}
+              onClick={() => sound.playClick()}
+              className="kids-card p-5 flex items-center gap-4 bg-cyan-50 border-cyan-200 cursor-pointer"
+            >
+              <span className="text-4xl">✨</span>
+              <div>
+                <p className="text-[10px] text-cyan-400 font-black uppercase tracking-widest">{isHindi ? "पॉइंट्स" : "POINTS"}</p>
+                <p className="text-xl font-black text-cyan-600">{stats?.xp.total ?? 0} ⭐</p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Level Rainbow Progress bar */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="kids-card p-6 bg-white"
+          >
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-black text-gray-500 uppercase tracking-widest">
+                🚀 {isHindi ? "अगला माइलस्टोन" : "Next Milestone"}
+              </h3>
+              <span className="text-xs font-black text-[#7c3aed]">
+                {stats?.xp.toNextLevel ?? 100} XP {isHindi ? "बाकी है" : "to go!"}
+              </span>
+            </div>
+            <div className="h-6 bg-gray-100 rounded-full overflow-hidden border-2 border-gray-200 p-0.5">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${levelProgress}%` }}
+                transition={{ duration: 1.5, ease: smoothEase }}
+                className="h-full rounded-full xp-rainbow"
+              />
+            </div>
+          </motion.div>
+
+          {/* Learning Worlds Adventure Map - Large Cards */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">🗺️</span>
+              <h2 className="text-2xl font-black text-gray-800 tracking-tight">
+                {isHindi ? "लर्निंग एडवेंचर्स चुनें" : "Choose a Learning Adventure!"}
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {kidsWorlds.map((world, idx) => (
+                <motion.div
+                  key={idx}
+                  onClick={() => {
+                    sound.playClick();
+                    router.push(world.path);
+                  }}
+                  whileHover={{ y: -8 }}
+                  className={`world-card p-6 flex flex-col justify-between bg-gradient-to-br ${world.color} text-white shadow-xl ${world.shadow} group relative cursor-pointer`}
+                >
+                  <div className="absolute top-2 right-2 text-7xl opacity-10 group-hover:scale-125 transition-transform select-none">{world.icon}</div>
+                  <div>
+                    <span className="text-4xl block mb-4 filter drop-shadow-md">{world.icon}</span>
+                    <h3 className="text-xl font-black tracking-tight">{world.name}</h3>
+                    <span className="inline-block bg-white/20 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider mt-1.5 border border-white/10">
+                      {world.subject}
+                    </span>
+                    <p className="text-xs text-white/90 font-medium mt-3 leading-relaxed">
+                      {world.desc}
+                    </p>
+                  </div>
+                  <div className="mt-6 flex items-center justify-between pt-4 border-t border-white/10">
+                    <span className="text-[11px] font-black uppercase tracking-wider">{isHindi ? "शुरू करें →" : "Start Quest →"}</span>
+                    <span className="w-8 h-8 rounded-full bg-white/25 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      ✨
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Daily Quest & Active Missions */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            {/* Active Quests (Assignments) - Scroll style */}
+            <div className="lg:col-span-8 space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🌲</span>
+                <h2 className="text-xl font-black text-gray-800">{isHindi ? "मेरे सक्रिय मिशन" : "My Active Quests"}</h2>
+              </div>
+
+              <div className="kids-card p-6 bg-white space-y-4">
+                {assignLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2].map((i) => <div key={i} className="h-16 rounded-2xl bg-gray-100 animate-pulse" />)}
+                  </div>
+                ) : activeAssignments.length === 0 ? (
+                  <div className="text-center py-10 space-y-3">
+                    <span className="text-5xl">🎉</span>
+                    <p className="font-bold text-gray-500">{isHindi ? "सारे मिशन पूरे! आप बहुत बढ़िया हैं!" : "All catch up! You completed every quest!"}</p>
+                  </div>
+                ) : (
+                  <div className="divide-y-2 divide-gray-100 space-y-2">
+                    {activeAssignments.map((a) => (
+                      <div
+                        key={a.id}
+                        onClick={() => {
+                          sound.playClick();
+                          router.push(`/dashboard/classroom/${a.id}`);
+                        }}
+                        className="group flex flex-col sm:flex-row sm:items-center justify-between py-4 rounded-xl hover:bg-violet-50/50 px-2 transition-all gap-4 border-b border-transparent cursor-pointer"
+                      >
+                        <div>
+                          <h4 className="font-bold text-gray-800 group-hover:text-violet-500 transition-colors">
+                            ⚔️ {a.title}
+                          </h4>
+                          <p className="text-xs font-semibold text-gray-400 mt-1">
+                            {a.className} • <span className="text-orange-500 font-extrabold">{getDaysUntilDue(a.dueDate)} {isHindi ? "दिन बाकी" : "days left"}</span>
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-xs font-black text-white bg-violet-400 px-3 py-1.5 rounded-full shadow-sm">
+                            +{a.xpReward} ⭐
+                          </span>
+                          <span className="text-lg">➔</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Daily Mission - Chest card */}
+            <div className="lg:col-span-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🎯</span>
+                <h2 className="text-xl font-black text-gray-800">{isHindi ? "दैनिक चुनौती" : "Daily Challenge"}</h2>
+              </div>
+
+              <div className={`kids-card p-6 bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 relative overflow-hidden flex flex-col justify-between h-[300px] ${!challenge?.completed ? "pulse-border-accent" : ""}`}>
+                <div className="absolute top-2 right-2 text-6xl opacity-10">🎁</div>
+                
+                <div>
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-xs font-black text-amber-600 bg-amber-200/50 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                      {challenge?.completed ? "Completed!" : "Active Quest!"}
+                    </span>
+                    <span className="text-xs font-bold text-amber-500">Resets: 12 AM</span>
+                  </div>
+
+                  <h3 className={`text-lg font-black leading-snug ${challenge?.completed ? "text-gray-400 line-through" : "text-gray-800"}`}>
+                    🔑 {challenge?.action ?? "Try out a new AI tool"}
+                  </h3>
+                  <p className="text-xs text-gray-500 font-bold mt-2 leading-relaxed">
+                    {challenge?.completed
+                      ? (isHindi ? "🎉 वोल्ट कहता है: \"क्या बात है! शानदार जीत!\"" : "🎉 Volt Bot: \"Incredible victory today! You did it!\"")
+                      : (isHindi ? "🤖 वोल्ट कहता है: \"सुपर बोनस अर्जित करने के लिए इस चुनौती को पार करें!\"" : "🤖 Volt Bot: \"Conquer this challenge and claim your golden bonus!\"")}
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-amber-200/60 flex items-center justify-between mt-auto">
+                  <span className="text-xl font-black text-amber-600">+{challenge?.xpAwarded ?? 50} XP ✨</span>
+                  <button
+                    onClick={() => {
+                      sound.playClick();
+                      router.push("/dashboard/tools");
+                    }}
+                    className="kids-btn-primary px-4 py-2 text-xs font-extrabold shadow-sm bg-amber-500 border-amber-600 text-white"
+                  >
+                    {challenge?.completed ? "Explore More" : "Go! →"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Quick Tools & Recent Activity */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="kids-card p-6 bg-white">
+              <h3 className="font-black text-lg text-gray-800 mb-4 flex items-center gap-2">
+                <span>🤖</span> {isHindi ? "त्वरित एआई टूल्स" : "Quick AI Tools"}
+              </h3>
+              {!tools || tools.length === 0 ? (
+                <EmptyState icon="🤖" message={isHindi ? "कोई टूल उपलब्ध नहीं है" : "No magical tools active"} />
+              ) : (
+                <div className="grid grid-cols-4 gap-3">
+                  {quickTools.map((tool) => (
+                    <div
+                      key={tool.id}
+                      onClick={() => {
+                        sound.playClick();
+                        router.push(`/dashboard/tools/${tool.id}`);
+                      }}
+                      className="group flex flex-col items-center gap-2 p-2 rounded-2xl border-2 border-gray-100 hover:border-violet-200 hover:bg-violet-50/20 transition-all text-center cursor-pointer"
+                    >
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white text-base shadow-md transition-transform group-hover:scale-110"
+                        style={{ backgroundColor: tool.brandColor || "#7c3aed" }}
+                      >
+                        {tool.name[0]}
+                      </div>
+                      <span className="text-[10px] font-bold text-gray-500 truncate w-full">{tool.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="kids-card p-6 bg-white">
+              <h3 className="font-black text-lg text-gray-800 mb-4 flex items-center gap-2">
+                <span>🔔</span> {isHindi ? "हाल की जीतें" : "Recent Victories"}
+              </h3>
+              {recentActivity.length === 0 ? (
+                <EmptyState icon="🔔" message={isHindi ? "अभी तक कोई जीत नहीं" : "No recent achievements recorded"} />
+              ) : (
+                <div className="space-y-3">
+                  {recentActivity.slice(0, 4).map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center py-1">
+                      <div>
+                        <p className="text-xs font-bold text-gray-600">🏆 {item.label}</p>
+                        <p className="text-[10px] font-bold text-gray-400 mt-0.5">{item.time}</p>
+                      </div>
+                      <span className="text-xs font-black text-green-500">+{item.xp}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Join Class secret code modal */}
+        <AnimatePresence>
+          {isJoinOpen && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="kids-card p-8 bg-white max-w-md w-full relative overflow-hidden text-center"
+              >
+                <button
+                  onClick={() => {
+                    setIsJoinOpen(false);
+                    setJoinError(undefined);
+                    setJoinSuccess(undefined);
+                  }}
+                  className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                <span className="text-5xl block mb-4 animate-bounce">🎈</span>
+                <h3 className="text-xl font-black text-gray-800">{isHindi ? "एक नए Quest ग्रुप में शामिल हों!" : "Join a Quest Group!"}</h3>
+                <p className="text-sm font-bold text-gray-400 mt-2">
+                  {isHindi ? "अपने शिक्षक द्वारा दिया गया 6-अक्षर का गुप्त कोड दर्ज करें" : "Enter the 6-character secret code from your teacher"}
+                </p>
+
+                {joinError && (
+                  <div className="my-4 p-3 rounded-2xl bg-red-50 border-2 border-red-200 text-red-500 text-xs font-bold">
+                    ⚠️ {joinError}
+                  </div>
+                )}
+
+                {joinSuccess ? (
+                  <div className="py-6 space-y-2">
+                    <span className="text-4xl block">✨🎉</span>
+                    <p className="font-black text-gray-800">{joinSuccess}</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleJoinSubmit} className="space-y-4 mt-6">
+                    <input
+                      type="text"
+                      placeholder="CLASS CODE"
+                      value={joinCodeInput}
+                      onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
+                      disabled={joinLoading}
+                      required
+                      className="w-full py-4 bg-gray-50 border-4 border-gray-100 rounded-2xl text-center font-mono text-3xl font-black uppercase tracking-wider focus:outline-none focus:border-violet-300 focus:bg-white text-gray-700 placeholder:text-gray-300"
+                    />
+
+                    <button
+                      type="submit"
+                      disabled={joinLoading || !joinCodeInput.trim()}
+                      className="kids-btn-primary w-full py-4 text-base"
+                    >
+                      {joinLoading ? "Unlocking... 🔑" : "Unlock Quest! 🔑"}
+                    </button>
+                  </form>
+                )}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Level Up Party Modal */}
+        <AnimatePresence>
+          {showLevelUp !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-yellow-400/90 z-50 flex flex-col items-center justify-center text-center p-6"
+            >
+              <ReactConfetti
+                width={typeof window !== "undefined" ? window.innerWidth : 500}
+                height={typeof window !== "undefined" ? window.innerHeight : 600}
+                recycle={true}
+                numberOfPieces={250}
+              />
+              <motion.div
+                initial={{ scale: 0.8, y: 50, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.8, y: 50, opacity: 0 }}
+                transition={{ type: "spring", damping: 15 }}
+                className="space-y-6 max-w-sm"
+              >
+                <div className="text-9xl animate-bounce">🏆⭐</div>
+                <div className="space-y-2">
+                  <h2 className="font-black text-5xl text-white tracking-tight drop-shadow-md">LEVEL UP!</h2>
+                  <p className="text-2xl text-white font-extrabold drop-shadow-sm">
+                    {isHindi ? `आप स्तर ${showLevelUp} पर पहुंच गए हैं!` : `You reached Level ${showLevelUp}!`}
+                  </p>
+                  <p className="text-sm text-yellow-900 font-bold leading-relaxed">
+                    {isHindi ? "अद्भुत काम किया! नए एआई टूल्स का उपयोग करना और खजाने को जीतना जारी रखें।" : "Outstanding job! Keep exploring magical AI tools to rise to the top."}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowLevelUp(null);
+                    sound.playClick();
+                  }}
+                  className="kids-btn-primary bg-white text-yellow-600 border-white px-8 py-4 font-black shadow-lg shadow-yellow-600/30 hover:scale-105 active:scale-95 text-base w-full"
+                >
+                  {isHindi ? "बहुत बढ़िया!" : "Awesome! Let's Go!"}
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // Standard platform return fallback
   return (
     <div className={`min-h-screen relative selection:bg-accent/30 ${gradeClass}`}>
       {/* Subtle, moody background mesh */}
@@ -369,7 +835,7 @@ export default function StudentDashboardPage() {
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       className="absolute -top-12 left-1/2 -translate-x-1/2 bg-accent px-4 py-2 rounded-xl shadow-xl border border-accent-light text-white text-xs font-bold whitespace-nowrap z-30"
                     >
-                      🏆 {isHindi ? `आप स्तर ${stats?.xp.level ? stats.xp.level + 1 : 2} से ${stats?.xp.toNextLevel ?? 100} एक्सपी दूर हैं!` : `You're {stats?.xp.toNextLevel ?? 100} XP away from Level {stats?.xp.level ? stats.xp.level + 1 : 2}!`}
+                      🏆 {isHindi ? `आप स्तर ${stats?.xp.level ? stats.xp.level + 1 : 2} से ${stats?.xp.toNextLevel ?? 100} एक्सपी दूर हैं!` : `You're ${stats?.xp.toNextLevel ?? 100} XP away from Level ${stats?.xp.level ? stats.xp.level + 1 : 2}!`}
                       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-accent" />
                     </motion.div>
                   )}
@@ -380,7 +846,7 @@ export default function StudentDashboardPage() {
 
           {/* Daily Mission Card - Span 4 */}
           <motion.div variants={itemVariants} className="md:col-span-4">
-            <GlassCard className="h-full relative overflow-hidden group">
+            <GlassCard className={`h-full relative overflow-hidden group ${!challenge?.completed ? "pulse-border-accent" : ""}`}>
               {/* Animated background shimmer */}
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               <div className="absolute -top-6 -right-6 w-24 h-24 bg-amber-400/10 rounded-full blur-2xl" />
@@ -458,38 +924,9 @@ export default function StudentDashboardPage() {
             </GlassCard>
           </motion.div>
 
-          {/* Mini Stats Row */}
           <motion.div
             variants={itemVariants}
-            className="md:col-span-4 cursor-pointer"
-            whileHover={{ scale: 1.02 }}
-            onClick={() => {
-              sound.playStreak();
-            }}
-          >
-            <GlassCard className="flex items-center gap-4 relative overflow-hidden group h-full">
-              <div className="absolute -right-4 -bottom-4 text-6xl opacity-10 group-hover:scale-110 transition-transform duration-300 select-none">🔥</div>
-              <div className="w-10 h-10 rounded-xl bg-warning/10 border border-warning/20 flex items-center justify-center flex-shrink-0">
-                <motion.div
-                  animate={{ y: [0, -4, 0] }}
-                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                >
-                  <Flame className="w-5 h-5 text-warning fill-warning" />
-                </motion.div>
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">{isHindi ? "दैनिक निरंतरता" : "Day Streak"}</p>
-                <p className="text-xl font-bold text-foreground mt-0.5 flex items-baseline gap-1.5">
-                  <span>{stats?.streak.current ?? 0}</span>
-                  <span className="text-xs font-semibold text-warning">{isHindi ? "दिन" : "days"} 🔥</span>
-                </p>
-              </div>
-            </GlassCard>
-          </motion.div>
-
-          <motion.div
-            variants={itemVariants}
-            className="md:col-span-4 cursor-pointer"
+            className="md:col-span-12 cursor-pointer"
             whileHover={{ scale: 1.02 }}
             onClick={() => {
               sound.playClick();
@@ -504,29 +941,6 @@ export default function StudentDashboardPage() {
                 <p className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">{isHindi ? "कक्षा रैंक" : "Class Rank"}</p>
                 <p className="text-xl font-bold text-foreground mt-0.5">
                   #{stats?.classRank ?? "—"}
-                </p>
-              </div>
-            </GlassCard>
-          </motion.div>
-
-          <motion.div
-            variants={itemVariants}
-            className="md:col-span-4 cursor-pointer"
-            whileHover={{ scale: 1.02 }}
-            onClick={() => {
-              sound.playClick();
-              router.push("/dashboard/profile");
-            }}
-          >
-            <GlassCard className="flex items-center gap-4 relative overflow-hidden group h-full">
-              <div className="absolute -right-4 -bottom-4 text-6xl opacity-10 group-hover:scale-110 transition-transform duration-300 select-none">🎖️</div>
-              <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
-                <Award className="w-5 h-5 text-accent-light" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">{isHindi ? "अर्जित बैज" : "Badges Earned"}</p>
-                <p className="text-xl font-bold text-foreground mt-0.5">
-                  {stats?.badges.earned ?? 0}
                 </p>
               </div>
             </GlassCard>
@@ -687,7 +1101,7 @@ export default function StudentDashboardPage() {
                 </div>
                 <h3 className="font-display text-xl font-bold text-foreground">Join a Class</h3>
                 <p className="text-sm text-foreground-subtle">
-                  Enter the 6-character code provided by your teacher
+                  Enter the 6-character class code (OTP) provided by your teacher
                 </p>
               </div>
 
@@ -710,10 +1124,9 @@ export default function StudentDashboardPage() {
                   <div className="space-y-1.5">
                     <input
                       type="text"
-                      placeholder="XXXXXX"
+                      placeholder="CLASS CODE"
                       value={joinCodeInput}
                       onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
-                      maxLength={6}
                       disabled={joinLoading}
                       required
                       className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-center font-mono text-2xl font-bold tracking-[0.4em] uppercase focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all placeholder:text-white/20 text-foreground"
@@ -722,7 +1135,7 @@ export default function StudentDashboardPage() {
 
                   <button
                     type="submit"
-                    disabled={joinLoading || joinCodeInput.trim().length !== 6}
+                    disabled={joinLoading || !joinCodeInput.trim()}
                     className="w-full py-3 bg-gradient-to-r from-accent to-accent-light hover:from-accent/90 hover:to-accent-light/90 text-white font-semibold rounded-xl shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center"
                   >
                     {joinLoading && (

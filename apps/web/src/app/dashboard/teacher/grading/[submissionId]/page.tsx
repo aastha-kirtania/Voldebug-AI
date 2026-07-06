@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, MouseEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { GradientMesh } from "@web/components/ui/background";
@@ -117,6 +117,32 @@ export default function GradeSubmissionPage() {
 
   const isAlreadyGraded = sub.status === "GRADED" || sub.status === "RETURNED";
 
+  const handleFileClick = (e: MouseEvent<HTMLAnchorElement>, url: string) => {
+    if (url.startsWith("data:")) {
+      e.preventDefault();
+      try {
+        const [dataPart] = url.split("?filename=");
+        const mimeType = dataPart.match(/data:([^;]+);/)?.[1] || "application/octet-stream";
+        const base64Data = dataPart.split(";base64,")[1];
+        
+        const cleanBase64 = base64Data.replace(/\s/g, "");
+        const byteCharacters = atob(cleanBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: mimeType });
+        const blobUrl = URL.createObjectURL(blob);
+        
+        window.open(blobUrl, "_blank");
+      } catch (err) {
+        console.error("Failed to open data URL", err);
+        window.open(url, "_blank");
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen relative">
       <GradientMesh />
@@ -157,9 +183,20 @@ export default function GradeSubmissionPage() {
             {sub.fileUrls?.length > 0 ? (
               <div className="space-y-2">
                 {sub.fileUrls.map((url, i) => (
-                  <a key={i} href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2.5 p-3 rounded-xl border border-card-border hover:border-card-border-hover hover:bg-surface/40 transition-all text-sm">
+                  <a
+                    key={i}
+                    href={url}
+                    onClick={(e) => handleFileClick(e, url)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2.5 p-3 rounded-xl border border-card-border hover:border-card-border-hover hover:bg-surface/40 transition-all text-sm"
+                  >
                     <FileText className="w-4 h-4 text-foreground-subtle" />
-                    <span className="flex-1 truncate">{url.split("/").pop() || `File ${i + 1}`}</span>
+                    <span className="flex-1 truncate text-foreground font-semibold">
+                      {url.includes("?filename=")
+                        ? decodeURIComponent(url.split("?filename=")[1].split("&")[0])
+                        : url.split("/").pop() || `File ${i + 1}`}
+                    </span>
                     <ExternalLink className="w-3.5 h-3.5 text-foreground-subtle" />
                   </a>
                 ))}

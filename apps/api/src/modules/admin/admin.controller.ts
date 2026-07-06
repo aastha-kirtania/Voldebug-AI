@@ -25,12 +25,22 @@ export async function handleGetSchool(req: Request, res: Response) {
 }
 
 export async function handleListUsers(req: Request, res: Response) {
+  const userId = req.userId!;
   const { role, page = 1, limit = 20, search } = req.query;
 
   try {
+    const school = await prisma.school.findFirst({
+      where: { adminId: userId },
+      select: { id: true }
+    });
+
+    if (!school) {
+      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+    }
+
     const skip = (Number(page) - 1) * Number(limit);
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, any> = { schoolId: school.id };
     if (role) where.role = role;
     if (search && typeof search === "string") {
       where.OR = [
@@ -69,11 +79,21 @@ export async function handleListUsers(req: Request, res: Response) {
 }
 
 export async function handleGetUser(req: Request, res: Response) {
+  const userId = req.userId!;
   const { id } = req.params;
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { id },
+    const school = await prisma.school.findFirst({
+      where: { adminId: userId },
+      select: { id: true }
+    });
+
+    if (!school) {
+      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { id, schoolId: school.id },
       select: {
         id: true,
         name: true,
@@ -97,7 +117,7 @@ export async function handleGetUser(req: Request, res: Response) {
     });
 
     if (!user) {
-      return apiError(res, { code: "NOT_FOUND", message: "User not found", status: 404 });
+      return apiError(res, { code: "NOT_FOUND", message: "User not found in your school", status: 404 });
     }
 
     return apiSuccess(res, user);
@@ -107,12 +127,31 @@ export async function handleGetUser(req: Request, res: Response) {
 }
 
 export async function handleUpdateUserRole(req: Request, res: Response) {
+  const userId = req.userId!;
   const { id } = req.params;
   const { role } = req.body;
 
   try {
     if (!["STUDENT", "TEACHER", "ADMIN"].includes(role)) {
       return apiError(res, { code: "VALIDATION_ERROR", message: "Invalid role", status: 422 });
+    }
+
+    const school = await prisma.school.findFirst({
+      where: { adminId: userId },
+      select: { id: true }
+    });
+
+    if (!school) {
+      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+    }
+
+    // Verify target user belongs to the same school
+    const targetUser = await prisma.user.findFirst({
+      where: { id, schoolId: school.id }
+    });
+
+    if (!targetUser) {
+      return apiError(res, { code: "NOT_FOUND", message: "User not found in your school", status: 404 });
     }
 
     const user = await prisma.user.update({
@@ -128,13 +167,22 @@ export async function handleUpdateUserRole(req: Request, res: Response) {
 }
 
 export async function handleListClasses(req: Request, res: Response) {
-  const { page = 1, limit = 20, schoolId } = req.query;
+  const userId = req.userId!;
+  const { page = 1, limit = 20 } = req.query;
 
   try {
+    const school = await prisma.school.findFirst({
+      where: { adminId: userId },
+      select: { id: true }
+    });
+
+    if (!school) {
+      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+    }
+
     const skip = (Number(page) - 1) * Number(limit);
 
-    const where: Record<string, unknown> = {};
-    if (schoolId) where.schoolId = schoolId;
+    const where = { schoolId: school.id };
 
     const [classes, total] = await Promise.all([
       prisma.class.findMany({
@@ -162,13 +210,41 @@ export async function handleListClasses(req: Request, res: Response) {
 }
 
 export async function handleUpdateClass(req: Request, res: Response) {
+  const userId = req.userId!;
   const { id } = req.params;
   const { name, teacherId } = req.body;
 
   try {
+    const school = await prisma.school.findFirst({
+      where: { adminId: userId },
+      select: { id: true }
+    });
+
+    if (!school) {
+      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+    }
+
+    // Verify class belongs to the school
+    const targetClass = await prisma.class.findFirst({
+      where: { id, schoolId: school.id }
+    });
+
+    if (!targetClass) {
+      return apiError(res, { code: "NOT_FOUND", message: "Class not found in your school", status: 404 });
+    }
+
     const data: Record<string, unknown> = {};
     if (name) data.name = name;
-    if (teacherId) data.teacherId = teacherId;
+    if (teacherId) {
+      // Verify teacher belongs to the school
+      const teacher = await prisma.user.findFirst({
+        where: { id: teacherId, role: "TEACHER", schoolId: school.id }
+      });
+      if (!teacher) {
+        return apiError(res, { code: "VALIDATION_ERROR", message: "Teacher not found in your school", status: 400 });
+      }
+      data.teacherId = teacherId;
+    }
 
     const updated = await prisma.class.update({
       where: { id },
@@ -182,9 +258,28 @@ export async function handleUpdateClass(req: Request, res: Response) {
 }
 
 export async function handleDeleteClass(req: Request, res: Response) {
+  const userId = req.userId!;
   const { id } = req.params;
 
   try {
+    const school = await prisma.school.findFirst({
+      where: { adminId: userId },
+      select: { id: true }
+    });
+
+    if (!school) {
+      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+    }
+
+    // Verify class belongs to the school
+    const targetClass = await prisma.class.findFirst({
+      where: { id, schoolId: school.id }
+    });
+
+    if (!targetClass) {
+      return apiError(res, { code: "NOT_FOUND", message: "Class not found in your school", status: 404 });
+    }
+
     await prisma.class.delete({ where: { id } });
     return apiSuccess(res, { success: true });
   } catch {
@@ -213,10 +308,22 @@ export async function handleGetSchoolOverview(req: Request, res: Response) {
 // ─── Principal Dashboard: Audit Logs ──────────────────────────────────────
 
 export async function handleGetAuditLogs(req: Request, res: Response) {
+  const userId = req.userId!;
   const { limit = 20, offset = 0, flagged, studentId, tool } = req.query;
 
   try {
-    const filters: { isFlagged?: boolean; studentId?: string; toolUsed?: string } = {};
+    const school = await prisma.school.findFirst({
+      where: { adminId: userId },
+      select: { id: true }
+    });
+
+    if (!school) {
+      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+    }
+
+    const filters: { isFlagged?: boolean; studentId?: string; toolUsed?: string; schoolId?: string } = {
+      schoolId: school.id
+    };
     if (flagged === "true") filters.isFlagged = true;
     if (flagged === "false") filters.isFlagged = false;
     if (studentId && typeof studentId === "string") filters.studentId = studentId;

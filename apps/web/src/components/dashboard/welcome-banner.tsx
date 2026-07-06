@@ -11,7 +11,7 @@ interface WelcomeBannerProps {
 }
 
 export function WelcomeBanner({ name, level, xpToNext, currentXP }: WelcomeBannerProps) {
-  const displayName = name.split(" ")[0];
+  const displayName = name;
 
   return (
     <motion.div

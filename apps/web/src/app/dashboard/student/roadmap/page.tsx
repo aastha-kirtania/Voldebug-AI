@@ -1,14 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useRoadmap } from "@web/hooks/use-dashboard";
 import { useTranslation } from "@web/context/language-context";
 import { GradientMesh } from "@web/components/ui/background";
 import {
-  Lock,
-  Unlock,
   CheckCircle2,
   ArrowRight,
   Sparkles,
@@ -42,13 +40,53 @@ const itemVariants = {
   },
 };
 
+function ScrollReveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: "0px 0px -50px 0px",
+      }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-1000 ease-out transform ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+      } ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function StudentRoadmapPage() {
   const { data: session } = useSession();
   const { data: roadmapData, isLoading, error } = useRoadmap();
   const { t } = useTranslation();
   const isHindi = t("nav.home") === "होम";
 
-  const userName = session?.user?.name?.split(" ")[0] || "Student";
+  const userName = session?.user?.name || "Student";
 
   // Identify the recommended tool details
   const recommendedTool = useMemo(() => {
@@ -123,8 +161,8 @@ export default function StudentRoadmapPage() {
             </h1>
             <p className="text-sm md:text-base text-foreground-subtle mt-2 font-medium tracking-wide">
               {isHindi 
-                ? `नए उपकरण अनलॉक करने और अपने सीखने के लक्ष्यों को पूरा करने के लिए स्तर बढ़ाएं, ${userName}।`
-                : `Level up to unlock new tools and complete your learning goals, ${userName}.`
+                ? `नए उपकरणों के साथ अपनी लाइब्रेरी का विस्तार करने और अपने सीखने के लक्ष्यों को पूरा करने के लिए स्तर बढ़ाएं, ${userName}।`
+                : `Level up to expand your library and complete your learning goals, ${userName}.`
               }
             </p>
           </div>
@@ -174,7 +212,7 @@ export default function StudentRoadmapPage() {
             </GlassCard>
           </motion.div>
 
-          {/* Unlock Info Summary */}
+          {/* Discover Info Summary */}
           <motion.div variants={itemVariants} className="md:col-span-1">
             <GlassCard className="flex flex-col justify-center items-center text-center h-full space-y-3">
               <div className="w-12 h-12 rounded-full bg-warning/20 flex items-center justify-center text-warning border border-warning/20">
@@ -184,8 +222,8 @@ export default function StudentRoadmapPage() {
                 <h4 className="font-semibold text-foreground text-sm">{isHindi ? "पथ प्रगति" : "Path Progression"}</h4>
                 <p className="text-xs text-foreground-subtle mt-1.5 leading-relaxed">
                   {isHindi 
-                    ? "असाइनमेंट पूरे करके एक्सपी कमाएं। उच्च स्तर विशिष्ट लेखन, डिज़ाइन और अनुसंधान एआई को अनलॉक करते हैं।"
-                    : "Earn XP by completing assignments. Higher levels unlock specialized writing, design, and research AI."
+                    ? "असाइनमेंट पूरे करके एक्सपी कमाएं। उच्च स्तर विशिष्ट लेखन, डिज़ाइन और अनुसंधान एआई पेश करते हैं।"
+                    : "Earn XP by completing assignments. Higher levels introduce specialized writing, design, and research AI."
                   }
                 </p>
               </div>
@@ -193,51 +231,43 @@ export default function StudentRoadmapPage() {
           </motion.div>
         </motion.div>
 
-        {/* Recommended Next Step Callout */}
-        {recommendedTool && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: smoothEase, delay: 0.2 }}
-          >
-            <div className="relative overflow-hidden group rounded-[2rem] border border-accent/20 bg-gradient-to-r from-accent-surface via-transparent to-transparent p-6 md:p-8 shadow-2xl">
-              <div className="absolute inset-0 bg-gradient-to-r from-accent/5 to-transparent opacity-50" />
-              
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-3">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-[10px] font-bold text-accent-light uppercase tracking-wider">
-                    <Zap className="w-3.5 h-3.5 animate-bounce" /> {isHindi ? "अनुशंसित अगला कदम" : "Recommended Next Step"}
-                  </span>
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground">
-                      {isHindi ? `उपयोग करें ${recommendedTool.name}` : `Use ${recommendedTool.name}`}
-                    </h3>
-                    <p className="text-sm text-foreground-subtle mt-1.5 max-w-xl">
-                      {recommendedTool.isLocked 
-                        ? (isHindi 
-                            ? `यह टूल लॉक है। अनलॉक करने और प्रयोग शुरू करने के लिए स्तर ${recommendedTool.requiredLevel} पर पहुंचें!`
-                            : `This tool is locked. Reach Level ${recommendedTool.requiredLevel} to unlock and start experimenting!`)
-                        : (isHindi 
-                            ? `आपने अभी तक यह कदम पूरा नहीं किया है। रोडमैप प्रगति अर्जित करने के लिए ${recommendedTool.name} के अंदर एक गैर-ध्वजांकित क्वेरी चलाने का प्रयास करें।`
-                            : `You haven't completed this step yet. Try running an unflagged query inside ${recommendedTool.name} to earn roadmap progress.`)
-                      }
-                    </p>
-                  </div>
+        {/* Your Learning Quest Bento Card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: smoothEase, delay: 0.2 }}
+        >
+          <div className="relative overflow-hidden group rounded-[2rem] border border-accent/20 bg-gradient-to-r from-accent-surface via-transparent to-transparent p-6 md:p-8 shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-r from-accent/5 to-transparent opacity-50" />
+            
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-3">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-[10px] font-bold text-accent-light uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5 animate-pulse" /> {isHindi ? "सक्रिय साहसिक कार्य" : "Active Adventure"}
+                </span>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground">
+                    {isHindi ? "आपकी सीखने की खोज" : "Your Learning Quest"}
+                  </h3>
+                  <p className="text-sm text-foreground-subtle mt-1.5 max-w-xl">
+                    {isHindi 
+                      ? "अपनी लाइब्रेरी का विस्तार करने के लिए नीचे दिए गए उपकरणों का उपयोग करके गतिविधियों को पूरा करें। आप जितना अधिक खोजते हैं, उतना ही आगे समठानें लगाते हैं।"
+                      : "Use the AI tools below to build skills and rack up XP. The more you explore, the further you climb."
+                    }
+                  </p>
                 </div>
-
-                {!recommendedTool.isLocked && (
-                  <a
-                    href={`/dashboard/tools/${recommendedTool.id}`}
-                    className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-accent text-white font-semibold text-sm shadow-lg shadow-accent/20 hover:bg-accent-light hover:shadow-accent/30 transition-all active:scale-[0.98] w-full md:w-auto h-12"
-                  >
-                    <span>{isHindi ? "टूल लॉन्च करें" : "Launch Tool"}</span>
-                    <Play className="w-4 h-4 fill-white" />
-                  </a>
-                )}
               </div>
+
+              <a
+                href="/dashboard/tools"
+                className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-accent text-white font-semibold text-sm shadow-lg shadow-accent/20 hover:bg-accent-light hover:shadow-accent/30 transition-all active:scale-[0.98] w-full md:w-auto h-12"
+              >
+                <span>{isHindi ? "सभी उपकरण ब्राउज़ करें" : "Browse All Tools"}</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
             </div>
-          </motion.div>
-        )}
+          </div>
+        </motion.div>
 
         {/* Roadmap Timeline path */}
         <motion.div
@@ -252,15 +282,13 @@ export default function StudentRoadmapPage() {
           {tools.map((tool, index) => {
             const isCompleted = tool.isCompleted;
             const isLocked = tool.isLocked;
-            const isRecommended = tool.id === roadmapData.recommendedToolId;
             
             // Alternates layout side for timeline on md+ screens
             const isLeft = index % 2 === 0;
 
             return (
-              <motion.div
+              <ScrollReveal
                 key={tool.id}
-                variants={itemVariants}
                 className={`relative flex flex-col md:flex-row items-start ${
                   isLeft ? "md:justify-start" : "md:justify-end"
                 } w-full`}
@@ -270,17 +298,13 @@ export default function StudentRoadmapPage() {
                   className={`absolute left-6 md:left-1/2 top-10 w-8 h-8 rounded-full border-4 ${
                     isCompleted
                       ? "bg-success border-success-glow shadow-[0_0_12px_var(--color-success)] text-white"
-                      : isRecommended
-                      ? "bg-accent border-accent-glow shadow-[0_0_12px_var(--color-accent)] text-white"
                       : "bg-surface border-white/10 text-foreground-muted"
                   } transform -translate-x-1/2 z-10 flex items-center justify-center`}
                 >
                   {isCompleted ? (
                     <CheckCircle2 className="w-4 h-4 text-white" />
-                  ) : isLocked ? (
-                    <Lock className="w-3.5 h-3.5 text-foreground-subtle" />
                   ) : (
-                    <Unlock className="w-3.5 h-3.5 text-accent-light" />
+                    <BookOpen className="w-3.5 h-3.5 text-accent-light/75" />
                   )}
                 </div>
 
@@ -294,29 +318,23 @@ export default function StudentRoadmapPage() {
                     className={`relative overflow-hidden rounded-[2rem] border transition-all duration-300 ${
                       isCompleted
                         ? "bg-success/5 border-success/20 shadow-lg"
-                        : isRecommended
-                        ? "bg-accent-surface border-accent/30 shadow-2xl ring-2 ring-accent/30 ring-offset-2 ring-offset-bg"
                         : isLocked
-                        ? "bg-surface/10 border-white/5 opacity-60 grayscale"
+                        ? "bg-surface/15 border-white/5 shadow-md"
                         : "bg-surface/30 border-white/5 hover:border-white/10 shadow-xl"
                     } p-6 group`}
                   >
-                    {/* Tool Category Banner & Lock state indicator */}
+                    {/* Tool Category Banner & Milestone state indicator */}
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider">
                         {tool.category.replace("_", " ")}
                       </span>
                       {isLocked ? (
-                        <span className="text-[10px] font-semibold text-error/90 flex items-center gap-1">
-                          <Lock className="w-3 h-3" /> {isHindi ? `स्तर ${tool.requiredLevel} पर अनलॉक होगा` : `Unlocks at Lvl ${tool.requiredLevel}`}
+                        <span className="text-[10px] font-semibold text-warning/95 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-warning" /> {isHindi ? `स्तर ${tool.requiredLevel} खोज` : `Lvl ${tool.requiredLevel} Quest`}
                         </span>
                       ) : isCompleted ? (
                         <span className="text-[10px] font-bold text-success flex items-center gap-1.5">
                           <CheckCircle2 className="w-3.5 h-3.5" /> {isHindi ? "पूर्ण" : "Completed"}
-                        </span>
-                      ) : isRecommended ? (
-                        <span className="text-[10px] font-bold text-accent-light animate-pulse flex items-center gap-1">
-                          ● {isHindi ? "अगला" : "Next Up"}
                         </span>
                       ) : (
                         <span className="text-[10px] font-bold text-foreground-muted flex items-center gap-1">
@@ -359,21 +377,19 @@ export default function StudentRoadmapPage() {
                       </div>
                     )}
 
-                    {/* Launch link for unlocked steps */}
-                    {!isLocked && (
-                      <div className="mt-4 pt-3 flex justify-end">
-                        <a
-                          href={`/dashboard/tools/${tool.id}`}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-accent-light hover:text-accent transition-colors"
-                        >
-                          <span>{isCompleted ? (isHindi ? "पुनः एक्सप्लोर करें" : "Explore again") : (isHindi ? "पथ शुरू करें" : "Start path")}</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </a>
-                      </div>
-                    )}
+                    {/* Launch link for all steps */}
+                    <div className="mt-4 pt-3 flex justify-end">
+                      <a
+                        href={`/dashboard/tools/${tool.id}`}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-accent-light hover:text-accent transition-colors"
+                      >
+                        <span>{isCompleted ? (isHindi ? "पुनः एक्सप्लोर करें" : "Explore again") : (isHindi ? "पथ शुरू करें" : "Start path")}</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </motion.div>
+              </ScrollReveal>
             );
           })}
         </motion.div>

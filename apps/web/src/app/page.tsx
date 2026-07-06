@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -20,10 +21,10 @@ const fadeUp = {
 // ─── Data ────────────────────────────────────────────────────────────────
 
 const STATS = [
-  { value: "12,400+", label: "Students Learning" },
-  { value: "350+", label: "AI Tools Curated" },
-  { value: "98%", label: "Teacher Satisfaction" },
-  { value: "4.2M", label: "XP Awarded This Month" },
+  { value: "Interactive", label: "AI Learning" },
+  { value: "Curated", label: "AI Tools Library" },
+  { value: "Gamified", label: "Missions & Quests" },
+  { value: "Safe", label: "School Moderated" },
 ];
 
 const FEATURES = [
@@ -38,7 +39,7 @@ const FEATURES = [
     icon: Bot,
     color: "text-accent-light",
     bg: "bg-accent/10 border-accent/20",
-    title: "350+ AI Tools",
+    title: "Curated AI Tools",
     desc: "A curated library of the best AI tools — categorized, rated, and matched to your assignments.",
   },
   {
@@ -87,21 +88,113 @@ const LEADERBOARD_PREVIEW = [
   { rank: 5, name: "Aisha Green", xp: 3120, level: 8 },
 ];
 
+// ─── Animated Counter Component ───────────────────────────────────────────
+
+function AnimatedCounter({ value }: { value: string }) {
+  const numericString = value.replace(/[^0-9.]/g, "");
+  const suffix = value.replace(/[0-9.]/g, "");
+  const target = parseFloat(numericString);
+
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (isNaN(target)) {
+      return;
+    }
+    
+    const hasDecimal = numericString.includes(".");
+    const decimals = hasDecimal ? numericString.split(".")[1].length : 0;
+    
+    let start = 0;
+    const duration = 1200; // 1.2s animation duration
+    const startTime = performance.now();
+
+    let frameId: number;
+
+    const updateCount = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      const easeProgress = progress * (2 - progress); // easeOutQuad
+      const currentVal = start + easeProgress * (target - start);
+      
+      setCount(parseFloat(currentVal.toFixed(decimals)));
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(updateCount);
+      }
+    };
+
+    frameId = requestAnimationFrame(updateCount);
+    return () => cancelAnimationFrame(frameId);
+  }, [target, numericString]);
+
+  if (isNaN(target)) {
+    return <>{value}</>;
+  }
+
+  return (
+    <>
+      {count.toLocaleString(undefined, { minimumFractionDigits: numericString.includes(".") ? 1 : 0 })}
+      {suffix}
+    </>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
+  const [statsData, setStatsData] = useState(STATS);
+
+  useEffect(() => {
+    const apiUrl = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/$/, "");
+    fetch(`${apiUrl}/v1/health/stats`)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((json) => {
+        if (json?.data) {
+          const { studentsCount, toolsCount, totalXP, teacherSatisfaction } = json.data;
+          setStatsData([
+            { value: `${studentsCount}`, label: "Students Learning" },
+            { value: `${toolsCount}`, label: "AI Tools Curated" },
+            { value: `${teacherSatisfaction}%`, label: "Teacher Satisfaction" },
+            { value: totalXP >= 1000000 ? `${(totalXP / 1000000).toFixed(1)}M` : totalXP >= 1000 ? `${(totalXP / 1000).toFixed(1)}k` : `${totalXP}`, label: "XP Awarded This Month" },
+          ]);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const elements = document.querySelectorAll(".animate-on-scroll");
+      elements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.85) {
+          el.classList.add("is-visible");
+        }
+      });
+    };
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Trigger once on mount to capture above-the-fold content
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <div className="min-h-screen relative overflow-x-hidden">
+    <div className="min-h-screen relative overflow-x-hidden kids-mode bg-[#fefdf8] text-[#3d3b30] selection:bg-violet-300/40 font-sans pb-20">
       {/* Atmospheric background */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-[700px] h-[700px] rounded-full bg-accent/8 blur-[160px]" />
-        <div className="absolute top-1/2 -left-40 w-[500px] h-[500px] rounded-full bg-purple-600/6 blur-[140px]" />
-        <div className="absolute -bottom-40 right-1/3 w-[600px] h-[600px] rounded-full bg-info/5 blur-[150px]" />
+      <div className="fixed inset-0 z-0 pointer-events-none bg-[#fefdf8]">
+        <div className="hero-background">
+          <div className="gradient-blob shape-1" />
+          <div className="gradient-blob shape-2" />
+        </div>
+        <div className="absolute -top-40 -right-40 w-[700px] h-[700px] rounded-full bg-violet-100/30 blur-[130px]" />
+        <div className="absolute top-1/2 -left-40 w-[500px] h-[500px] rounded-full bg-sky-100/20 blur-[110px]" />
+        <div className="absolute -bottom-40 right-1/3 w-[600px] h-[600px] rounded-full bg-amber-100/30 blur-[130px]" />
         <div
-          className="absolute inset-0 opacity-[0.02]"
+          className="absolute inset-0 opacity-[0.05]"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
+              "linear-gradient(rgba(61,59,48,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(61,59,48,0.04) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
           }}
         />
@@ -132,7 +225,7 @@ export default function LandingPage() {
         >
           <Link
             href="/login"
-            className="hidden md:inline-flex items-center px-4 py-2 text-sm font-medium text-foreground-muted hover:text-foreground transition-colors"
+            className="hidden md:inline-flex items-center px-4 py-2 text-sm font-medium text-foreground-muted hover:text-foreground transition-colors nav-link-underlined"
           >
             Sign In
           </Link>
@@ -155,7 +248,7 @@ export default function LandingPage() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/20 bg-accent/8 text-accent-light text-xs font-medium"
             >
               <Star className="w-3 h-3 fill-current" />
-              The AI Education Platform for Students 12–18
+              The Magical AI Adventure Platform for Students aged 12–18 🌟
             </motion.div>
 
             <motion.h1
@@ -183,7 +276,7 @@ export default function LandingPage() {
               custom={2} variants={fadeUp} initial="hidden" animate="show"
               className="text-foreground-muted text-lg leading-relaxed max-w-xl"
             >
-              Voldebug connects students with 350+ AI tools through gamified teacher-assigned activities.
+              Voldebug connects students with curated AI tools through gamified teacher-assigned activities.
               Earn XP, unlock badges, and climb the leaderboard — all while mastering skills that matter.
             </motion.p>
 
@@ -223,7 +316,7 @@ export default function LandingPage() {
                 ))}
               </div>
               <p className="text-sm text-foreground-muted">
-                <span className="text-foreground font-semibold">12,400+</span> students already learning
+                Empowering the next generation of AI-literate learners
               </p>
             </motion.div>
           </div>
@@ -274,7 +367,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 12, x: 12 }}
               animate={{ opacity: 1, y: 0, x: 0 }}
               transition={{ delay: 0.8, duration: 0.4 }}
-              className="absolute -right-6 top-1/3 card px-4 py-3 shadow-xl border-success/20 bg-success/5"
+              className="absolute -right-6 top-1/3 card px-4 py-3 shadow-xl border-success/20 bg-success/5 floating-element"
             >
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-success" />
@@ -290,7 +383,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 12, x: -12 }}
               animate={{ opacity: 1, y: 0, x: 0 }}
               transition={{ delay: 1.0, duration: 0.4 }}
-              className="absolute -left-6 bottom-12 card px-4 py-3 shadow-xl border-accent/20 bg-accent/5"
+              className="absolute -left-6 bottom-12 card px-4 py-3 shadow-xl border-accent/20 bg-accent/5 floating-element"
             >
               <div className="flex items-center gap-2">
                 <Star className="w-4 h-4 text-accent-light fill-current" />
@@ -305,9 +398,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── Stats ─────────────────────────────────────────── */}
-      <section className="relative z-10 border-y border-white/5 bg-card/30 backdrop-blur-sm py-10">
+      <section className="relative z-10 border-y border-white/5 bg-card/30 backdrop-blur-sm py-10 animate-on-scroll fade-in">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-          {STATS.map((s, i) => (
+          {statsData.map((s, i) => (
             <motion.div
               key={s.label}
               custom={i}
@@ -317,7 +410,9 @@ export default function LandingPage() {
               viewport={{ once: true }}
               className="text-center"
             >
-              <p className="stat-number text-3xl md:text-4xl text-gradient">{s.value}</p>
+              <p className="stat-number text-3xl md:text-4xl text-gradient">
+                <AnimatedCounter value={s.value} />
+              </p>
               <p className="text-sm text-foreground-subtle mt-1">{s.label}</p>
             </motion.div>
           ))}
@@ -325,7 +420,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Features ─────────────────────────────────────── */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-20">
+      <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-20 animate-on-scroll slide-up">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -351,27 +446,48 @@ export default function LandingPage() {
               initial="hidden"
               whileInView="show"
               viewport={{ once: true }}
-              className="card p-6 group"
             >
-              <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl border mb-4 ${f.bg} ${f.color}`}>
-                <f.icon className="w-5 h-5" />
+              <div className="flip-card">
+                <div className="flip-card-inner">
+                  {/* Front Face */}
+                  <div className="flip-card-front p-6 flex flex-col justify-between items-start text-left bg-gradient-to-br from-surface to-surface/60">
+                    <div className="w-full">
+                      <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl border mb-4 ${f.bg} ${f.color}`}>
+                        <f.icon className="w-5 h-5" />
+                      </div>
+                      <h3 className="font-display text-base font-semibold text-foreground">{f.title}</h3>
+                      <p className="text-xs text-foreground-muted leading-relaxed line-clamp-2 mt-2">
+                        {f.desc}
+                      </p>
+                    </div>
+                    <div className="w-full text-right text-xs text-accent-light font-semibold flex items-center justify-end gap-1 mt-auto pt-4 border-t border-card-border/40">
+                      Reveal Details <ArrowRight className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                  {/* Back Face */}
+                  <div className="flip-card-back p-6 flex flex-col justify-center items-center text-center">
+                    <h3 className="font-display text-base font-bold mb-2 text-white">{f.title}</h3>
+                    <p className="text-xs text-white/90 leading-relaxed mb-4">{f.desc}</p>
+                    <Link href="/register" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white text-accent font-semibold text-xs transition-colors hover:bg-slate-100 shadow-md">
+                      Get Started <Zap className="w-3 h-3 text-accent" />
+                    </Link>
+                  </div>
+                </div>
               </div>
-              <h3 className="font-display text-base font-semibold mb-2">{f.title}</h3>
-              <p className="text-sm text-foreground-muted leading-relaxed">{f.desc}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* ── AI Tool Categories ─────────────────────────── */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-20">
+      <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-20 animate-on-scroll slide-up">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="flex items-center justify-between mb-8"
         >
-          <h2 className="font-display text-2xl font-bold">350+ AI Tools, Organized for Students</h2>
+          <h2 className="font-display text-2xl font-bold">Curated AI Tools, Organized for Students</h2>
           <Link
             href="/tools"
             className="hidden md:flex items-center gap-1.5 text-sm text-accent-light hover:underline"
@@ -389,7 +505,7 @@ export default function LandingPage() {
               initial="hidden"
               whileInView="show"
               viewport={{ once: true }}
-              className="card p-5 flex flex-col items-center gap-3 hover:scale-[1.02] transition-transform cursor-pointer"
+              className="card p-5 flex flex-col items-center gap-3 hover:scale-[1.02] transition-transform cursor-pointer interactive-card"
             >
               <div
                 className="w-12 h-12 rounded-2xl flex items-center justify-center"
@@ -404,7 +520,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ──────────────────────────────────────────── */}
-      <section className="relative z-10 max-w-4xl mx-auto px-6 pb-24">
+      <section className="relative z-10 max-w-4xl mx-auto px-6 pb-24 animate-on-scroll zoom-in">
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           whileInView={{ opacity: 1, scale: 1 }}

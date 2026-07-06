@@ -71,24 +71,39 @@ export function FileUpload({
 
   const simulateUpload = useCallback(
     (id: string) => {
-      // Simulate upload progress — replace with real presigned URL upload in production
+      // Simulate upload progress while reading the actual file's data url
       let progress = 0;
       const interval = setInterval(() => {
         progress += Math.random() * 25 + 5;
         if (progress >= 100) {
           clearInterval(interval);
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.id === id
-                ? { ...f, progress: 100, status: "done", url: `/uploads/${id}_${f.file.name}` }
-                : f
-            )
-          );
-          // Notify parent with the (mock) URLs
-          setFiles((current) => {
-            const doneFiles = current.filter((f) => f.status === "done" && f.url);
-            onFilesChange(doneFiles.map((f) => f.url!));
-            return current;
+          setFiles((currentFiles) => {
+            const fileObj = currentFiles.find((f) => f.id === id);
+            if (!fileObj) return currentFiles;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64Url = reader.result as string;
+              const finalUrl = `${base64Url}?filename=${encodeURIComponent(fileObj.file.name)}`;
+
+              setFiles((prev) =>
+                prev.map((f) => {
+                  if (f.id === id) {
+                    return { ...f, progress: 100, status: "done", url: finalUrl };
+                  }
+                  return f;
+                })
+              );
+
+              // Notify parent with the URLs
+              setFiles((current) => {
+                const doneFiles = current.filter((f) => f.status === "done" && f.url);
+                onFilesChange(doneFiles.map((f) => f.url!));
+                return current;
+              });
+            };
+            reader.readAsDataURL(fileObj.file);
+            return currentFiles;
           });
         } else {
           setFiles((prev) =>
@@ -97,7 +112,7 @@ export function FileUpload({
             )
           );
         }
-      }, 200);
+      }, 100);
     },
     [onFilesChange]
   );

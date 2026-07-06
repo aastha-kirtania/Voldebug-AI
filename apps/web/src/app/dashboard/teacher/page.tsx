@@ -55,7 +55,14 @@ const itemVariants = {
 
 // ─── Premium UI Sub-components ────────────────────────────────────────────
 
-function GlassCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function GlassCard({ children, className = "", kidsMode = false }: { children: React.ReactNode; className?: string; kidsMode?: boolean }) {
+  if (kidsMode) {
+    return (
+      <div className={`kids-card p-6 lg:p-8 bg-white border-2 border-gray-100 ${className}`}>
+        {children}
+      </div>
+    );
+  }
   return (
     <div className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 lg:p-8 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}>
       {children}
@@ -63,11 +70,11 @@ function GlassCard({ children, className = "" }: { children: React.ReactNode; cl
   );
 }
 
-function MiniStat({ title, value, icon, colorClass = "text-accent-light", bgClass = "bg-accent/10" }: { title: string; value: string | number; icon: React.ReactNode; colorClass?: string; bgClass?: string }) {
+function MiniStat({ title, value, icon, colorClass = "text-accent-light", bgClass = "bg-accent/10", kidsMode = false }: { title: string; value: string | number; icon: React.ReactNode; colorClass?: string; bgClass?: string; kidsMode?: boolean }) {
   return (
-    <GlassCard className="!p-5 flex items-center gap-4 h-full">
-      <div className={`w-12 h-12 rounded-full ${bgClass} flex items-center justify-center flex-shrink-0 shadow-inner`}>
-        <div className={colorClass}>{icon}</div>
+    <GlassCard className="!p-5 flex items-center gap-4 h-full" kidsMode={kidsMode}>
+      <div className={`w-12 h-12 rounded-full ${kidsMode ? "bg-violet-100" : bgClass} flex items-center justify-center flex-shrink-0 shadow-inner`}>
+        <div className={kidsMode ? "text-violet-500" : colorClass}>{icon}</div>
       </div>
       <div>
         <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">{title}</p>
@@ -103,11 +110,76 @@ function timeAgo(dateStr: string, isHindi: boolean): string {
   return isHindi ? `${diffD} दिन पहले` : `${diffD}d ago`;
 }
 
+// ─── Safety Alerts Sub-component ────────────────────────────────────────
+
+function SafetyAlertsTable({ alerts, isHindi }: { alerts: any[]; isHindi: boolean }) {
+  const [showAll, setShowAll] = useState(false);
+  const displayedAlerts = showAll ? alerts : alerts.slice(0, 3);
+  const hasMore = alerts.length > 3;
+
+  return (
+    <>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-white/5 text-[10px] font-bold text-foreground-subtle uppercase tracking-wider">
+              <th className="pb-3 pr-4">{isHindi ? "छात्र" : "Student"}</th>
+              <th className="pb-3 pr-4">{isHindi ? "ग्रेड" : "Grade"}</th>
+              <th className="pb-3 pr-4">{isHindi ? "चिह्नित प्रश्न" : "Flagged Query"}</th>
+              <th className="pb-3 pr-4">{isHindi ? "AI टूल" : "AI Tool"}</th>
+              <th className="pb-3 pr-4">{isHindi ? "श्रेणी" : "Category"}</th>
+              <th className="pb-3 pr-4">{isHindi ? "गंभीरता" : "Severity"}</th>
+              <th className="pb-3">{isHindi ? "समय" : "Timestamp"}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5 text-xs text-foreground-muted font-medium">
+            {displayedAlerts.map((alert) => (
+              <tr key={alert.id} className="hover:bg-white/[0.01] transition-all">
+                <td className="py-3.5 pr-4 text-foreground font-semibold">{alert.studentName}</td>
+                <td className="py-3.5 pr-4">{isHindi ? "कक्षा" : "Grade"} {alert.gradeLevel || "—"}</td>
+                <td className="py-3.5 pr-4 italic max-w-xs truncate" title={alert.promptText}>
+                  &quot;{alert.promptText}&quot;
+                </td>
+                <td className="py-3.5 pr-4">{alert.toolUsed}</td>
+                <td className="py-3.5 pr-4">
+                  <span className="px-2 py-0.5 rounded bg-error/10 text-error border border-error/15 text-[10px] font-bold">
+                    {alert.category}
+                  </span>
+                </td>
+                <td className="py-3.5 pr-4">
+                  <span className="px-2 py-0.5 rounded bg-error/15 text-error text-[10px] font-bold">
+                    {alert.severity}
+                  </span>
+                </td>
+                <td className="py-3.5 text-foreground-subtle">{timeAgo(alert.timestamp, isHindi)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {hasMore && (
+        <div className="mt-4 pt-4 border-t border-white/5 flex justify-center">
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="text-xs font-semibold text-accent-light hover:text-accent flex items-center gap-1.5 transition-colors"
+          >
+            {showAll
+              ? (isHindi ? "कम दिखाएं" : "Show less")
+              : (isHindi ? `${alerts.length - 3} और दिखाएं` : `Show ${alerts.length - 3} more`)}
+            <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${showAll ? "-rotate-90" : "rotate-90"}`} />
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ─── Main Page ───────────────────────────────────────────────────────────
 
 export default function TeacherDashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [kidsMode, setKidsMode] = useState(false);
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.role === "STUDENT") {
@@ -115,10 +187,22 @@ export default function TeacherDashboardPage() {
     }
   }, [session, status, router]);
 
-  const userName = session?.user?.name?.split(" ")[0] || "Teacher";
+  const userName = session?.user?.name || "Teacher";
   const { data, isLoading } = useTeacherDashboard();
   const { t } = useTranslation();
   const isHindi = t("nav.home") === "होम";
+
+  useEffect(() => {
+    const checkKidsMode = () => {
+      const saved = localStorage.getItem("kids-mode");
+      if (saved !== null) {
+        setKidsMode(saved === "true");
+      }
+    };
+    checkKidsMode();
+    const interval = setInterval(checkKidsMode, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const [isCreateClassOpen, setIsCreateClassOpen] = useState(false);
   const [classNameInput, setClassNameInput] = useState("");
@@ -154,7 +238,7 @@ export default function TeacherDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen relative selection:bg-accent/30">
+    <div className={`min-h-screen relative selection:bg-accent/30 transition-all ${kidsMode ? "kids-mode pb-20 bg-[#fefdf8]" : ""}`}>
       <GradientMesh className="opacity-40" />
 
       <div className="max-w-7xl mx-auto space-y-8 pb-24 lg:pb-12 px-4 md:px-8 pt-8 relative z-10">
@@ -164,6 +248,24 @@ export default function TeacherDashboardPage() {
           animate="show"
           className="space-y-8"
         >
+          {/* Kids Mode Mascot Cheerful Header Preview */}
+          {kidsMode && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="kids-card p-5 bg-white flex flex-col sm:flex-row items-center gap-4 border-2 border-violet-100"
+            >
+              <div className="w-14 h-14 rounded-full bg-violet-100 flex items-center justify-center text-3xl select-none animate-bounce">
+                🤖
+              </div>
+              <div className="mascot-bubble border-violet-200">
+                <p className="text-sm font-bold text-gray-600">
+                  🎉 Volt Bot says: <span className="text-[#7c3aed]">"You are doing an awesome job managing your students today, Teacher! Keep up the positive guidance! 🌟"</span>
+                </p>
+              </div>
+            </motion.div>
+          )}
+
           {/* Header Section */}
           <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
@@ -180,7 +282,7 @@ export default function TeacherDashboardPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-4 bg-surface/30 backdrop-blur-xl border border-white/5 px-5 py-3 rounded-2xl shadow-xl">
+            <div className={`flex items-center gap-4 bg-surface/30 backdrop-blur-xl border border-white/5 px-5 py-3 rounded-2xl shadow-xl ${kidsMode ? "kids-card bg-white" : ""}`}>
               <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center border border-accent/20">
                 <GraduationCap className="w-5 h-5 text-accent-light" />
               </div>
@@ -204,6 +306,7 @@ export default function TeacherDashboardPage() {
               icon={<Users className="w-5 h-5" />}
               colorClass="text-accent-light"
               bgClass="bg-accent/15"
+              kidsMode={kidsMode}
             />
             <MiniStat
               title={isHindi ? "आज सक्रिय" : "Active Today"}
@@ -211,6 +314,7 @@ export default function TeacherDashboardPage() {
               icon={<Activity className="w-5 h-5" />}
               colorClass="text-success"
               bgClass="bg-success/15"
+              kidsMode={kidsMode}
             />
             <MiniStat
               title={isHindi ? "समीक्षा प्रतीक्षित" : "Pending Review"}
@@ -218,6 +322,7 @@ export default function TeacherDashboardPage() {
               icon={<Clock className="w-5 h-5" />}
               colorClass="text-warning"
               bgClass="bg-warning/15"
+              kidsMode={kidsMode}
             />
             <MiniStat
               title={isHindi ? "सुरक्षा अलर्ट" : "Safety Alerts"}
@@ -225,6 +330,7 @@ export default function TeacherDashboardPage() {
               icon={<AlertTriangle className="w-5 h-5" />}
               colorClass="text-error"
               bgClass="bg-error/15"
+              kidsMode={kidsMode}
             />
           </motion.div>
 
@@ -233,7 +339,7 @@ export default function TeacherDashboardPage() {
             
             {/* Chronological Activity Feed */}
             <motion.div variants={itemVariants} className="lg:col-span-2">
-              <GlassCard className="h-full flex flex-col justify-between">
+              <GlassCard className="h-full flex flex-col justify-between" kidsMode={kidsMode}>
                 <div>
                   <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
                     <div className="flex items-center gap-3">
@@ -301,7 +407,7 @@ export default function TeacherDashboardPage() {
 
             {/* Quick Actions Card */}
             <motion.div variants={itemVariants}>
-              <GlassCard className="h-full flex flex-col">
+              <GlassCard className="h-full flex flex-col" kidsMode={kidsMode}>
                 <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6">
                   {isHindi ? "त्वरित क्रियाएं" : "Quick Actions"}
                 </h3>
@@ -361,12 +467,12 @@ export default function TeacherDashboardPage() {
             </motion.div>
           </div>
 
-          {/* Row 3: AI Usage Summary, Frequently Asked Doubts & Classes */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Row 3: AI Usage Summary & Classes */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* AI Usage Summary */}
             <motion.div variants={itemVariants}>
-              <GlassCard className="h-full flex flex-col justify-between">
+              <GlassCard className="h-full flex flex-col justify-between" kidsMode={kidsMode}>
                 <div>
                   <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6 flex items-center gap-2">
                     <BrainCircuit className="w-4 h-4 text-accent-light" />
@@ -421,43 +527,9 @@ export default function TeacherDashboardPage() {
               </GlassCard>
             </motion.div>
 
-            {/* Frequently Asked Doubts */}
-            <motion.div variants={itemVariants}>
-              <GlassCard className="h-full flex flex-col">
-                <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6 flex items-center gap-2">
-                  <HelpCircle className="w-4 h-4 text-warning" />
-                  {isHindi ? "अक्सर पूछे गए संदेह" : "Frequently Asked Doubts"}
-                </h3>
-
-                {isLoading ? (
-                  <div className="flex flex-wrap gap-2">
-                    {[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="h-8 w-16 rounded-full bg-white/5 animate-pulse" />)}
-                  </div>
-                ) : !data?.frequentDoubts || data.frequentDoubts.length === 0 ? (
-                  <div className="text-center py-8 text-foreground-subtle text-xs flex-1 flex items-center justify-center">
-                    {isHindi ? "अभी तक कोई संदेह विश्लेषण नहीं।" : "No doubts analyzed yet."}
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-2 flex-1 items-start">
-                    {data.frequentDoubts.map((doubt) => (
-                      <span
-                        key={doubt.word}
-                        className="px-3.5 py-1.5 rounded-full bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 text-xs font-medium text-foreground-muted flex items-center gap-1.5 transition-all cursor-default"
-                      >
-                        <span>{doubt.word}</span>
-                        <span className="px-1.5 py-0.5 rounded-full bg-accent/20 text-[10px] text-accent-light font-bold">
-                          {doubt.count}
-                        </span>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </GlassCard>
-            </motion.div>
-
             {/* Teacher Classes */}
             <motion.div variants={itemVariants}>
-              <GlassCard className="h-full flex flex-col">
+              <GlassCard className="h-full flex flex-col" kidsMode={kidsMode}>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest flex items-center gap-2">
                     <GraduationCap className="w-4 h-4 text-info" />
@@ -512,18 +584,12 @@ export default function TeacherDashboardPage() {
 
           {/* Safety Alerts Preview */}
           <motion.div variants={itemVariants}>
-            <GlassCard>
+            <GlassCard kidsMode={kidsMode}>
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
                 <div className="flex items-center gap-3">
                   <ShieldAlert className="w-5 h-5 text-error" />
                   <h2 className="text-base font-medium text-foreground tracking-wide">{isHindi ? "सुरक्षा अलर्ट" : "Safety Alerts Preview"}</h2>
                 </div>
-                <a
-                  href="/dashboard/teacher/analytics"
-                  className="text-xs font-medium text-foreground-subtle hover:text-foreground transition-colors flex items-center gap-1"
-                >
-                  {isHindi ? "पूरा इतिहास देखें" : "View full history"} <ArrowUpRight className="w-3.5 h-3.5" />
-                </a>
               </div>
 
               {isLoading ? (
@@ -535,44 +601,7 @@ export default function TeacherDashboardPage() {
                   {isHindi ? "हाल ही में कोई सुरक्षा झंडा नहीं। सभी छात्र शैक्षणिक ईमानदारी के नियमों का पालन कर रहे हैं।" : "No safety flags triggered recently. All students are following academic integrity rules."}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="border-b border-white/5 text-[10px] font-bold text-foreground-subtle uppercase tracking-wider">
-                        <th className="pb-3 pr-4">{isHindi ? "छात्र" : "Student"}</th>
-                        <th className="pb-3 pr-4">{isHindi ? "ग्रेड" : "Grade"}</th>
-                        <th className="pb-3 pr-4">{isHindi ? "चिह्नित प्रश्न" : "Flagged Query"}</th>
-                        <th className="pb-3 pr-4">{isHindi ? "AI टूल" : "AI Tool"}</th>
-                        <th className="pb-3 pr-4">{isHindi ? "श्रेणी" : "Category"}</th>
-                        <th className="pb-3 pr-4">{isHindi ? "गंभीरता" : "Severity"}</th>
-                        <th className="pb-3">{isHindi ? "समय" : "Timestamp"}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5 text-xs text-foreground-muted font-medium">
-                      {data.safetyAlertsPreview.map((alert) => (
-                        <tr key={alert.id} className="hover:bg-white/[0.01] transition-all">
-                          <td className="py-3.5 pr-4 text-foreground font-semibold">{alert.studentName}</td>
-                          <td className="py-3.5 pr-4">{isHindi ? "कक्षा" : "Grade"} {alert.gradeLevel || "—"}</td>
-                          <td className="py-3.5 pr-4 italic max-w-xs truncate" title={alert.promptText}>
-                            "{alert.promptText}"
-                          </td>
-                          <td className="py-3.5 pr-4">{alert.toolUsed}</td>
-                          <td className="py-3.5 pr-4">
-                            <span className="px-2 py-0.5 rounded bg-error/10 text-error border border-error/15 text-[10px] font-bold">
-                              {alert.category}
-                            </span>
-                          </td>
-                          <td className="py-3.5 pr-4">
-                            <span className="px-2 py-0.5 rounded bg-error/15 text-error text-[10px] font-bold">
-                              {alert.severity}
-                            </span>
-                          </td>
-                          <td className="py-3.5 text-foreground-subtle">{timeAgo(alert.timestamp, isHindi)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <SafetyAlertsTable alerts={data.safetyAlertsPreview} isHindi={isHindi} />
               )}
             </GlassCard>
           </motion.div>

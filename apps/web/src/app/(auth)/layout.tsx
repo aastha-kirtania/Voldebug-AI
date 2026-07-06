@@ -5,7 +5,7 @@ import { Zap } from "lucide-react";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
+    <div className="min-h-screen flex flex-col relative overflow-hidden kids-mode bg-[#fefdf8] text-[#3d3b30] selection:bg-violet-300/40 infinite-scroll-bg">
       {/* Background */}
       <GradientMesh />
 
@@ -15,17 +15,17 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <div className="absolute bottom-0 -left-20 w-[400px] h-[400px] rounded-full bg-purple-600/5 blur-[120px]" />
         {/* Subtle grid */}
         <div
-          className="absolute inset-0 opacity-[0.015]"
+          className="absolute inset-0 opacity-[0.05]"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+              "linear-gradient(rgba(61,59,48,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(61,59,48,0.04) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
           }}
         />
       </div>
 
       {/* Top nav bar */}
-      <nav className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-white/5">
+      <nav className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-card-border">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-accent flex items-center justify-center shadow-md shadow-accent/30">
             <Zap className="w-3.5 h-3.5 text-white" />

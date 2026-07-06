@@ -137,7 +137,7 @@ function WelcomeStep({ name }: { name: string }) {
       <div className="text-6xl animate-float">🤖</div>
       <div className="space-y-3">
         <h2 className="font-display text-2xl md:text-3xl font-bold">
-          Welcome to Voldebug{name ? `, ${name.split(" ")[0]}` : ""}!
+          Welcome to Voldebug{name ? `, ${name}` : ""}!
         </h2>
         <p className="text-foreground-muted text-base max-w-sm mx-auto leading-relaxed">
           You're about to join thousands of students learning AI skills through real assignments and friendly competition.
@@ -205,11 +205,7 @@ function HowItWorksStep() {
 
 function SetupStep({
   schoolName,
-  classId,
-  classes,
-  loadingClasses,
   setSchoolName,
-  setClassId,
   gradeLevel,
   studentId,
   setGradeLevel,
@@ -226,11 +222,7 @@ function SetupStep({
   loadingSchools,
 }: {
   schoolName: string;
-  classId: string;
-  classes: { id: string; name: string; teacher: { name: string | null } }[];
-  loadingClasses: boolean;
   setSchoolName: (v: string) => void;
-  setClassId: (v: string) => void;
   gradeLevel: string;
   studentId: string;
   setGradeLevel: (v: string) => void;
@@ -299,40 +291,6 @@ function SetupStep({
             </div>
           )}
         </div>
-
-        {schoolName.trim().length > 0 && (
-          <div className="space-y-1.5">
-            <label htmlFor="classId" className="text-sm font-medium flex items-center gap-1.5">
-              <BookOpen className="w-4 h-4 text-foreground-subtle" />
-              Class / Classroom
-              <span className="text-foreground-subtle text-xs font-normal ml-1">(optional)</span>
-            </label>
-            {loadingClasses ? (
-              <div className="flex items-center gap-2 text-xs text-foreground-subtle py-2">
-                <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
-                Finding classes...
-              </div>
-            ) : classes.length > 0 ? (
-              <select
-                id="classId"
-                value={classId}
-                onChange={(e) => setClassId(e.target.value)}
-                className="input-base"
-              >
-                <option value="">Select class to join...</option>
-                {classes.map((cls) => (
-                  <option key={cls.id} value={cls.id}>
-                    {cls.name} (Teacher: {cls.teacher?.name || "Unknown"})
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <p className="text-xs text-warning py-1 font-medium">
-                No classes found in this school yet. Ask your teacher to create the class first.
-              </p>
-            )}
-          </div>
-        )}
 
         <div className="space-y-1.5">
           <label htmlFor="gradeLevel" className="text-sm font-medium flex items-center gap-1.5">
@@ -453,11 +411,8 @@ export default function StudentOnboarding() {
   const [gradeLevel, setGradeLevel] = useState("");
   const [studentId, setStudentId] = useState("");
   const [schoolName, setSchoolName] = useState("");
-  const [classId, setClassId] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("robot");
   const [showConfetti, setShowConfetti] = useState(false);
-  const [classes, setClasses] = useState<{ id: string; name: string; teacher: { name: string | null } }[]>([]);
-  const [loadingClasses, setLoadingClasses] = useState(false);
   const [registeredSchools, setRegisteredSchools] = useState<{ id: string; name: string }[]>([]);
   const [loadingSchools, setLoadingSchools] = useState(false);
   const [password, setPassword] = useState("");
@@ -494,39 +449,6 @@ export default function StudentOnboarding() {
     }
   }, [session]);
 
-  useEffect(() => {
-    if (!schoolName.trim()) {
-      setClasses([]);
-      setClassId("");
-      return;
-    }
-
-    const delayDebounce = setTimeout(async () => {
-      setLoadingClasses(true);
-      try {
-        const token = (session?.user as any)?.token;
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/v1/users/school-classes?schoolName=${encodeURIComponent(schoolName.trim())}`,
-          {
-            headers: {
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-          }
-        );
-        if (res.ok) {
-          const json = await res.json();
-          setClasses(json.data || []);
-        }
-      } catch (err) {
-        console.error("Failed to fetch classes:", err);
-      } finally {
-        setLoadingClasses(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(delayDebounce);
-  }, [schoolName, session]);
-
   const userName = session?.user?.name ?? "";
   const hasPassword = session?.user?.hasPassword ?? false;
 
@@ -561,7 +483,6 @@ export default function StudentOnboarding() {
             gradeLevel: Number(gradeLevel),
             studentId: studentId || undefined,
             schoolName: schoolName.trim() || undefined,
-            classId: classId || undefined,
             password: password || undefined,
             avatar: selectedAvatar,
           }),
@@ -590,7 +511,7 @@ export default function StudentOnboarding() {
     } finally {
       setSubmitting(false);
     }
-  }, [gradeLevel, studentId, schoolName, classId, password, selectedAvatar, session, update, router, hasPassword]);
+  }, [gradeLevel, studentId, schoolName, password, selectedAvatar, session, update, router, hasPassword]);
 
   const isLastStep = step === STEPS.length - 1;
   const canNext = step < STEPS.length - 1;
@@ -629,7 +550,7 @@ export default function StudentOnboarding() {
               {i < STEPS.length - 1 && (
                 <div
                   className={`h-0.5 w-8 rounded-full transition-all duration-500 ${
-                    i < step ? "bg-success" : "bg-card-border"
+                     i < step ? "bg-success" : "bg-card-border"
                   }`}
                 />
               )}
@@ -657,11 +578,7 @@ export default function StudentOnboarding() {
               {step === 3 && (
                 <SetupStep
                   schoolName={schoolName}
-                  classId={classId}
-                  classes={classes}
-                  loadingClasses={loadingClasses}
                   setSchoolName={setSchoolName}
-                  setClassId={setClassId}
                   gradeLevel={gradeLevel}
                   studentId={studentId}
                   setGradeLevel={setGradeLevel}

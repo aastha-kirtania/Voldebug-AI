@@ -3,29 +3,40 @@
 import { type ReactNode, useState, useEffect } from "react";
 import { Navigation } from "@web/components/dashboard/navigation";
 import { NotificationBell } from "@web/components/dashboard/notification-bell";
-import { ThemeToggle } from "@web/components/dashboard/theme-toggle";
 import { LanguageSwitcher } from "@web/components/dashboard/language-switcher";
 import { useSession, signOut } from "next-auth/react";
-import { LogOut, Volume2, VolumeX } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { sound } from "@web/lib/audio";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { data: session } = useSession();
-  const [soundEnabled, setSoundEnabled] = useState(true);
-
-  useEffect(() => {
-    setSoundEnabled(sound.isEnabled());
-  }, []);
-
-  const handleToggleSound = () => {
-    const next = sound.toggle();
-    setSoundEnabled(next);
-    if (next) {
-      sound.playClick();
-    }
-  };
+  const [kidsMode, setKidsMode] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const role = session?.user?.role;
+
+  useEffect(() => {
+    const saved = localStorage.getItem("kids-mode");
+    if (saved !== null) {
+      setKidsMode(saved === "true");
+    } else {
+      setKidsMode(role === "STUDENT");
+    }
+    setIsInitialized(true);
+  }, [role]);
+
+  useEffect(() => {
+    if (!isInitialized) return;
+    const root = window.document.documentElement;
+    if (kidsMode) {
+      root.classList.add("kids-mode");
+      localStorage.setItem("kids-mode", "true");
+    } else {
+      root.classList.remove("kids-mode");
+      localStorage.setItem("kids-mode", "false");
+    }
+  }, [kidsMode, isInitialized]);
+
   const brandHref = role === "ADMIN"
     ? "/dashboard/admin"
     : (role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student");
@@ -46,12 +57,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex relative">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex w-64 flex-col border-r border-white/5 p-4">
+      <aside className="hidden lg:flex w-64 flex-col border-r border-white/5 p-4 transition-all">
         <div className="px-2 py-4 mb-6">
           <a href={brandHref} className="font-display text-lg font-bold tracking-tight">
             <span className="text-gradient">VOLDEBUG</span>
-            <span className="text-foreground-muted text-xs ml-1.5 font-sans font-normal">
-              AI PORTAL
+            <span className="text-foreground-muted text-xs ml-1.5 font-sans font-normal uppercase">
+              {"AI Portal"}
             </span>
           </a>
         </div>
@@ -60,20 +71,24 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Top bar: language switcher + theme toggle + sound toggle + notification bell + logout + user */}
-        <header className="sticky top-0 z-40 bg-bg/80 backdrop-blur-sm border-b border-white/5 h-14 flex items-center justify-end px-4 md:px-6 lg:px-8 gap-2">
+        {/* Top bar: language switcher + kids mode toggle + notification bell + logout + user */}
+        <header className="sticky top-0 z-40 bg-bg/80 backdrop-blur-sm border-b border-white/5 h-14 flex items-center justify-end px-4 md:px-6 lg:px-8 gap-2 transition-all">
           <LanguageSwitcher />
-          <ThemeToggle />
+          
+          {/* Kids Mode Toggle */}
           <button
-            onClick={handleToggleSound}
-            className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-surface/60 border border-white/5 transition-all text-foreground-muted hover:text-foreground"
-            title={soundEnabled ? "Mute Sounds" : "Unmute Sounds"}
+            onClick={() => {
+              setKidsMode(!kidsMode);
+              sound.playClick();
+            }}
+            className={`w-9 h-9 rounded-lg flex items-center justify-center border transition-all ${
+              kidsMode 
+                ? "bg-[#7c3aed] text-white border-[#7c3aed] shadow-md shadow-violet-200/50" 
+                : "hover:bg-surface/60 border-white/5 text-foreground-muted hover:text-foreground"
+            }`}
+            title="Theme Toggle"
           >
-            {soundEnabled ? (
-              <Volume2 className="w-[18px] h-[18px]" />
-            ) : (
-              <VolumeX className="w-[18px] h-[18px] text-error" />
-            )}
+            <span className="text-base select-none">🔴</span>
           </button>
           <NotificationBell />
           <button
