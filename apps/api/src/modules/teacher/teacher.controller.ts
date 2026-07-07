@@ -6,44 +6,133 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
   const userId = req.userId!;
 
   try {
-    const teacherUser = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { school: { select: { name: true } } },
-    });
+    // Phase 1: Fetch initial setup data in parallel (1 network round-trip)
+    const [teacherUser, classes, dbTools] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { school: { select: { name: true } } },
+      }),
+      prisma.class.findMany({
+        where: { teacherId: userId },
+        include: {
+          members: { select: { userId: true } },
+          _count: { select: { assignments: true, members: true } },
+        },
+      }),
+      prisma.tool.findMany({
+        select: { name: true, brandColor: true },
+      })
+    ]);
+
     const schoolName = teacherUser?.school?.name || null;
-
-    // Get teacher's classes
-    const classes = await prisma.class.findMany({
-      where: { teacherId: userId },
-      include: {
-        members: { select: { userId: true } },
-        _count: { select: { assignments: true, members: true } },
-      },
-    });
-
     const classIds = classes.map((c) => c.id);
     const studentIds = Array.from(new Set(classes.flatMap((c) => c.members.map((m) => m.userId))));
 
-    // Get assignment IDs
-    const assignments = await prisma.assignment.findMany({
-      where: { classId: { in: classIds }, status: "PUBLISHED", deletedAt: null },
-      select: { id: true },
-    });
-    const assignmentIds = assignments.map((a) => a.id);
+    // Phase 2: Fetch all dashboard metrics and logs in parallel (1 network round-trip)
+    const [
+      assignments,
+      pendingSubmissionsList,
+      activeStudentsToday,
+      safetyAlertsCount,
+      gradedSubmissions,
+      submissionsForActivity,
+      auditLogsForActivity,
+      auditLogsForAI,
+      logsForDoubts,
+      latestAlerts
+    ] = await Promise.all([
+      // 1. Published assignments
+      prisma.assignment.findMany({
+        where: { classId: { in: classIds }, status: "PUBLISHED", deletedAt: null },
+        select: { id: true },
+      }),
+      // 2. Pending submissions (using joined filter on classIds)
+      prisma.submission.findMany({
+        where: {
+          assignment: { classId: { in: classIds }, status: "PUBLISHED", deletedAt: null },
+          status: "SUBMITTED",
+          deletedAt: null
+        },
+        include: {
+          student: { select: { id: true, name: true, email: true, image: true } },
+          assignment: { select: { title: true } },
+        },
+        orderBy: { submittedAt: "desc" },
+        take: 10,
+      }),
+      // 3. Active students count
+      prisma.user.count({
+        where: {
+          id: { in: studentIds },
+          lastActiveAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+        },
+      }),
+      // 4. Safety alerts count
+      prisma.auditLog.count({
+        where: {
+          studentId: { in: studentIds },
+          isFlagged: true,
+        },
+      }),
+      // 5. Graded submissions for average stats
+      prisma.submission.findMany({
+        where: {
+          assignment: { classId: { in: classIds }, status: "PUBLISHED", deletedAt: null },
+          status: { in: ["GRADED", "RETURNED"] },
+          deletedAt: null
+        },
+        select: { score: true },
+      }),
+      // 6. Submissions for unified activity feed
+      prisma.submission.findMany({
+        where: { studentId: { in: studentIds }, deletedAt: null },
+        include: {
+          student: { select: { name: true, email: true } },
+          assignment: { select: { title: true } },
+        },
+        orderBy: { submittedAt: "desc" },
+        take: 15,
+      }),
+      // 7. Audit logs for activity feed
+      prisma.auditLog.findMany({
+        where: { studentId: { in: studentIds } },
+        include: { student: { select: { name: true, email: true } } },
+        orderBy: { timestamp: "desc" },
+        take: 15,
+      }),
+      // 8. Audit logs for AI usage statistics
+      prisma.auditLog.findMany({
+        where: {
+          studentId: { in: studentIds },
+          isFlagged: false,
+        },
+        select: { toolUsed: true, timestamp: true },
+      }),
+      // 9. Logs for doubt keyword analysis
+      prisma.auditLog.findMany({
+        where: {
+          studentId: { in: studentIds },
+          isFlagged: false,
+        },
+        select: { promptText: true },
+        take: 200,
+      }),
+      // 10. Latest flagged alerts preview
+      prisma.auditLog.findMany({
+        where: {
+          studentId: { in: studentIds },
+          isFlagged: true,
+        },
+        include: {
+          student: { select: { name: true, email: true, gradeLevel: true } },
+        },
+        orderBy: { timestamp: "desc" },
+        take: 100,
+      })
+    ]);
 
-    // Active assignments count
     const activeAssignments = assignments.length;
-
-    // Pending submissions (ungraded)
-    const pendingSubmissionsList = await prisma.submission.findMany({
-      where: { assignmentId: { in: assignmentIds }, status: "SUBMITTED", deletedAt: null },
-      include: {
-        student: { select: { id: true, name: true, email: true, image: true } },
-        assignment: { select: { title: true } },
-      },
-      orderBy: { submittedAt: "desc" },
-      take: 10,
-    });
+    const assignmentIds = assignments.map((a) => a.id);
 
     const recentSubmissions = pendingSubmissionsList.map((s) => ({
       id: s.id,
@@ -59,30 +148,7 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
       xpAwarded: s.xpAwarded,
     }));
 
-    // Total unique students
     const totalStudents = studentIds.length;
-
-    // Active students today (active in last 24h)
-    const activeStudentsToday = await prisma.user.count({
-      where: {
-        id: { in: studentIds },
-        lastActiveAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      },
-    });
-
-    // Safety alerts count
-    const safetyAlertsCount = await prisma.auditLog.count({
-      where: {
-        studentId: { in: studentIds },
-        isFlagged: true,
-      },
-    });
-
-    // Graded submissions for stats
-    const gradedSubmissions = await prisma.submission.findMany({
-      where: { assignmentId: { in: assignmentIds }, status: { in: ["GRADED", "RETURNED"] }, deletedAt: null },
-      select: { score: true },
-    });
 
     const averageGrade =
       gradedSubmissions.length > 0
@@ -94,24 +160,7 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
         ? Math.round((gradedSubmissions.length / assignmentIds.length) * 100)
         : 0;
 
-    // Unified Chronological Activity Feed
-    const submissionsForActivity = await prisma.submission.findMany({
-      where: { studentId: { in: studentIds }, deletedAt: null },
-      include: {
-        student: { select: { name: true, email: true } },
-        assignment: { select: { title: true } },
-      },
-      orderBy: { submittedAt: "desc" },
-      take: 15,
-    });
-
-    const auditLogsForActivity = await prisma.auditLog.findMany({
-      where: { studentId: { in: studentIds } },
-      include: { student: { select: { name: true, email: true } } },
-      orderBy: { timestamp: "desc" },
-      take: 15,
-    });
-
+    // Unified Chronological Activity Feed Compilation
     const activities: any[] = [];
 
     submissionsForActivity.forEach((sub) => {
@@ -159,25 +208,13 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
     activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     const recentActivity = activities.slice(0, 10);
 
-    // AI Usage Summary
-    const auditLogsForAI = await prisma.auditLog.findMany({
-      where: {
-        studentId: { in: studentIds },
-        isFlagged: false,
-      },
-      select: { toolUsed: true, timestamp: true },
-    });
-
+    // AI Usage Summary compilation
     const toolCounts: Record<string, number> = {};
     auditLogsForAI.forEach((log) => {
       toolCounts[log.toolUsed] = (toolCounts[log.toolUsed] || 0) + 1;
     });
 
-    const dbTools = await prisma.tool.findMany({
-      select: { name: true, brandColor: true },
-    });
     const colorMap = new Map(dbTools.map((t) => [t.name.toLowerCase(), t.brandColor]));
-
     const mostUsedTools = Object.entries(toolCounts)
       .map(([name, count]) => ({
         name,
@@ -201,7 +238,7 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
       weeklyUsage,
     };
 
-    // Frequently Asked Doubts
+    // Frequently Asked Doubts compilation
     const wordCounts: Record<string, number> = {};
     const stopwords = new Set([
       "what", "whats", "how", "why", "who", "whom", "whose", "which", "where", "when", 
@@ -216,15 +253,6 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
       "please", "question", "answer", "query", "find", "give", "show", "write", "make", "take",
       "get", "tell", "ask", "like", "want", "need", "know", "think", "good", "best", "easy"
     ]);
-
-    const logsForDoubts = await prisma.auditLog.findMany({
-      where: {
-        studentId: { in: studentIds },
-        isFlagged: false,
-      },
-      select: { promptText: true },
-      take: 200,
-    });
 
     logsForDoubts.forEach((log) => {
       const words = log.promptText
@@ -243,19 +271,7 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 8);
 
-    // Safety Alerts Preview
-    const latestAlerts = await prisma.auditLog.findMany({
-      where: {
-        studentId: { in: studentIds },
-        isFlagged: true,
-      },
-      include: {
-        student: { select: { name: true, email: true, gradeLevel: true } },
-      },
-      orderBy: { timestamp: "desc" },
-      take: 100,
-    });
-
+    // Safety Alerts Preview compilation
     const safetyAlertsPreview = latestAlerts.map((a) => {
       let category = "CHEATING";
       let severity = "HIGH";
