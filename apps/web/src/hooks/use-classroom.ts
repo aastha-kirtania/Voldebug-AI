@@ -66,7 +66,7 @@ export function useAssignmentList(filter?: "active" | "completed" | "overdue") {
         return true;
       });
     },
-    staleTime: 60_000,
+    staleTime: 1_000,
   });
 }
 
@@ -75,7 +75,7 @@ export function useAssignment(id: string) {
     queryKey: ["assignments", id],
     queryFn: () => api.get<Assignment>(`/v1/assignments/${id}`),
     enabled: !!id,
-    staleTime: 60_000,
+    staleTime: 1_000,
   });
 }
 
@@ -97,6 +97,6 @@ export function useSubmissionHistory(status?: string) {
   return useQuery({
     queryKey: ["submissions", status],
     queryFn: () => api.get<Submission[]>(`/v1/submissions/history${qs}`),
-    staleTime: 60_000,
+    staleTime: 1_000,
   });
 }

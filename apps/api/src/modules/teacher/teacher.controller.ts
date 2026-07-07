@@ -486,49 +486,118 @@ export async function handleTeacherAlerts(req: Request, res: Response) {
 export async function handleTeacherAnalytics(req: Request, res: Response) {
   const teacherId = req.userId!;
   try {
-    const classes = await prisma.class.findMany({
-      where: { teacherId },
-      include: { members: { select: { userId: true } } }
-    });
+    // Phase 1: Fetch initial classes and assignments in parallel (1 network round-trip)
+    const [classes, assignmentsForIds, dbTools] = await Promise.all([
+      prisma.class.findMany({
+        where: { teacherId },
+        include: { members: { select: { userId: true } } }
+      }),
+      prisma.assignment.findMany({
+        where: { class: { teacherId }, deletedAt: null },
+        select: { id: true }
+      }),
+      prisma.tool.findMany()
+    ]);
+
     const classIds = classes.map(c => c.id);
     const studentIds = Array.from(new Set(classes.flatMap(c => c.members.map(m => m.userId))));
-
-    const assignmentsForIds = await prisma.assignment.findMany({
-      where: { classId: { in: classIds }, deletedAt: null },
-      select: { id: true }
-    });
     const assignmentIds = assignmentsForIds.map(a => a.id);
 
-    // 1. Weekly submissions count (last 7 days)
-    const submissionDays = await Promise.all(
-      Array.from({ length: 7 }).map(async (_, idx) => {
-        const d = new Date();
-        d.setDate(d.getDate() - idx);
-        d.setHours(0, 0, 0, 0);
-        const nextD = new Date(d);
-        nextD.setDate(d.getDate() + 1);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
 
-        const count = await prisma.submission.count({
-          where: {
-            assignmentId: { in: assignmentIds },
-            submittedAt: { gte: d, lt: nextD },
-            deletedAt: null
-          }
-        });
-        return {
-          dayLabel: d.toLocaleDateString("en-US", { weekday: "short" }),
-          count
-        };
+    // Phase 2: Fetch all analytics data concurrently (1 network round-trip)
+    const [
+      recentSubmissionsForWeek,
+      gradedSubmissions,
+      studentLogs,
+      assignmentsWithSubmissions,
+      logsForDoubts,
+      streaks,
+      studentSubmissions,
+      flaggedLogs
+    ] = await Promise.all([
+      // 1. All submissions from the last 7 days (to group in JS)
+      prisma.submission.findMany({
+        where: {
+          assignmentId: { in: assignmentIds },
+          submittedAt: { gte: sevenDaysAgo },
+          deletedAt: null
+        },
+        select: { submittedAt: true }
+      }),
+      // 2. Graded submissions
+      prisma.submission.findMany({
+        where: { assignmentId: { in: assignmentIds }, status: "GRADED", deletedAt: null },
+        select: { score: true }
+      }),
+      // 3. Tool usage logs grouped by tool
+      prisma.auditLog.groupBy({
+        by: ["toolUsed"],
+        where: {
+          studentId: { in: studentIds },
+          isFlagged: false,
+        },
+        _count: { toolUsed: true },
+      }),
+      // 4. Assignments with their graded submissions
+      prisma.assignment.findMany({
+        where: { classId: { in: classIds }, deletedAt: null },
+        include: { submissions: { where: { status: "GRADED", deletedAt: null } } }
+      }),
+      // 5. Search prompts for doubt analysis
+      prisma.auditLog.findMany({
+        where: {
+          studentId: { in: studentIds },
+          isFlagged: false,
+        },
+        select: { promptText: true },
+        take: 100
+      }),
+      // 6. Streaks
+      prisma.streak.findMany({
+        where: { userId: { in: studentIds } },
+        select: { currentStreak: true }
+      }),
+      // 7. Student submissions for risk assessment
+      prisma.submission.findMany({
+        where: { studentId: { in: studentIds }, deletedAt: null },
+        include: { student: { select: { id: true, name: true, email: true, image: true } } }
+      }),
+      // 8. Flagged safety logs (7d)
+      prisma.auditLog.findMany({
+        where: {
+          studentId: { in: studentIds },
+          isFlagged: true,
+          timestamp: { gte: sevenDaysAgo }
+        },
+        include: { student: { select: { id: true, name: true, email: true, image: true } } },
+        orderBy: { timestamp: "desc" }
       })
-    );
+    ]);
+
+    // Group submission counts by day in JS memory
+    const submissionDays = Array.from({ length: 7 }).map((_, idx) => {
+      const d = new Date();
+      d.setDate(d.getDate() - idx);
+      d.setHours(0, 0, 0, 0);
+      const nextD = new Date(d);
+      nextD.setDate(d.getDate() + 1);
+
+      const count = recentSubmissionsForWeek.filter(s => {
+        const subDate = new Date(s.submittedAt);
+        return subDate >= d && subDate < nextD;
+      }).length;
+
+      return {
+        dayLabel: d.toLocaleDateString("en-US", { weekday: "short" }),
+        count
+      };
+    });
     const weeklySubmissions = submissionDays.reverse();
 
-    // 2. Grade distribution from graded submissions
-    const gradedSubmissions = await prisma.submission.findMany({
-      where: { assignmentId: { in: assignmentIds }, status: "GRADED", deletedAt: null },
-      select: { score: true }
-    });
-
+    // Grade Distribution
     const gradeDistribution = [
       { label: "A (90-100%)", count: gradedSubmissions.filter(s => (s.score ?? 0) >= 90).length, color: "#22c55e" },
       { label: "B (80-89%)", count: gradedSubmissions.filter(s => (s.score ?? 0) >= 80 && (s.score ?? 0) < 90).length, color: "#6366f1" },
@@ -537,55 +606,36 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
       { label: "F (<60%)", count: gradedSubmissions.filter(s => (s.score ?? 0) < 60).length, color: "#7f1d1d" },
     ];
 
-    // 3. Top tools count from student audit logs, falling back to global
-    const studentLogs = await prisma.auditLog.groupBy({
-      by: ["toolUsed"],
-      where: {
-        studentId: { in: studentIds },
-        isFlagged: false,
-      },
-      _count: { toolUsed: true },
-    });
-
+    // Tool Stats mapping
     const studentToolCounts = studentLogs.map(l => ({
       name: l.toolUsed,
       count: l._count.toolUsed
     }));
     studentToolCounts.sort((a, b) => b.count - a.count);
 
-    const toolNames = studentToolCounts.map(tc => tc.name);
-    const dbTools = await prisma.tool.findMany({
-      where: { name: { in: toolNames } }
-    });
-
+    const colorMap = new Map(dbTools.map((t) => [t.name.toLowerCase(), t.brandColor]));
     const toolStats = studentToolCounts.slice(0, 5).map(tc => {
-      const dbT = dbTools.find(t => t.name.toLowerCase() === tc.name.toLowerCase());
       return {
         name: tc.name,
         usageCount: tc.count,
-        brandColor: dbT?.brandColor || "#6366f1"
+        brandColor: colorMap.get(tc.name.toLowerCase()) || "#6366f1"
       };
     });
 
     if (toolStats.length === 0) {
-      const tools = await prisma.tool.findMany({
-        orderBy: { usageCount: "desc" },
-        take: 5
-      });
-      toolStats.push(...tools.map(t => ({
+      // If no student logs, take top 5 tools ordered by global count
+      const sortedTools = [...dbTools]
+        .sort((a, b) => b.usageCount - a.usageCount)
+        .slice(0, 5);
+      toolStats.push(...sortedTools.map(t => ({
         name: t.name,
         usageCount: t.usageCount,
         brandColor: t.brandColor
       })));
     }
 
-    // 4. Weak concepts (graded assignments with average score < 75)
-    const assignments = await prisma.assignment.findMany({
-      where: { classId: { in: classIds }, deletedAt: null },
-      include: { submissions: { where: { status: "GRADED", deletedAt: null } } }
-    });
-
-    const weakConcepts = assignments
+    // Weak Concepts compilation
+    const weakConcepts = assignmentsWithSubmissions
       .map(a => {
         const scores = a.submissions.map(s => s.score ?? 0);
         const avg = scores.length > 0 ? scores.reduce((sum, s) => sum + s, 0) / scores.length : 100;
@@ -599,16 +649,7 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
       .filter(a => a.submissionsCount > 0 && a.avgScore < 75)
       .sort((a, b) => a.avgScore - b.avgScore);
 
-    // 5. Common doubts from search prompts
-    const logs = await prisma.auditLog.findMany({
-      where: {
-        studentId: { in: studentIds },
-        isFlagged: false,
-      },
-      select: { promptText: true },
-      take: 100
-    });
-
+    // Common doubts compilation
     const wordCounts: Record<string, number> = {};
     const stopwords = new Set([
       "what", "whats", "how", "why", "who", "whom", "whose", "which", "where", "when", 
@@ -623,7 +664,8 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
       "please", "question", "answer", "query", "find", "give", "show", "write", "make", "take",
       "get", "tell", "ask", "like", "want", "need", "know", "think", "good", "best", "easy"
     ]);
-    logs.forEach(log => {
+
+    logsForDoubts.forEach(log => {
       const words = log.promptText
         .toLowerCase()
         .replace(/[^a-zA-Z\s]/g, "")
@@ -640,21 +682,12 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 8);
 
-    // 6. Streaks and engagement
-    const streaks = await prisma.streak.findMany({
-      where: { userId: { in: studentIds } },
-      select: { currentStreak: true }
-    });
+    // Streaks evaluation
     const avgStreak = streaks.length > 0
       ? Math.round(streaks.reduce((sum, s) => sum + s.currentStreak, 0) / streaks.length)
       : 0;
 
-    // 7. At-risk students
-    const studentSubmissions = await prisma.submission.findMany({
-      where: { studentId: { in: studentIds }, deletedAt: null },
-      include: { student: { select: { id: true, name: true, email: true, image: true } } }
-    });
-
+    // Risk assessment compilation
     const studentGrades: Record<string, { total: number; count: number; name: string; email: string; image: string | null }> = {};
     studentSubmissions.forEach(s => {
       if (s.status === "GRADED" && s.score !== null) {
@@ -686,16 +719,6 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
         });
       }
     }
-
-    const flaggedLogs = await prisma.auditLog.findMany({
-      where: {
-        studentId: { in: studentIds },
-        isFlagged: true,
-        timestamp: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
-      },
-      include: { student: { select: { id: true, name: true, email: true, image: true } } },
-      orderBy: { timestamp: "desc" }
-    });
 
     const flaggedStudentIds = new Set(atRiskStudents.map(s => s.id));
     flaggedLogs.forEach(log => {

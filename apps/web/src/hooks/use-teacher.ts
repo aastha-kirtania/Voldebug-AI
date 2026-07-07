@@ -141,7 +141,7 @@ export function useTeacherDashboard() {
   return useQuery({
     queryKey: ["teacher", "dashboard"],
     queryFn: () => api.get<TeacherDashboard>("/v1/teacher/dashboard"),
-    staleTime: 30_000,
+    staleTime: 1_000,
   });
 }
 
@@ -149,7 +149,7 @@ export function useTeacherClasses() {
   return useQuery({
     queryKey: ["teacher", "classes"],
     queryFn: () => api.get<TeacherClass[]>("/v1/teacher/classes"),
-    staleTime: 60_000,
+    staleTime: 1_000,
   });
 }
 
@@ -158,7 +158,7 @@ export function useClassDetail(classId: string) {
     queryKey: ["teacher", "classes", classId],
     queryFn: () => api.get<ClassDetail>(`/v1/teacher/classes/${classId}`),
     enabled: !!classId,
-    staleTime: 30_000,
+    staleTime: 1_000,
   });
 }
 
@@ -167,7 +167,7 @@ export function useAssignmentSubmissions(assignmentId: string) {
     queryKey: ["submissions", "assignment", assignmentId],
     queryFn: () => api.get<Submission[]>(`/v1/submissions/assignment/${assignmentId}`),
     enabled: !!assignmentId,
-    staleTime: 15_000,
+    staleTime: 1_000,
   });
 }
 

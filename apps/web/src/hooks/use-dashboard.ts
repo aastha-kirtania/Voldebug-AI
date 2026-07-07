@@ -76,7 +76,7 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: () => api.get<DashboardStats>("/v1/dashboard/stats"),
-    staleTime: 60_000,
+    staleTime: 1_000,
     retry: 2,
   });
 }
@@ -85,7 +85,7 @@ export function useAssignments() {
   return useQuery({
     queryKey: ["assignments"],
     queryFn: () => api.get<AssignmentResponse[]>("/v1/assignments"),
-    staleTime: 30_000,
+    staleTime: 1_000,
     retry: 2,
   });
 }
