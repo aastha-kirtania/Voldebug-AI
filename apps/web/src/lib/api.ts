@@ -3,9 +3,14 @@ import { env } from "./env";
 
 export class ApiClient {
   private baseURL: string;
+  private token: string | null = null;
 
   constructor(baseURL?: string) {
     this.baseURL = baseURL ?? env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+  }
+
+  setToken(token: string | null) {
+    this.token = token;
   }
 
   async request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -15,16 +20,17 @@ export class ApiClient {
       ...(options?.headers as Record<string, string>)
     };
 
-    // 2. Fetch the current session from NextAuth
-    // Note: getSession works well on the client side
-    const session = await getSession();
+    // 2. Fetch the current session from NextAuth only if we don't have a cached token
+    let token = this.token;
+    if (!token && typeof window !== "undefined") {
+      const session = await getSession();
+      token = (session as any)?.accessToken || (session as any)?.user?.token || null;
+      if (token) {
+        this.token = token;
+      }
+    }
 
-    // 3. Extract the token
-    // Note: You will need to make sure NextAuth is configured to pass the JWT 
-    // to the session object. Usually, this is called 'accessToken' or 'token'.
-    const token = (session as any)?.accessToken || (session as any)?.user?.token;
-
-    // 4. If we have a token, attach it to the Authorization header
+    // 3. If we have a token, attach it to the Authorization header
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }

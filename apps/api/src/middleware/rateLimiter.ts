@@ -4,7 +4,7 @@ const isDev = process.env.NODE_ENV !== "production";
 
 export const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isDev ? 10000 : 100, // 100 requests per window
+  max: isDev ? 10000 : 1000, // 1000 requests per window
   message: {
     data: null,
     error: { code: "RATE_LIMIT_EXCEEDED", message: "Too many requests, please try again later." },
