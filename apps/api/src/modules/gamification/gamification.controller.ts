@@ -5,7 +5,6 @@ import {
   completeDailyChallenge,
   getDailyChallenge,
   awardXP,
-  evaluateBadges,
   updateStreak,
   calculateLevel,
   xpNeededForNextLevel,
@@ -240,63 +239,7 @@ export async function handleGetRoadmap(req: Request, res: Response) {
   }
 }
 
-export async function handleGetBadgeCertificate(req: Request, res: Response) {
-  const userId = req.userId!;
-  const { badgeId } = req.params;
 
-  try {
-    // 1. Verify if user has earned this badge
-    const userBadge = await prisma.userBadge.findUnique({
-      where: {
-        userId_badgeId: { userId, badgeId },
-      },
-      include: {
-        user: { select: { name: true, email: true } },
-        badge: true,
-      },
-    });
-
-    if (!userBadge) {
-      return apiError(res, {
-        code: "FORBIDDEN",
-        message: "You have not earned this badge milestone yet",
-        status: 403,
-      });
-    }
-
-    // 2. Format details
-    const studentName = userBadge.user.name || userBadge.user.email || "Student";
-    const dateEarned = new Date(userBadge.earnedAt).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="certificate_${userBadge.badge.conditionKey}.pdf"`
-    );
-
-    // 3. Generate PDF and stream it directly
-    await generateCertificatePdf(res, {
-      studentName,
-      milestoneTitle: `${userBadge.badge.name} Badge`,
-      milestoneDescription: userBadge.badge.description,
-      dateEarned,
-      verificationId: `CERT-B-${userBadge.id}`,
-    });
-  } catch (err) {
-    console.error("Badge certificate generation error:", err);
-    if (!res.headersSent) {
-      return apiError(res, {
-        code: "INTERNAL_ERROR",
-        message: "Failed to generate certificate PDF",
-        status: 500,
-      });
-    }
-  }
-}
 
 export async function handleGetLevelCertificate(req: Request, res: Response) {
   const userId = req.userId!;

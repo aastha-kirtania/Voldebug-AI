@@ -40,28 +40,7 @@ async function main() {
   await prisma.user.deleteMany();
   console.log("  Purged database successfully.");
 
-  // Badges
-  const badgeDefs = [
-    { name: "First Step", desc: "Completed your first assignment", condition: "first_assignment", count: 1, xp: 100, icon: "📤" },
-    { name: "Tool Explorer", desc: "Used 5 different AI tools", condition: "used_5_tools", count: 5, xp: 150, icon: "🔭" },
-    { name: "Streak Master", desc: "Maintained a 7-day login streak", condition: "streak_7", count: 7, xp: 200, icon: "⚡" },
-    { name: "Top Scholar", desc: "Reached #1 on the class leaderboard", condition: "rank_1", count: 1, xp: 300, icon: "🏆" },
-    { name: "Quiz Whiz", desc: "Passed your first AI tool quiz", condition: "quiz_first_pass", count: 1, xp: 100, icon: "🧠" },
-    { name: "Quiz Master", desc: "Successfully passed 3 different tool quizzes", condition: "quiz_three_passes", count: 3, xp: 250, icon: "🧙" }
-  ];
-  const badges = [];
-  for (const b of badgeDefs) {
-    badges.push(await prisma.badge.create({
-      data: {
-        name: b.name,
-        description: b.desc,
-        iconUrl: b.icon,
-        conditionKey: b.condition,
-        requiredCount: b.count,
-        xpReward: b.xp,
-      },
-    }));
-  }
+
 
   // Tools
   const toolDefs = [
@@ -318,13 +297,7 @@ async function main() {
       }
     });
 
-    await prisma.userBadge.create({
-      data: {
-        userId: s.id,
-        badgeId: badges[randomInt(0, badges.length - 1)].id,
-        progressCount: 1
-      }
-    });
+
   }
 
   // 9. Seeding Audit Logs

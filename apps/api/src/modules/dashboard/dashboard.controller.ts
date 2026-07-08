@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../../utils/prisma.js";
 import { apiSuccess, apiError } from "../../utils/api.js";
-import { evaluateBadges } from "../gamification/gamification.service.js";
 
 export async function handleDashboardStats(req: Request, res: Response) {
   const userId = req.userId;
@@ -10,8 +9,6 @@ export async function handleDashboardStats(req: Request, res: Response) {
   }
 
   try {
-    // Proactively catch up on badges calculation
-    await evaluateBadges(userId).catch(err => console.error("Error evaluating badges:", err));
 
     const [user, xpTransactions, streak, badgesCount, submissions, classMemberships] =
       await Promise.all([

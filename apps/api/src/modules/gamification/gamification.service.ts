@@ -10,7 +10,7 @@ export function calculateLevel(totalXP: number): number {
 
 export function xpNeededForNextLevel(totalXP: number): number {
   const currentLevel = calculateLevel(totalXP);
-  return currentLevel * currentLevel * 100 - totalXP + 100;
+  return currentLevel * currentLevel * 100 - totalXP;
 }
 
 // ─── XP Awarding ──────────────────────────────────────────────────────
@@ -29,12 +29,12 @@ export async function awardXP(
   source: string,
   assignmentId?: string | null,
 ): Promise<AwardXPResult> {
-  // Get level before
-  const transactions = await prisma.xPTransaction.findMany({
+  // Get level before using aggregate sum
+  const aggregateBefore = await prisma.xPTransaction.aggregate({
     where: { userId },
-    select: { amount: true },
+    _sum: { amount: true },
   });
-  const prevTotalXP = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const prevTotalXP = aggregateBefore._sum.amount ?? 0;
   const prevLevel = calculateLevel(prevTotalXP);
 
   // Create XP transaction
@@ -47,11 +47,6 @@ export async function awardXP(
     },
   });
 
-  // Get new level
-  const newTotalXP = prevTotalXP + amount;
-  const newLevel = calculateLevel(newTotalXP);
-  const levelUp = newLevel > prevLevel;
-
   // Update lastActiveAt
   await prisma.user.update({
     where: { id: userId },
@@ -61,8 +56,14 @@ export async function awardXP(
   // Evaluate streak
   const newStreak = await updateStreak(userId);
 
-  // Evaluate badges
-  const badgesEarned = await evaluateBadges(userId);
+  // Get final total XP after transaction and any secondary transactions
+  const aggregateAfter = await prisma.xPTransaction.aggregate({
+    where: { userId },
+    _sum: { amount: true },
+  });
+  const newTotalXP = aggregateAfter._sum.amount ?? 0;
+  const newLevel = calculateLevel(newTotalXP);
+  const levelUp = newLevel > prevLevel;
 
   // Emit socket events
   emitToUser(userId, "xp:updated", {
@@ -82,7 +83,7 @@ export async function awardXP(
     level: newLevel,
     levelUp,
     newStreak,
-    badgesEarned,
+    badgesEarned: [],
   };
 }
 
@@ -114,11 +115,12 @@ export async function updateStreak(userId: string): Promise<number> {
     return streak.currentStreak;
   }
 
-  // Check if within 48 hours (streak maintained)
-  const hoursSinceLastActive =
-    (now.getTime() - streak.lastActiveDate.getTime()) / (1000 * 60 * 60);
+  // Calculate calendar days difference
+  const lastDateTime = new Date(lastDate).getTime();
+  const todayTime = new Date(today).getTime();
+  const diffDays = Math.round((todayTime - lastDateTime) / (1000 * 60 * 60 * 24));
 
-  if (hoursSinceLastActive <= 48) {
+  if (diffDays === 1) {
     // Streak continues
     const newStreak = streak.currentStreak + 1;
     const updated = await prisma.streak.update({
@@ -142,96 +144,6 @@ export async function updateStreak(userId: string): Promise<number> {
     },
   });
   return updated.currentStreak;
-}
-
-// ─── Badge Evaluation ─────────────────────────────────────────────────
-
-export async function evaluateBadges(userId: string): Promise<string[]> {
-  const earned: string[] = [];
-
-  // Get user stats
-  const xpTransactions = await prisma.xPTransaction.findMany({
-    where: { userId },
-    select: { amount: true },
-  });
-  const totalXP = xpTransactions.reduce((sum, t) => sum + t.amount, 0);
-
-  const submissionCount = await prisma.submission.count({
-    where: { studentId: userId, deletedAt: null },
-  });
-
-  const streak = await prisma.streak.findUnique({ where: { userId } });
-
-  // Get all active badge definitions
-  const badges = await prisma.badge.findMany({
-    where: { isActive: true },
-    select: { id: true, name: true, conditionKey: true, requiredCount: true, xpReward: true },
-    orderBy: { xpReward: "asc" },
-  });
-
-  // Get already earned badges
-  const existingBadges = await prisma.userBadge.findMany({
-    where: { userId },
-    select: { badgeId: true },
-  });
-  const earnedIds = new Set(existingBadges.map((b) => b.badgeId));
-
-  for (const badge of badges) {
-    if (earnedIds.has(badge.id)) continue;
-
-    let meetsCondition = false;
-
-    switch (badge.conditionKey) {
-      case "first_submission":
-        meetsCondition = submissionCount >= 1;
-        break;
-      case "ten_submissions":
-        meetsCondition = submissionCount >= 10;
-        break;
-      case "first_tool_use":
-        meetsCondition = false;
-        break;
-      case "seven_day_streak":
-        meetsCondition = (streak?.currentStreak || 0) >= 7;
-        break;
-      case "xp_milestone_500":
-        meetsCondition = totalXP >= 500;
-        break;
-      case "xp_milestone_1000":
-        meetsCondition = totalXP >= 1000;
-        break;
-      case "quiz_first_pass": {
-        const passedQuizzes = await prisma.quizAttempt.groupBy({
-          by: ["quizId"],
-          where: { studentId: userId, passed: true },
-        });
-        meetsCondition = passedQuizzes.length >= 1;
-        break;
-      }
-      case "quiz_three_passes": {
-        const passedQuizzes = await prisma.quizAttempt.groupBy({
-          by: ["quizId"],
-          where: { studentId: userId, passed: true },
-        });
-        meetsCondition = passedQuizzes.length >= 3;
-        break;
-      }
-    }
-
-    if (meetsCondition) {
-      await prisma.userBadge.create({
-        data: {
-          userId,
-          badgeId: badge.id,
-          progressCount: badge.requiredCount,
-        },
-      });
-      earned.push(badge.name);
-      emitToUser(userId, "badge:earned", { badgeId: badge.id, name: badge.name });
-    }
-  }
-
-  return earned;
 }
 
 // ─── Daily Challenge ──────────────────────────────────────────────────
@@ -307,11 +219,22 @@ export async function completeDailyChallenge(
 ): Promise<DailyChallengeResult | null> {
   const today = new Date().toISOString().split("T")[0];
 
-  const challenge = await prisma.dailyChallenge.findUnique({
+  let challenge = await prisma.dailyChallenge.findUnique({
     where: { userId_date: { userId, date: today } },
   });
 
-  if (!challenge || challenge.completed) return null;
+  if (!challenge) {
+    const actionGenerated = generateChallenge(userId, today);
+    challenge = await prisma.dailyChallenge.create({
+      data: {
+        userId,
+        date: today,
+        action: actionGenerated,
+      },
+    });
+  }
+
+  if (challenge.completed) return null;
 
   // Verify the action matches
   if (challenge.action !== action) {
@@ -329,20 +252,8 @@ export async function completeDailyChallenge(
     },
   });
 
-  // Award XP
-  await prisma.xPTransaction.create({
-    data: {
-      userId,
-      amount: xpAmount,
-      source: "DAILY_CHALLENGE",
-    },
-  });
-
-  emitToUser(userId, "xp:updated", {
-    totalXP: undefined, // client will refetch
-    xpGained: xpAmount,
-    source: "DAILY_CHALLENGE",
-  });
+  // Award XP using the unified function
+  await awardXP(userId, xpAmount, "DAILY_CHALLENGE");
 
   return {
     id: updated.id,

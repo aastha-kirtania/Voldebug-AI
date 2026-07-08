@@ -32,6 +32,21 @@ import {
 
 const smoothEase = [0.16, 1, 0.3, 1];
 
+function getChallengeRedirectPath(action?: string): string {
+  if (!action) return "/dashboard/tools";
+  if (
+    action === "Submit an assignment" ||
+    action === "Achieve 90%+ on a graded assignment" ||
+    action === "Earn a streak bonus"
+  ) {
+    return "/dashboard/classroom";
+  }
+  if (action === "Check the scoreboard rankings") {
+    return "/dashboard/scoreboard";
+  }
+  return "/dashboard/tools";
+}
+
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
@@ -519,7 +534,7 @@ export default function StudentDashboardPage() {
                   <button
                     onClick={() => {
                       sound.playClick();
-                      router.push("/dashboard/tools");
+                      router.push(getChallengeRedirectPath(challenge?.action));
                     }}
                     className="kids-btn-primary px-4 py-2 text-xs font-extrabold shadow-sm bg-amber-500 border-amber-600 text-white"
                   >
@@ -911,7 +926,7 @@ export default function StudentDashboardPage() {
                   +{challenge?.xpAwarded ?? 50} XP ✨
                 </motion.span>
                 <a
-                  href="/dashboard/tools"
+                  href={getChallengeRedirectPath(challenge?.action)}
                   className={`text-xs font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
                     challenge?.completed
                       ? "text-foreground-subtle"

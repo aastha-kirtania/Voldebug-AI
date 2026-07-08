@@ -5,7 +5,6 @@ import {
   handleCompleteChallenge,
   handleGetLeaderboard,
   handleGetRoadmap,
-  handleGetBadgeCertificate,
   handleGetLevelCertificate,
   handleSaveParentSettings,
   handleTriggerParentReport,
@@ -25,7 +24,6 @@ gamificationRouter.get("/scoreboard", handleGetLeaderboard);
 gamificationRouter.get("/roadmap", handleGetRoadmap);
 
 // Certificate endpoints
-gamificationRouter.get("/certificate/badge/:badgeId", handleGetBadgeCertificate);
 gamificationRouter.get("/certificate/level/:level", handleGetLevelCertificate);
 
 // Parent reporting endpoints
