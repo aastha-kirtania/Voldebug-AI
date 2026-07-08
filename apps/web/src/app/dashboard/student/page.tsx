@@ -36,8 +36,7 @@ function getChallengeRedirectPath(action?: string): string {
   if (!action) return "/dashboard/tools";
   if (
     action === "Submit an assignment" ||
-    action === "Achieve 90%+ on a graded assignment" ||
-    action === "Earn a streak bonus"
+    action === "Achieve 90%+ on a graded assignment"
   ) {
     return "/dashboard/classroom";
   }

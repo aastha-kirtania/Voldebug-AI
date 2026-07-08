@@ -131,7 +131,6 @@ export async function updateStreak(userId: string): Promise<number> {
         lastActiveDate: now,
       },
     });
-    completeDailyChallenge(userId, "Earn a streak bonus").catch(console.error);
     return updated.currentStreak;
   }
 
@@ -160,7 +159,6 @@ const CHALLENGES = [
   "Use an AI Tool today",
   "Submit an assignment",
   "Achieve 90%+ on a graded assignment",
-  "Earn a streak bonus",
   "Check the scoreboard rankings",
 ];
 
