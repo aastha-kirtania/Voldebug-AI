@@ -17,7 +17,7 @@ import {
 const STEPS = [
   { id: "basics", title: "Assignment Details", icon: BookOpen },
   { id: "tool", title: "Suggest an AI Tool", icon: Bot },
-  { id: "config", title: "Deadline & Rewards", icon: Calendar },
+  { id: "config", title: "Assignment Deadline", icon: Calendar },
   { id: "preview", title: "Review & Publish", icon: CheckCircle2 },
 ];
 
@@ -117,10 +117,6 @@ function ToolStep({
           </button>
         ))}
       </div>
-
-      <button onClick={() => setSelectedTool(null)} className="text-xs text-foreground-subtle hover:text-foreground transition-colors">
-        Skip — no tool suggested
-      </button>
     </motion.div>
   );
 }
@@ -128,10 +124,9 @@ function ToolStep({
 // ─── Step 3: Config ───────────────────────────────────────────────────────
 
 function ConfigStep({
-  dueDate, setDueDate, xpReward, setXpReward
+  dueDate, setDueDate
 }: {
   dueDate: string; setDueDate: (v: string) => void;
-  xpReward: number; setXpReward: (v: number) => void;
 }) {
   const minDate = new Date();
   minDate.setDate(minDate.getDate() + 1);
@@ -145,24 +140,6 @@ function ConfigStep({
           Due Date <span className="text-error">*</span>
         </label>
         <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} min={minDateStr} className="input-base" />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium flex items-center gap-2">
-          <Zap className="w-4 h-4 text-accent-light" />
-          Base XP Reward
-        </label>
-        <input type="number" min={10} max={500} value={xpReward} onChange={e => setXpReward(Number(e.target.value))} className="input-base" />
-        <p className="text-xs text-foreground-subtle">Awarded on submission</p>
-      </div>
-
-      {/* XP preview */}
-      <div className="p-4 rounded-xl border border-card-border bg-surface/30 flex items-center gap-3">
-        <Zap className="w-5 h-5 text-accent-light" />
-        <div>
-          <p className="text-sm font-semibold text-foreground">Students will earn +{xpReward} XP</p>
-          <p className="text-xs text-foreground-subtle">Awarded automatically upon assignment submission.</p>
-        </div>
       </div>
     </motion.div>
   );
@@ -193,10 +170,6 @@ function PreviewStep({ title, description, classId, classes, selectedTool, dueDa
           <div>
             <p className="text-xs text-foreground-subtle uppercase tracking-wider mb-1">Due Date</p>
             <p className="text-sm font-medium flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{due}</p>
-          </div>
-          <div>
-            <p className="text-xs text-foreground-subtle uppercase tracking-wider mb-1">XP Reward</p>
-            <p className="text-sm font-semibold text-accent-light">+{xpReward} XP</p>
           </div>
         </div>
         {selectedTool && (
@@ -326,7 +299,7 @@ function CreateAssignmentForm() {
           <AnimatePresence mode="wait">
             {step === 0 && <BasicsStep title={title} setTitle={setTitle} description={description} setDescription={setDescription} classId={classId} setClassId={setClassId} classes={classes} error={error} />}
             {step === 1 && <ToolStep selectedTool={selectedTool} setSelectedTool={setSelectedTool} />}
-            {step === 2 && <ConfigStep dueDate={dueDate} setDueDate={setDueDate} xpReward={xpReward} setXpReward={setXpReward} />}
+            {step === 2 && <ConfigStep dueDate={dueDate} setDueDate={setDueDate} />}
             {step === 3 && <PreviewStep title={title} description={description} classId={classId} classes={classes} selectedTool={selectedTool} dueDate={dueDate} xpReward={xpReward} />}
           </AnimatePresence>
         </div>

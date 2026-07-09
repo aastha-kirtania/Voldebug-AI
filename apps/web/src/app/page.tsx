@@ -24,7 +24,6 @@ const STATS = [
   { value: "Interactive", label: "AI Learning" },
   { value: "Curated", label: "AI Tools Library" },
   { value: "Gamified", label: "Missions & Quests" },
-  { value: "Safe", label: "School Moderated" },
 ];
 
 const FEATURES = [
@@ -152,11 +151,10 @@ export default function LandingPage() {
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((json) => {
         if (json?.data) {
-          const { studentsCount, toolsCount, totalXP, teacherSatisfaction } = json.data;
+          const { studentsCount, toolsCount, totalXP } = json.data;
           setStatsData([
             { value: `${studentsCount}`, label: "Students Learning" },
             { value: `${toolsCount}`, label: "AI Tools Curated" },
-            { value: `${teacherSatisfaction}%`, label: "Teacher Satisfaction" },
             { value: totalXP >= 1000000 ? `${(totalXP / 1000000).toFixed(1)}M` : totalXP >= 1000 ? `${(totalXP / 1000).toFixed(1)}k` : `${totalXP}`, label: "XP Awarded This Month" },
           ]);
         }
@@ -399,7 +397,7 @@ export default function LandingPage() {
 
       {/* ── Stats ─────────────────────────────────────────── */}
       <section className="relative z-10 border-y border-white/5 bg-card/30 backdrop-blur-sm py-10 animate-on-scroll fade-in">
-        <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+        <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
           {statsData.map((s, i) => (
             <motion.div
               key={s.label}
