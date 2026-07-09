@@ -57,9 +57,9 @@ export async function handleCreateSubmission(req: Request, res: Response) {
     });
 
     // Award XP for submission
-    let totalXP = assignment.xpReward || 50;
+    let totalXP = assignment.xpReward ?? 50;
     if (isEarly) {
-      totalXP += assignment.earlyBonus || 25;
+      totalXP += assignment.earlyBonus ?? 25;
     }
 
     await awardXP(

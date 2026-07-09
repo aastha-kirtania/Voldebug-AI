@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { useDashboardStats, useAssignments, useTools, useDailyChallenge } from "@web/hooks/use-dashboard";
 import { Progress } from "@web/components/ui/progress";
 import { GradientMesh } from "@web/components/ui/background";
-import ReactConfetti from "react-confetti";
 import { sound } from "@web/lib/audio";
 import { useTranslation } from "@web/context/language-context";
 import {
@@ -674,12 +673,6 @@ export default function StudentDashboardPage() {
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-yellow-400/90 z-50 flex flex-col items-center justify-center text-center p-6"
             >
-              <ReactConfetti
-                width={typeof window !== "undefined" ? window.innerWidth : 500}
-                height={typeof window !== "undefined" ? window.innerHeight : 600}
-                recycle={true}
-                numberOfPieces={250}
-              />
               <motion.div
                 initial={{ scale: 0.8, y: 50, opacity: 0 }}
                 animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -1173,12 +1166,6 @@ export default function StudentDashboardPage() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex flex-col items-center justify-center text-center p-6"
           >
-            <ReactConfetti
-              width={typeof window !== "undefined" ? window.innerWidth : 500}
-              height={typeof window !== "undefined" ? window.innerHeight : 600}
-              recycle={true}
-              numberOfPieces={200}
-            />
             <motion.div
               initial={{ scale: 0.8, y: 50, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}

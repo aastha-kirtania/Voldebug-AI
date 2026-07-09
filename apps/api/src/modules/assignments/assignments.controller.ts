@@ -114,6 +114,27 @@ export async function handleCreateAssignment(req: Request, res: Response) {
       });
     }
 
+    const parsedDueDate = new Date(dueDate);
+    if (isNaN(parsedDueDate.getTime())) {
+      return apiError(res, {
+        code: "VALIDATION_ERROR",
+        message: "Invalid due date format",
+        status: 400,
+      });
+    }
+
+    const today = new Date();
+    const utcDueDate = Date.UTC(parsedDueDate.getUTCFullYear(), parsedDueDate.getUTCMonth(), parsedDueDate.getUTCDate());
+    const utcToday = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+
+    if (utcDueDate < utcToday) {
+      return apiError(res, {
+        code: "VALIDATION_ERROR",
+        message: "Due date cannot be in the past",
+        status: 400,
+      });
+    }
+
     const classObj = await prisma.class.findUnique({
       where: { id: classId },
     });
@@ -130,8 +151,8 @@ export async function handleCreateAssignment(req: Request, res: Response) {
         creatorId: userId,
         suggestedToolId,
         dueDate: new Date(dueDate),
-        xpReward: xpReward || 50,
-        earlyBonus: earlyBonus || 25,
+        xpReward: xpReward ?? 50,
+        earlyBonus: earlyBonus ?? 25,
         submissionFormats: submissionFormats || [],
         notifyOnPublish: notifyOnPublish ?? true,
         status: "PUBLISHED",
@@ -187,6 +208,29 @@ export async function handleUpdateAssignment(req: Request, res: Response) {
     }
 
     const { title, description, dueDate, xpReward, earlyBonus, status } = req.body;
+
+    if (dueDate) {
+      const parsedDueDate = new Date(dueDate);
+      if (isNaN(parsedDueDate.getTime())) {
+        return apiError(res, {
+          code: "VALIDATION_ERROR",
+          message: "Invalid due date format",
+          status: 400,
+        });
+      }
+
+      const today = new Date();
+      const utcDueDate = Date.UTC(parsedDueDate.getUTCFullYear(), parsedDueDate.getUTCMonth(), parsedDueDate.getUTCDate());
+      const utcToday = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+
+      if (utcDueDate < utcToday) {
+        return apiError(res, {
+          code: "VALIDATION_ERROR",
+          message: "Due date cannot be in the past",
+          status: 400,
+        });
+      }
+    }
 
     const updated = await prisma.assignment.update({
       where: { id },

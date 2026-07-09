@@ -128,11 +128,10 @@ function ToolStep({
 // ─── Step 3: Config ───────────────────────────────────────────────────────
 
 function ConfigStep({
-  dueDate, setDueDate, xpReward, setXpReward, earlyBonus, setEarlyBonus
+  dueDate, setDueDate, xpReward, setXpReward
 }: {
   dueDate: string; setDueDate: (v: string) => void;
   xpReward: number; setXpReward: (v: number) => void;
-  earlyBonus: number; setEarlyBonus: (v: number) => void;
 }) {
   const minDate = new Date();
   minDate.setDate(minDate.getDate() + 1);
@@ -148,43 +147,21 @@ function ConfigStep({
         <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} min={minDateStr} className="input-base" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium flex items-center gap-2">
-            <Zap className="w-4 h-4 text-accent-light" />
-            Base XP Reward
-          </label>
-          <input type="number" min={10} max={500} value={xpReward} onChange={e => setXpReward(Number(e.target.value))} className="input-base" />
-          <p className="text-xs text-foreground-subtle">Awarded on submission</p>
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium flex items-center gap-2">
-            <Star className="w-4 h-4 text-yellow-400" />
-            Early Bonus XP
-          </label>
-          <input type="number" min={0} max={200} value={earlyBonus} onChange={e => setEarlyBonus(Number(e.target.value))} className="input-base" />
-          <p className="text-xs text-foreground-subtle">For submitting 2+ days early</p>
-        </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium flex items-center gap-2">
+          <Zap className="w-4 h-4 text-accent-light" />
+          Base XP Reward
+        </label>
+        <input type="number" min={10} max={500} value={xpReward} onChange={e => setXpReward(Number(e.target.value))} className="input-base" />
+        <p className="text-xs text-foreground-subtle">Awarded on submission</p>
       </div>
 
       {/* XP preview */}
-      <div className="p-4 rounded-xl border border-card-border bg-surface/30">
-        <p className="text-xs text-foreground-subtle mb-2 font-medium uppercase tracking-wider">XP Preview</p>
-        <div className="flex items-center gap-6">
-          <div className="text-center">
-            <p className="stat-number text-2xl text-accent-light">{xpReward}</p>
-            <p className="text-xs text-foreground-subtle">On-time</p>
-          </div>
-          <div className="text-foreground-subtle">+</div>
-          <div className="text-center">
-            <p className="stat-number text-2xl text-yellow-400">{earlyBonus}</p>
-            <p className="text-xs text-foreground-subtle">Early bonus</p>
-          </div>
-          <div className="text-foreground-subtle">=</div>
-          <div className="text-center">
-            <p className="stat-number text-2xl text-success">{xpReward + earlyBonus}</p>
-            <p className="text-xs text-foreground-subtle">Max earn</p>
-          </div>
+      <div className="p-4 rounded-xl border border-card-border bg-surface/30 flex items-center gap-3">
+        <Zap className="w-5 h-5 text-accent-light" />
+        <div>
+          <p className="text-sm font-semibold text-foreground">Students will earn +{xpReward} XP</p>
+          <p className="text-xs text-foreground-subtle">Awarded automatically upon assignment submission.</p>
         </div>
       </div>
     </motion.div>
@@ -193,7 +170,7 @@ function ConfigStep({
 
 // ─── Step 4: Preview ──────────────────────────────────────────────────────
 
-function PreviewStep({ title, description, classId, classes, selectedTool, dueDate, xpReward, earlyBonus }: any) {
+function PreviewStep({ title, description, classId, classes, selectedTool, dueDate, xpReward }: any) {
   const className = classes.find((c: any) => c.id === classId)?.name || "—";
   const due = dueDate ? new Date(dueDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "—";
 
@@ -220,10 +197,6 @@ function PreviewStep({ title, description, classId, classes, selectedTool, dueDa
           <div>
             <p className="text-xs text-foreground-subtle uppercase tracking-wider mb-1">XP Reward</p>
             <p className="text-sm font-semibold text-accent-light">+{xpReward} XP</p>
-          </div>
-          <div>
-            <p className="text-xs text-foreground-subtle uppercase tracking-wider mb-1">Early Bonus</p>
-            <p className="text-sm font-semibold text-yellow-400">+{earlyBonus} XP</p>
           </div>
         </div>
         {selectedTool && (
@@ -264,7 +237,7 @@ function CreateAssignmentForm() {
   const [selectedTool, setSelectedTool] = useState<any>(null);
   const [dueDate, setDueDate] = useState("");
   const [xpReward, setXpReward] = useState(50);
-  const [earlyBonus, setEarlyBonus] = useState(25);
+  const earlyBonus = 0;
 
   const validateStep = (s: number): string | undefined => {
     if (s === 0) {
@@ -274,6 +247,13 @@ function CreateAssignmentForm() {
     }
     if (s === 2) {
       if (!dueDate) return "Due date is required.";
+      const [year, month, day] = dueDate.split("-").map(Number);
+      const selectedDate = new Date(year, month - 1, day);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selectedDate < today) {
+        return "Due date cannot be in the past.";
+      }
     }
     return undefined;
   };
@@ -301,7 +281,7 @@ function CreateAssignmentForm() {
     } catch (e: any) {
       setError(e.message ?? "Failed to create assignment.");
     }
-  }, [createMutation, title, description, classId, selectedTool, dueDate, xpReward, earlyBonus, router]);
+  }, [createMutation, title, description, classId, selectedTool, dueDate, xpReward, router]);
 
   return (
     <div className="min-h-screen relative">
@@ -346,8 +326,8 @@ function CreateAssignmentForm() {
           <AnimatePresence mode="wait">
             {step === 0 && <BasicsStep title={title} setTitle={setTitle} description={description} setDescription={setDescription} classId={classId} setClassId={setClassId} classes={classes} error={error} />}
             {step === 1 && <ToolStep selectedTool={selectedTool} setSelectedTool={setSelectedTool} />}
-            {step === 2 && <ConfigStep dueDate={dueDate} setDueDate={setDueDate} xpReward={xpReward} setXpReward={setXpReward} earlyBonus={earlyBonus} setEarlyBonus={setEarlyBonus} />}
-            {step === 3 && <PreviewStep title={title} description={description} classId={classId} classes={classes} selectedTool={selectedTool} dueDate={dueDate} xpReward={xpReward} earlyBonus={earlyBonus} />}
+            {step === 2 && <ConfigStep dueDate={dueDate} setDueDate={setDueDate} xpReward={xpReward} setXpReward={setXpReward} />}
+            {step === 3 && <PreviewStep title={title} description={description} classId={classId} classes={classes} selectedTool={selectedTool} dueDate={dueDate} xpReward={xpReward} />}
           </AnimatePresence>
         </div>
 
