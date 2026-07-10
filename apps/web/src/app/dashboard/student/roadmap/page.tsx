@@ -160,8 +160,8 @@ export default function StudentRoadmapPage() {
             </h1>
             <p className="text-sm md:text-base text-foreground-subtle mt-2 font-medium tracking-wide">
               {isHindi 
-                ? `नए उपकरणों के साथ अपनी लाइब्रेरी का विस्तार करने और अपने सीखने के लक्ष्यों को पूरा करने के लिए स्तर बढ़ाएं, ${userName}।`
-                : `Level up to expand your library and complete your learning goals, ${userName}.`
+                ? `अपने सीखने की प्रगति को ट्रैक करें, उपलब्धियां अर्जित करें और अपने शैक्षिक लक्ष्यों को पूरा करें, ${userName}।`
+                : `Track your learning progress, earn achievements, and complete your educational goals, ${userName}.`
               }
             </p>
           </div>
@@ -221,8 +221,8 @@ export default function StudentRoadmapPage() {
                 <h4 className="font-semibold text-foreground text-sm">{isHindi ? "पथ प्रगति" : "Path Progression"}</h4>
                 <p className="text-xs text-foreground-subtle mt-1.5 leading-relaxed">
                   {isHindi 
-                    ? "असाइनमेंट पूरे करके एक्सपी कमाएं। उच्च स्तर विशिष्ट लेखन, डिज़ाइन और अनुसंधान एआई पेश करते हैं।"
-                    : "Earn XP by completing assignments. Higher levels introduce specialized writing, design, and research AI."
+                    ? "असाइनमेंट पूरा करके और विभिन्न उपकरणों को आज़माकर एक्सपी अर्जित करें। उच्च स्तर एआई में महारत हासिल करने के लिए आपकी प्रगति और समर्पण को दर्शाते हैं।"
+                    : "Earn XP by completing assignments and trying different tools. Higher levels show your progress and dedication to mastering AI."
                   }
                 </p>
               </div>
