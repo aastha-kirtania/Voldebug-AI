@@ -328,17 +328,9 @@ export default function StudentRoadmapPage() {
                       <span className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider">
                         {tool.category.replace("_", " ")}
                       </span>
-                      {isLocked ? (
+                      {isLocked && (
                         <span className="text-[10px] font-semibold text-warning/95 flex items-center gap-1">
                           <Sparkles className="w-3 h-3 text-warning" /> {isHindi ? `स्तर ${tool.requiredLevel} खोज` : `Lvl ${tool.requiredLevel} Quest`}
-                        </span>
-                      ) : isCompleted ? (
-                        <span className="text-[10px] font-bold text-success flex items-center gap-1.5">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> {isHindi ? "पूर्ण" : "Completed"}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold text-foreground-muted flex items-center gap-1">
-                          {isHindi ? "अप्रयुक्त" : "Unused"}
                         </span>
                       )}
                     </div>
