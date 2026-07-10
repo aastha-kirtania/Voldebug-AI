@@ -7,7 +7,6 @@ import { useRoadmap } from "@web/hooks/use-dashboard";
 import { useTranslation } from "@web/context/language-context";
 import { GradientMesh } from "@web/components/ui/background";
 import {
-  CheckCircle2,
   ArrowRight,
   Sparkles,
   Milestone,
@@ -295,17 +294,9 @@ export default function StudentRoadmapPage() {
               >
                 {/* Timeline center node indicator */}
                 <div
-                  className={`absolute left-6 md:left-1/2 top-10 w-8 h-8 rounded-full border-4 ${
-                    isCompleted
-                      ? "bg-success border-success-glow shadow-[0_0_12px_var(--color-success)] text-white"
-                      : "bg-surface border-white/10 text-foreground-muted"
-                  } transform -translate-x-1/2 z-10 flex items-center justify-center`}
+                  className="absolute left-6 md:left-1/2 top-10 w-8 h-8 rounded-full border-4 bg-surface border-white/10 text-foreground-muted transform -translate-x-1/2 z-10 flex items-center justify-center"
                 >
-                  {isCompleted ? (
-                    <CheckCircle2 className="w-4 h-4 text-white" />
-                  ) : (
-                    <BookOpen className="w-3.5 h-3.5 text-accent-light/75" />
-                  )}
+                  <BookOpen className="w-3.5 h-3.5 text-accent-light/75" />
                 </div>
 
                 {/* Timeline node details card */}
