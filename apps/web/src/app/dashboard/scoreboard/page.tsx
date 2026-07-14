@@ -169,7 +169,7 @@ export default function ScoreboardPage() {
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
-                className="w-full bg-surface/60 backdrop-blur-md border border-white/10 text-foreground text-sm font-semibold rounded-2xl px-4 py-3 pr-8 shadow-lg focus:outline-none focus:border-accent transition-all duration-300 appearance-none cursor-pointer"
+                className="w-full bg-input border border-white/10 text-foreground text-sm font-semibold rounded-2xl px-4 py-3 pr-8 shadow-lg focus:outline-none focus:border-accent transition-all duration-300 appearance-none cursor-pointer"
               >
                 {classesList.map((cls) => (
                   <option
@@ -401,8 +401,8 @@ function PodiumCard({
 
       {/* Avatar */}
       <div
-        className={`w-12 h-12 md:w-16 md:h-16 rounded-[1.25rem] bg-surface flex items-center justify-center text-xl md:text-2xl font-black shadow-inner border border-white/10 ${
-          isCurrentUser ? "bg-accent text-white" : styles.text
+        className={`w-12 h-12 md:w-16 md:h-16 rounded-[1.25rem] flex items-center justify-center text-xl md:text-2xl font-black shadow-inner border border-white/10 ${
+          isCurrentUser ? "bg-accent text-white" : `bg-surface ${styles.text}`
         }`}
       >
         {entry.name?.[0]?.toUpperCase() ?? "?"}
