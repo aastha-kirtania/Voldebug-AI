@@ -2,13 +2,34 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sun, Moon, Laptop } from "lucide-react";
+import { Sun, Moon, Laptop, Sparkles } from "lucide-react";
 import { useTheme, type Theme } from "../providers/theme-provider";
+import { sound } from "@web/lib/audio";
 
 export function ThemeToggle() {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
+  const [kidsMode, setKidsMode] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Sync kidsMode on mount and listen to changes
+  useEffect(() => {
+    const checkKidsMode = () => {
+      const saved = localStorage.getItem("kids-mode");
+      setKidsMode(saved === "true");
+    };
+
+    checkKidsMode();
+    window.addEventListener("kids-mode-change", checkKidsMode);
+
+    // Fallback polling to match other components
+    const interval = setInterval(checkKidsMode, 1000);
+
+    return () => {
+      window.removeEventListener("kids-mode-change", checkKidsMode);
+      clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -23,34 +44,57 @@ export function ThemeToggle() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const options: { value: Theme; label: string; icon: typeof Sun }[] = [
-    { value: "light", label: "Light", icon: Sun },
-    { value: "dark", label: "Dark", icon: Moon },
-    { value: "system", label: "System", icon: Laptop },
-  ];
+  const handleSelect = (mode: "light" | "dark" | "system" | "kids") => {
+    sound.playClick();
+    if (mode === "kids") {
+      setKidsMode(true);
+      localStorage.setItem("kids-mode", "true");
+      window.document.documentElement.classList.add("kids-mode");
+    } else {
+      setKidsMode(false);
+      localStorage.setItem("kids-mode", "false");
+      window.document.documentElement.classList.remove("kids-mode");
+      setTheme(mode);
+    }
+    window.dispatchEvent(new Event("kids-mode-change"));
+    setOpen(false);
+  };
 
-  const currentIcon = () => {
+  const getActiveIcon = () => {
+    if (kidsMode) return Sparkles;
     if (theme === "system") return Laptop;
     return theme === "light" ? Sun : Moon;
   };
 
-  const IconComponent = currentIcon();
+  const IconComponent = getActiveIcon();
+
+  const options = [
+    { value: "light", label: "Light", icon: Sun },
+    { value: "dark", label: "Dark", icon: Moon },
+    { value: "system", label: "System", icon: Laptop },
+    { value: "kids", label: "Kids Mode", icon: Sparkles },
+  ];
 
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-surface/60 border border-white/5 dark:border-white/5 transition-all relative overflow-hidden"
+        className={`w-9 h-9 rounded-lg flex items-center justify-center border transition-all relative overflow-hidden ${
+          kidsMode
+            ? "bg-[#7c3aed] text-white border-[#7c3aed] shadow-md shadow-violet-200/50"
+            : "hover:bg-surface/60 border-white/5 text-foreground-muted hover:text-foreground"
+        }`}
         aria-label="Toggle theme"
+        title="Theme Settings"
       >
         <motion.div
-          key={theme}
+          key={kidsMode ? "kids" : theme}
           initial={{ y: 15, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -15, opacity: 0 }}
           transition={{ duration: 0.15 }}
         >
-          <IconComponent className="w-[18px] h-[18px] text-foreground-muted hover:text-foreground transition-colors" />
+          <IconComponent className="w-[18px] h-[18px] transition-colors" />
         </motion.div>
       </button>
 
@@ -61,18 +105,16 @@ export function ThemeToggle() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.96 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-32 rounded-xl bg-card border border-card-border shadow-xl z-50 overflow-hidden p-1"
+            className="absolute right-0 top-full mt-2 w-36 rounded-xl bg-card border border-card-border shadow-xl z-50 p-1"
           >
             {options.map((opt) => {
               const OptIcon = opt.icon;
-              const isSelected = theme === opt.value;
+              const isSelected =
+                opt.value === "kids" ? kidsMode : !kidsMode && theme === opt.value;
               return (
                 <button
                   key={opt.value}
-                  onClick={() => {
-                    setTheme(opt.value);
-                    setOpen(false);
-                  }}
+                  onClick={() => handleSelect(opt.value as any)}
                   className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg transition-colors text-left ${
                     isSelected
                       ? "bg-accent-surface text-accent-light"

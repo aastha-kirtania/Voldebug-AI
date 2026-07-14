@@ -7,6 +7,7 @@ import { LanguageSwitcher } from "@web/components/dashboard/language-switcher";
 import { useSession, signOut } from "next-auth/react";
 import { LogOut } from "lucide-react";
 import { sound } from "@web/lib/audio";
+import { ThemeToggle } from "@web/components/dashboard/theme-toggle";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { data: session } = useSession();
@@ -16,13 +17,22 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const role = session?.user?.role;
 
   useEffect(() => {
-    const saved = localStorage.getItem("kids-mode");
-    if (saved !== null) {
-      setKidsMode(saved === "true");
-    } else {
-      setKidsMode(role === "STUDENT");
-    }
+    const checkKidsMode = () => {
+      const saved = localStorage.getItem("kids-mode");
+      if (saved !== null) {
+        setKidsMode(saved === "true");
+      } else {
+        setKidsMode(role === "STUDENT");
+      }
+    };
+
+    checkKidsMode();
+    window.addEventListener("kids-mode-change", checkKidsMode);
     setIsInitialized(true);
+
+    return () => {
+      window.removeEventListener("kids-mode-change", checkKidsMode);
+    };
   }, [role]);
 
   useEffect(() => {
@@ -77,25 +87,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Top bar: language switcher + kids mode toggle + notification bell + logout + user */}
+        {/* Top bar: language switcher + theme toggle dropdown + notification bell + logout + user */}
         <header className="sticky top-0 z-40 bg-bg/80 backdrop-blur-sm border-b border-white/5 h-14 flex items-center justify-end px-4 md:px-6 lg:px-8 gap-2 transition-all">
           <LanguageSwitcher />
 
-          {/* Kids Mode Toggle */}
-          <button
-            onClick={() => {
-              setKidsMode(!kidsMode);
-              sound.playClick();
-            }}
-            className={`w-9 h-9 rounded-lg flex items-center justify-center border transition-all ${
-              kidsMode
-                ? "bg-[#7c3aed] text-white border-[#7c3aed] shadow-md shadow-violet-200/50"
-                : "hover:bg-surface/60 border-white/5 text-foreground-muted hover:text-foreground"
-            }`}
-            title="Theme Toggle"
-          >
-            <span className="text-base select-none">🔴</span>
-          </button>
+          {/* Theme Dropdown Toggle */}
+          <ThemeToggle />
           <NotificationBell />
           <button
             onClick={handleLogout}
