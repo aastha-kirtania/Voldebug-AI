@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@web/lib/api";
@@ -24,14 +24,18 @@ interface LeaderboardResponse {
   leaderboard: LeaderboardEntry[];
   userRank: number | null;
   classId: string;
+  classes: { id: string; name: string }[];
 }
 
 // ─── Hooks ──────────────────────────────────────────────────────────────
 
-function useLeaderboard(userId?: string) {
+function useLeaderboard(userId?: string, classId?: string) {
   return useQuery({
-    queryKey: ["leaderboard", userId],
-    queryFn: () => api.get<LeaderboardResponse>("/v1/gamification/scoreboard"),
+    queryKey: ["leaderboard", userId, classId],
+    queryFn: () =>
+      api.get<LeaderboardResponse>(
+        `/v1/gamification/scoreboard${classId ? `?classId=${classId}` : ""}`,
+      ),
     enabled: !!userId,
     staleTime: 30_000,
     refetchInterval: 15_000,
@@ -92,9 +96,19 @@ function GlassCard({
 export default function ScoreboardPage() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
-  const { data, isLoading } = useLeaderboard(userId);
+  const [selectedClassId, setSelectedClassId] = useState<string>("");
+  const { data, isLoading } = useLeaderboard(userId, selectedClassId);
   const { t } = useTranslation();
   const isHindi = t("nav.home") === "होम";
+
+  // Automatically select the first class returned by the API if not already set
+  useEffect(() => {
+    if (data?.classId && !selectedClassId) {
+      setSelectedClassId(data.classId);
+    }
+  }, [data?.classId, selectedClassId]);
+
+  const classesList = data?.classes ?? [];
 
   const currentUserEntry = useMemo(
     () => data?.leaderboard?.find((e) => e.userId === userId),
@@ -142,6 +156,43 @@ export default function ScoreboardPage() {
               : "Compete with your classmates, earn XP, and climb to the top of the leaderboard!"}
           </p>
         </motion.div>
+
+        {/* Class Selector Dropdown */}
+        {classesList.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex justify-center"
+          >
+            <div className="relative inline-block w-64">
+              <select
+                value={selectedClassId}
+                onChange={(e) => setSelectedClassId(e.target.value)}
+                className="w-full bg-surface/60 backdrop-blur-md border border-white/10 text-foreground text-sm font-semibold rounded-2xl px-4 py-3 pr-8 shadow-lg focus:outline-none focus:border-accent transition-all duration-300 appearance-none cursor-pointer"
+              >
+                {classesList.map((cls) => (
+                  <option
+                    key={cls.id}
+                    value={cls.id}
+                    className="bg-background text-foreground"
+                  >
+                    {cls.name}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-foreground-subtle">
+                <svg
+                  className="fill-current h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                </svg>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Podium Section */}
         {!isLoading && top3.length > 0 && (

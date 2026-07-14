@@ -65,25 +65,31 @@ export async function handleGetLeaderboard(req: Request, res: Response) {
   const { classId, period } = req.query;
 
   try {
+    // Fetch user classes for selector list
+    let userClasses: { id: string; name: string }[] = [];
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+    if (user?.role === "TEACHER") {
+      userClasses = await prisma.class.findMany({
+        where: { teacherId: userId },
+        select: { id: true, name: true },
+      });
+    } else {
+      const memberships = await prisma.classMember.findMany({
+        where: { userId },
+        include: { class: { select: { id: true, name: true } } },
+      });
+      userClasses = memberships.map((m) => m.class);
+    }
+
     let targetClassId = classId as string;
     if (!targetClassId) {
-      const membership = await prisma.classMember.findFirst({
-        where: { userId },
-        select: { classId: true },
-      });
-      if (membership) {
-        targetClassId = membership.classId;
+      if (userClasses.length > 0) {
+        targetClassId = userClasses[0].id;
       } else {
-        // Fallback for Teachers
-        const teacherClass = await prisma.class.findFirst({
-          where: { teacherId: userId },
-          select: { id: true },
-        });
-        if (teacherClass) {
-          targetClassId = teacherClass.id;
-        } else {
-          return apiSuccess(res, { leaderboard: [], userRank: null });
-        }
+        return apiSuccess(res, { leaderboard: [], userRank: null, classes: [] });
       }
     }
 
@@ -147,6 +153,7 @@ export async function handleGetLeaderboard(req: Request, res: Response) {
       leaderboard: ranked,
       userRank,
       classId: targetClassId,
+      classes: userClasses,
     });
   } catch {
     return apiError(res, {
