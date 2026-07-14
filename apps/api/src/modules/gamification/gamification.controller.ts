@@ -111,9 +111,7 @@ export async function handleGetLeaderboard(req: Request, res: Response) {
       where: { userId: { in: memberIds } },
     });
 
-    const xpMap = new Map(
-      xpGroups.map((g) => [g.userId, g._sum.amount || 0]),
-    );
+    const xpMap = new Map(xpGroups.map((g) => [g.userId, g._sum.amount || 0]));
 
     // Calculate levels
     const leaderboard = members
@@ -141,9 +139,15 @@ export async function handleGetLeaderboard(req: Request, res: Response) {
     const userRank = userEntry?.rank ?? null;
 
     // Complete Daily Challenge if applicable
-    completeDailyChallenge(userId, "Check the scoreboard rankings").catch(console.error);
+    completeDailyChallenge(userId, "Check the scoreboard rankings").catch(
+      console.error,
+    );
 
-    return apiSuccess(res, { leaderboard: ranked, userRank, classId: targetClassId });
+    return apiSuccess(res, {
+      leaderboard: ranked,
+      userRank,
+      classId: targetClassId,
+    });
   } catch {
     return apiError(res, {
       code: "INTERNAL_ERROR",
@@ -196,7 +200,7 @@ export async function handleGetRoadmap(req: Request, res: Response) {
     // 5. Determine recommended next step
     let recommendedToolId: string | null = null;
     const nextUnlockedUncompleted = roadmapTools.find(
-      (t) => !t.isLocked && !t.isCompleted
+      (t) => !t.isLocked && !t.isCompleted,
     );
     if (nextUnlockedUncompleted) {
       recommendedToolId = nextUnlockedUncompleted.id;
@@ -238,8 +242,6 @@ export async function handleGetRoadmap(req: Request, res: Response) {
     });
   }
 }
-
-
 
 export async function handleGetLevelCertificate(req: Request, res: Response) {
   const userId = req.userId!;
@@ -295,7 +297,7 @@ export async function handleGetLevelCertificate(req: Request, res: Response) {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="certificate_level_${levelParam}.pdf"`
+      `attachment; filename="certificate_level_${levelParam}.pdf"`,
     );
 
     // 4. Generate PDF and stream it directly
@@ -320,7 +322,8 @@ export async function handleGetLevelCertificate(req: Request, res: Response) {
 
 export async function handleSaveParentSettings(req: Request, res: Response) {
   const userId = req.userId!;
-  const { parentEmail, parentReportingEnabled, parentReportFrequency } = req.body;
+  const { parentEmail, parentReportingEnabled, parentReportFrequency } =
+    req.body;
 
   if (parentReportingEnabled && !parentEmail) {
     return apiError(res, {
@@ -371,7 +374,8 @@ export async function handleTriggerParentReport(req: Request, res: Response) {
     if (!user?.parentEmail || !user?.parentReportingEnabled) {
       return apiError(res, {
         code: "BAD_REQUEST",
-        message: "Parent reporting must be enabled with a valid parent email address before triggering a report.",
+        message:
+          "Parent reporting must be enabled with a valid parent email address before triggering a report.",
         status: 400,
       });
     }
@@ -398,7 +402,9 @@ export async function handleTriggerParentReport(req: Request, res: Response) {
     // Simulate sending email by printing to logs
     console.log(`\n==================================================`);
     console.log(`[EMAIL SEND] To: ${report.parentEmail}`);
-    console.log(`[EMAIL SEND] Subject: Progress Report Update (Manual) - ${report.studentName}`);
+    console.log(
+      `[EMAIL SEND] Subject: Progress Report Update (Manual) - ${report.studentName}`,
+    );
     console.log(`--------------------------------------------------`);
     console.log(report.markdown);
     console.log(`==================================================\n`);

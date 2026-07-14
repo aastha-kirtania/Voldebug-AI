@@ -5,7 +5,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useTeacherClasses, useCreateClass } from "@web/hooks/use-teacher";
 import { GradientMesh } from "@web/components/ui/background";
-import { Users, BookOpen, ChevronRight, PlusCircle, Calendar, X, Loader2, AlertCircle } from "lucide-react";
+import {
+  Users,
+  BookOpen,
+  ChevronRight,
+  PlusCircle,
+  Calendar,
+  X,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 
 export default function TeacherClassesPage() {
   const router = useRouter();
@@ -26,7 +35,9 @@ export default function TeacherClassesPage() {
       setIsCreateOpen(false);
       setNewClassName("");
     } catch (err: any) {
-      setSubmitError(err.message || "Failed to create class. Please try again.");
+      setSubmitError(
+        err.message || "Failed to create class. Please try again.",
+      );
     }
   };
 
@@ -34,15 +45,22 @@ export default function TeacherClassesPage() {
     <div className="min-h-screen relative">
       <GradientMesh />
       <div className="max-w-6xl mx-auto space-y-6 pb-24 lg:pb-8 px-4 md:px-6 lg:px-8">
-        
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="pt-8 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="pt-8 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+        >
           <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">Your Classes</h1>
-            <p className="text-foreground-muted text-sm mt-1.5">Manage your class sections and students</p>
+            <h1 className="font-display text-3xl font-bold tracking-tight">
+              Your Classes
+            </h1>
+            <p className="text-foreground-muted text-sm mt-1.5">
+              Manage your class sections and students
+            </p>
           </div>
-          
-          <button 
+
+          <button
             onClick={() => {
               setIsCreateOpen(true);
               setSubmitError(undefined);
@@ -58,7 +76,10 @@ export default function TeacherClassesPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-48 bg-surface/50 rounded-2xl animate-pulse" />
+              <div
+                key={i}
+                className="h-48 bg-surface/50 rounded-2xl animate-pulse"
+              />
             ))}
           </div>
         ) : !classes || classes.length === 0 ? (
@@ -66,15 +87,18 @@ export default function TeacherClassesPage() {
             <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mb-4">
               <Users className="w-8 h-8 text-accent-light" />
             </div>
-            <h2 className="font-display text-xl font-semibold">No classes found</h2>
+            <h2 className="font-display text-xl font-semibold">
+              No classes found
+            </h2>
             <p className="text-foreground-muted text-sm max-w-md mt-2">
-              You haven't set up any classes yet. Create your first class to invite students and start assigning work. 
+              You haven't set up any classes yet. Create your first class to
+              invite students and start assigning work.
             </p>
           </div>
         ) : (
-          <motion.div 
-            initial={{ opacity: 0, y: 16 }} 
-            animate={{ opacity: 1, y: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
@@ -87,38 +111,50 @@ export default function TeacherClassesPage() {
                 className="card overflow-hidden hover:border-accent/40 transition-all group flex flex-col"
               >
                 <div className="h-24 bg-gradient-to-br from-accent/20 to-surface border-b border-card-border p-5 relative">
-                  <h3 className="font-display text-xl font-bold truncate pr-8">{cls.name}</h3>
+                  <h3 className="font-display text-xl font-bold truncate pr-8">
+                    {cls.name}
+                  </h3>
                   <p className="text-xs text-foreground-muted mt-1 flex items-center gap-1.5 opacity-80">
-                    <Calendar className="w-3.5 h-3.5" /> Created {new Date(cls.createdAt).toLocaleDateString()}
+                    <Calendar className="w-3.5 h-3.5" /> Created{" "}
+                    {new Date(cls.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                
+
                 <div className="p-5 flex-1 flex flex-col justify-between">
                   <div className="flex gap-4 mb-6">
                     <div className="flex-1 bg-surface/50 p-3 rounded-lg border border-card-border">
                       <p className="text-xs text-foreground-subtle font-medium uppercase tracking-wider mb-1 flex items-center gap-1.5">
                         <Users className="w-3.5 h-3.5" /> Students
                       </p>
-                      <p className="text-xl font-bold text-foreground">{cls._count?.members || 0}</p>
+                      <p className="text-xl font-bold text-foreground">
+                        {cls._count?.members || 0}
+                      </p>
                     </div>
                     <div className="flex-1 bg-surface/50 p-3 rounded-lg border border-card-border">
                       <p className="text-xs text-foreground-subtle font-medium uppercase tracking-wider mb-1 flex items-center gap-1.5">
                         <BookOpen className="w-3.5 h-3.5" /> Assign.
                       </p>
-                      <p className="text-xl font-bold text-foreground">{cls._count?.assignments || 0}</p>
+                      <p className="text-xl font-bold text-foreground">
+                        {cls._count?.assignments || 0}
+                      </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between text-xs px-1 text-foreground-subtle">
                       <span>Join Code:</span>
-                      <span className="font-mono font-bold text-accent-light tracking-wide bg-accent/10 px-2 py-0.5 rounded border border-accent/20">{cls.joinCode || "—"}</span>
+                      <span className="font-mono font-bold text-accent-light tracking-wide bg-accent/10 px-2 py-0.5 rounded border border-accent/20">
+                        {cls.joinCode || "—"}
+                      </span>
                     </div>
-                    <button 
-                      onClick={() => router.push(`/dashboard/teacher/classes/${cls.id}`)}
+                    <button
+                      onClick={() =>
+                        router.push(`/dashboard/teacher/classes/${cls.id}`)
+                      }
                       className="w-full mt-1 py-2.5 border border-card-border rounded-xl text-sm font-semibold flex items-center justify-center gap-2 group-hover:bg-accent group-hover:text-white group-hover:border-accent transition-all"
                     >
-                      View Class <ChevronRight className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                      View Class{" "}
+                      <ChevronRight className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                     </button>
                   </div>
                 </div>
@@ -151,7 +187,9 @@ export default function TeacherClassesPage() {
               </button>
 
               <div className="space-y-2 mb-6">
-                <h3 className="font-display text-xl font-bold text-foreground">Create a New Class</h3>
+                <h3 className="font-display text-xl font-bold text-foreground">
+                  Create a New Class
+                </h3>
                 <p className="text-sm text-foreground-subtle">
                   Set up a new learning environment for your students.
                 </p>
@@ -166,7 +204,10 @@ export default function TeacherClassesPage() {
 
               <form onSubmit={handleCreateSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label htmlFor="className" className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">
+                  <label
+                    htmlFor="className"
+                    className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider"
+                  >
                     Class Name
                   </label>
                   <input
@@ -194,7 +235,9 @@ export default function TeacherClassesPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={createClassMutation.isPending || !newClassName.trim()}
+                    disabled={
+                      createClassMutation.isPending || !newClassName.trim()
+                    }
                     className="flex-1 py-3 bg-accent hover:bg-accent-light text-white font-semibold rounded-xl text-sm shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center"
                   >
                     {createClassMutation.isPending ? (

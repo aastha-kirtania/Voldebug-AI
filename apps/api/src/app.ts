@@ -26,7 +26,7 @@ app.set("trust proxy", 1);
 app.use(helmet());
 const allowedOrigins = [
   "http://localhost:3000", // Keep this for your local development
-  "https://voldebug-ai-web-esmp.vercel.app" // Your live Vercel frontend
+  "https://voldebug-ai-web-esmp.vercel.app", // Your live Vercel frontend
 ];
 
 app.use(
@@ -44,7 +44,7 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 app.options("*", cors());
 app.use(express.json({ limit: "100mb" }));

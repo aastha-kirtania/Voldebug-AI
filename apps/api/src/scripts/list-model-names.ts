@@ -6,7 +6,9 @@ async function test() {
   if (!apiKey) return;
   const genAI = new GoogleGenerativeAI(apiKey);
   try {
-    const modelsResult = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    const modelsResult = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
+    );
     const data: any = await modelsResult.json();
     if (data.models) {
       console.log("All model names:");

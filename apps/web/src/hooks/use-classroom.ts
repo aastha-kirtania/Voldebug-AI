@@ -15,8 +15,20 @@ export interface Assignment {
   className: string;
   classId: string;
   creatorId: string;
-  creator: { id: string; name: string | null; email: string | null; image: string | null };
-  suggestedTool: { id: string; name: string; logoUrl: string; brandColor: string; subjects?: string[]; category?: string } | null;
+  creator: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  };
+  suggestedTool: {
+    id: string;
+    name: string;
+    logoUrl: string;
+    brandColor: string;
+    subjects?: string[];
+    category?: string;
+  } | null;
   submissions: Submission[];
   createdAt: string;
 }
@@ -38,7 +50,12 @@ export interface Submission {
     id: string;
     title: string;
     xpReward: number;
-    suggestedTool: { id: string; name: string; logoUrl: string; brandColor: string } | null;
+    suggestedTool: {
+      id: string;
+      name: string;
+      logoUrl: string;
+      brandColor: string;
+    } | null;
   };
 }
 
@@ -83,7 +100,10 @@ export function useSubmitAssignment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (payload: CreateSubmissionPayload) =>
-      api.post<Submission & { xpAwarded: number }>("/v1/submissions", payload as unknown as Record<string, unknown>),
+      api.post<Submission & { xpAwarded: number }>(
+        "/v1/submissions",
+        payload as unknown as Record<string, unknown>,
+      ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["assignments"] });
       qc.invalidateQueries({ queryKey: ["submissions"] });

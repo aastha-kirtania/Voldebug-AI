@@ -6,12 +6,20 @@ import { generateUniqueClassCode } from "../../utils/code.js";
 export async function handleJoinClass(req: Request, res: Response) {
   const userId = req.userId;
   if (!userId) {
-    return apiError(res, { code: "UNAUTHORIZED", message: "Authentication required", status: 401 });
+    return apiError(res, {
+      code: "UNAUTHORIZED",
+      message: "Authentication required",
+      status: 401,
+    });
   }
 
   const { code } = req.body;
   if (!code || typeof code !== "string") {
-    return apiError(res, { code: "BAD_REQUEST", message: "Class join code is required", status: 400 });
+    return apiError(res, {
+      code: "BAD_REQUEST",
+      message: "Class join code is required",
+      status: 400,
+    });
   }
 
   const joinCodeClean = code.trim().toUpperCase();
@@ -30,7 +38,11 @@ export async function handleJoinClass(req: Request, res: Response) {
     });
 
     if (!cls) {
-      return apiError(res, { code: "NOT_FOUND", message: "Invalid class code. Please check and try again.", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Invalid class code. Please check and try again.",
+        status: 404,
+      });
     }
 
     // Verify school boundaries for student class code joins
@@ -39,10 +51,16 @@ export async function handleJoinClass(req: Request, res: Response) {
       select: { schoolId: true },
     });
 
-    if (studentUser && studentUser.schoolId && cls.schoolId && studentUser.schoolId !== cls.schoolId) {
+    if (
+      studentUser &&
+      studentUser.schoolId &&
+      cls.schoolId &&
+      studentUser.schoolId !== cls.schoolId
+    ) {
       return apiError(res, {
         code: "FORBIDDEN",
-        message: "You can only join classes belonging to your registered school.",
+        message:
+          "You can only join classes belonging to your registered school.",
         status: 403,
       });
     }
@@ -53,7 +71,10 @@ export async function handleJoinClass(req: Request, res: Response) {
     });
 
     if (existingMember) {
-      return apiSuccess(res, { message: "You are already a member of this class.", class: cls });
+      return apiSuccess(res, {
+        message: "You are already a member of this class.",
+        class: cls,
+      });
     }
 
     // 3. Create class membership
@@ -84,7 +105,11 @@ export async function handleJoinClass(req: Request, res: Response) {
 export async function handleRegenerateClassCode(req: Request, res: Response) {
   const userId = req.userId;
   if (!userId) {
-    return apiError(res, { code: "UNAUTHORIZED", message: "Authentication required", status: 401 });
+    return apiError(res, {
+      code: "UNAUTHORIZED",
+      message: "Authentication required",
+      status: 401,
+    });
   }
 
   const { id: classId } = req.params;
@@ -96,11 +121,19 @@ export async function handleRegenerateClassCode(req: Request, res: Response) {
     });
 
     if (!cls) {
-      return apiError(res, { code: "NOT_FOUND", message: "Class not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Class not found",
+        status: 404,
+      });
     }
 
     if (cls.teacherId !== userId) {
-      return apiError(res, { code: "FORBIDDEN", message: "You do not have permission to modify this class", status: 403 });
+      return apiError(res, {
+        code: "FORBIDDEN",
+        message: "You do not have permission to modify this class",
+        status: 403,
+      });
     }
 
     // Generate new unique join code
@@ -128,12 +161,20 @@ export async function handleRegenerateClassCode(req: Request, res: Response) {
 export async function handleCreateClass(req: Request, res: Response) {
   const userId = req.userId;
   if (!userId) {
-    return apiError(res, { code: "UNAUTHORIZED", message: "Authentication required", status: 401 });
+    return apiError(res, {
+      code: "UNAUTHORIZED",
+      message: "Authentication required",
+      status: 401,
+    });
   }
 
   const { name } = req.body;
   if (!name || typeof name !== "string" || !name.trim()) {
-    return apiError(res, { code: "BAD_REQUEST", message: "Class name is required", status: 400 });
+    return apiError(res, {
+      code: "BAD_REQUEST",
+      message: "Class name is required",
+      status: 400,
+    });
   }
 
   try {
@@ -176,17 +217,28 @@ export async function handleCreateClass(req: Request, res: Response) {
   }
 }
 
-export async function handleCreateClassAnnouncement(req: Request, res: Response) {
+export async function handleCreateClassAnnouncement(
+  req: Request,
+  res: Response,
+) {
   const userId = req.userId;
   if (!userId) {
-    return apiError(res, { code: "UNAUTHORIZED", message: "Authentication required", status: 401 });
+    return apiError(res, {
+      code: "UNAUTHORIZED",
+      message: "Authentication required",
+      status: 401,
+    });
   }
 
   const { id: classId } = req.params;
   const { title, body } = req.body;
 
   if (!body || !body.trim()) {
-    return apiError(res, { code: "BAD_REQUEST", message: "Announcement message body is required", status: 400 });
+    return apiError(res, {
+      code: "BAD_REQUEST",
+      message: "Announcement message body is required",
+      status: 400,
+    });
   }
 
   try {
@@ -196,11 +248,19 @@ export async function handleCreateClassAnnouncement(req: Request, res: Response)
     });
 
     if (!cls) {
-      return apiError(res, { code: "NOT_FOUND", message: "Class not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Class not found",
+        status: 404,
+      });
     }
 
     if (cls.teacherId !== userId) {
-      return apiError(res, { code: "FORBIDDEN", message: "Only the teacher of this class can make announcements", status: 403 });
+      return apiError(res, {
+        code: "FORBIDDEN",
+        message: "Only the teacher of this class can make announcements",
+        status: 403,
+      });
     }
 
     const members = await prisma.classMember.findMany({

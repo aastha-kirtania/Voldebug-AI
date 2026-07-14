@@ -14,9 +14,7 @@ export class ApiClient {
   private resolvePath(path: string): string {
     // In client components with JWT: hit backend directly
     if (path.startsWith("http")) return path;
-    return path.startsWith("/api/")
-      ? path
-      : `/api/proxy${path}`;
+    return path.startsWith("/api/") ? path : `/api/proxy${path}`;
   }
 
   async request<T>(
@@ -34,7 +32,9 @@ export class ApiClient {
     const json: ApiResponse<T> = await res.json();
 
     if (!res.ok) {
-      throw new Error(json?.error?.message ?? `Request failed: ${res.statusText}`);
+      throw new Error(
+        json?.error?.message ?? `Request failed: ${res.statusText}`,
+      );
     }
 
     return json.data as T;

@@ -23,7 +23,11 @@ export async function handleGetNotifications(req: Request, res: Response) {
       total,
     });
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch notifications", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch notifications",
+      status: 500,
+    });
   }
 }
 
@@ -31,10 +35,16 @@ export async function handleGetUnreadCount(req: Request, res: Response) {
   const userId = req.userId!;
 
   try {
-    const count = await prisma.notification.count({ where: { userId, read: false } });
+    const count = await prisma.notification.count({
+      where: { userId, read: false },
+    });
     return apiSuccess(res, { count });
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch unread count", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch unread count",
+      status: 500,
+    });
   }
 }
 
@@ -43,9 +53,15 @@ export async function handleMarkAsRead(req: Request, res: Response) {
   const userId = req.userId!;
 
   try {
-    const notification = await prisma.notification.findUnique({ where: { id } });
+    const notification = await prisma.notification.findUnique({
+      where: { id },
+    });
     if (!notification || notification.userId !== userId) {
-      return apiError(res, { code: "NOT_FOUND", message: "Notification not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Notification not found",
+        status: 404,
+      });
     }
 
     const updated = await prisma.notification.update({
@@ -55,7 +71,11 @@ export async function handleMarkAsRead(req: Request, res: Response) {
 
     return apiSuccess(res, updated);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to mark as read", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to mark as read",
+      status: 500,
+    });
   }
 }
 
@@ -69,6 +89,10 @@ export async function handleMarkAllAsRead(req: Request, res: Response) {
     });
     return apiSuccess(res, { success: true });
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to mark all as read", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to mark all as read",
+      status: 500,
+    });
   }
 }

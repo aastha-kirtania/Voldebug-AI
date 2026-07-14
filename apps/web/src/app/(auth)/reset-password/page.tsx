@@ -6,10 +6,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Input } from "@web/components/ui/input";
 import { Button } from "@web/components/ui/button";
-import { Zap, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowRight } from "lucide-react";
+import {
+  Zap,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  CheckCircle2,
+  ArrowRight,
+} from "lucide-react";
 
 // Password strength indicator helper
-function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
+function getPasswordStrength(pw: string): {
+  score: number;
+  label: string;
+  color: string;
+} {
   if (!pw) return { score: 0, label: "", color: "" };
   let score = 0;
   if (pw.length >= 8) score++;
@@ -40,50 +51,55 @@ function ResetPasswordForm() {
   const isMatch = password === confirmPassword;
   const isLengthValid = password.length >= 8;
 
-  const handleSubmit = useCallback(async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
 
-    if (!token) {
-      setError("Reset token is missing from the link URL.");
-      return;
-    }
-
-    if (!isLengthValid) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-
-    if (!isMatch) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    setLoading(true);
-    setError(undefined);
-
-    try {
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/$/, "");
-      const res = await fetch(`${apiUrl}/v1/auth/reset-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token, password }),
-      });
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.error?.message || "Failed to reset password.");
+      if (!token) {
+        setError("Reset token is missing from the link URL.");
+        return;
       }
 
-      setSuccess(true);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }, [token, password, isLengthValid, isMatch]);
+      if (!isLengthValid) {
+        setError("Password must be at least 8 characters.");
+        return;
+      }
+
+      if (!isMatch) {
+        setError("Passwords do not match.");
+        return;
+      }
+
+      setLoading(true);
+      setError(undefined);
+
+      try {
+        const apiUrl = (
+          process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"
+        ).replace(/\/$/, "");
+        const res = await fetch(`${apiUrl}/v1/auth/reset-password`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token, password }),
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+          throw new Error(json.error?.message || "Failed to reset password.");
+        }
+
+        setSuccess(true);
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token, password, isLengthValid, isMatch],
+  );
 
   if (!token) {
     return (
@@ -93,9 +109,12 @@ function ResetPasswordForm() {
             <AlertCircle className="w-6 h-6" />
           </div>
         </div>
-        <h2 className="font-display text-xl font-bold text-foreground">Invalid Reset Link</h2>
+        <h2 className="font-display text-xl font-bold text-foreground">
+          Invalid Reset Link
+        </h2>
         <p className="text-sm text-foreground-muted leading-relaxed">
-          The password reset link is invalid because the token is missing. Please request a new link.
+          The password reset link is invalid because the token is missing.
+          Please request a new link.
         </p>
         <Link
           href="/forgot-password"
@@ -115,7 +134,6 @@ function ResetPasswordForm() {
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className="bg-card border border-card-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-6"
     >
-
       {/* Header & Logo */}
       <div className="text-center space-y-4">
         <motion.div
@@ -167,9 +185,12 @@ function ResetPasswordForm() {
             </div>
           </div>
           <div className="space-y-2">
-            <h3 className="font-semibold text-foreground">Password reset complete</h3>
+            <h3 className="font-semibold text-foreground">
+              Password reset complete
+            </h3>
             <p className="text-sm text-foreground-muted px-4 leading-relaxed">
-              Your password has been successfully updated. You can now log in with your new password.
+              Your password has been successfully updated. You can now log in
+              with your new password.
             </p>
           </div>
           <Link
@@ -184,7 +205,10 @@ function ResetPasswordForm() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Password Field */}
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium text-foreground">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium text-foreground"
+            >
               New Password
             </label>
             <div className="relative">
@@ -206,7 +230,11 @@ function ResetPasswordForm() {
                 tabIndex={-1}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                {showPassword ? (
+                  <EyeOff className="w-4.5 h-4.5" />
+                ) : (
+                  <Eye className="w-4.5 h-4.5" />
+                )}
               </button>
             </div>
 
@@ -221,15 +249,21 @@ function ResetPasswordForm() {
             {password.length > 0 && (
               <div className="space-y-1.5 pt-1">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-foreground-muted font-medium">Password strength:</span>
-                  <span className="font-semibold text-foreground">{strength.label}</span>
+                  <span className="text-foreground-muted font-medium">
+                    Password strength:
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {strength.label}
+                  </span>
                 </div>
                 <div className="h-1.5 w-full bg-card-border rounded-full overflow-hidden flex gap-0.5">
                   {[1, 2, 3, 4].map((barIndex) => (
                     <div
                       key={barIndex}
                       className={`h-full flex-1 transition-colors duration-300 ${
-                        strength.score >= barIndex ? strength.color : "bg-foreground-subtle/10"
+                        strength.score >= barIndex
+                          ? strength.color
+                          : "bg-foreground-subtle/10"
                       }`}
                     />
                   ))}
@@ -240,7 +274,10 @@ function ResetPasswordForm() {
 
           {/* Confirm Password Field */}
           <div className="space-y-2">
-            <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
+            <label
+              htmlFor="confirmPassword"
+              className="text-sm font-medium text-foreground"
+            >
               Confirm New Password
             </label>
             <Input
@@ -262,7 +299,13 @@ function ResetPasswordForm() {
 
           <Button
             type="submit"
-            disabled={loading || !password || !confirmPassword || !isMatch || !isLengthValid}
+            disabled={
+              loading ||
+              !password ||
+              !confirmPassword ||
+              !isMatch ||
+              !isLengthValid
+            }
             className="w-full py-3 bg-gradient-to-r from-accent to-accent-light hover:from-accent/90 hover:to-accent-light/90 text-white font-semibold rounded-xl shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center"
           >
             {loading ? (
@@ -280,11 +323,13 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <div className="w-full max-w-md mx-auto">
-      <Suspense fallback={
-        <div className="bg-card border border-card-border rounded-3xl p-6 sm:p-8 shadow-sm flex items-center justify-center min-h-[300px]">
-          <div className="w-8 h-8 border-3 border-accent/30 border-t-accent rounded-full animate-spin" />
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="bg-card border border-card-border rounded-3xl p-6 sm:p-8 shadow-sm flex items-center justify-center min-h-[300px]">
+            <div className="w-8 h-8 border-3 border-accent/30 border-t-accent rounded-full animate-spin" />
+          </div>
+        }
+      >
         <ResetPasswordForm />
       </Suspense>
     </div>

@@ -1,6 +1,14 @@
 import { compare, hash } from "bcryptjs";
 import { prisma } from "../../utils/prisma.js";
-import { registerSchema, loginSchema, roleSchema, forgotPasswordSchema, resetPasswordSchema, sendEmailOtpSchema, verifyEmailOtpSchema } from "./auth.schema.js";
+import {
+  registerSchema,
+  loginSchema,
+  roleSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  sendEmailOtpSchema,
+  verifyEmailOtpSchema,
+} from "./auth.schema.js";
 import { generateToken } from "../../utils/jwt.js";
 import type { UserRole } from "@prisma/client";
 import crypto from "crypto";
@@ -22,8 +30,12 @@ export async function registerUser(input: {
   // If verificationToken is provided, validate it
   if (data.verificationToken) {
     try {
-      const payload = jwt.verify(data.verificationToken, JWT_SECRET) as { email: string; purpose: string };
-      if (payload.purpose !== "email-verification") throw new Error("Invalid token purpose");
+      const payload = jwt.verify(data.verificationToken, JWT_SECRET) as {
+        email: string;
+        purpose: string;
+      };
+      if (payload.purpose !== "email-verification")
+        throw new Error("Invalid token purpose");
       if (payload.email.toLowerCase() !== data.email.toLowerCase()) {
         throw new Error("Verified email does not match registration email.");
       }
@@ -158,7 +170,11 @@ export async function findUser(email: string) {
   });
 }
 
-export async function createUserFromProvider(email: string, name: string, image?: string) {
+export async function createUserFromProvider(
+  email: string,
+  name: string,
+  image?: string,
+) {
   let user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
@@ -183,7 +199,10 @@ export async function createUserFromProvider(email: string, name: string, image?
   };
 }
 
-export async function requestPasswordReset(input: { email: string }, clientOrigin?: string) {
+export async function requestPasswordReset(
+  input: { email: string },
+  clientOrigin?: string,
+) {
   const data = forgotPasswordSchema.parse(input);
 
   const user = await prisma.user.findUnique({
@@ -191,12 +210,19 @@ export async function requestPasswordReset(input: { email: string }, clientOrigi
   });
 
   if (!user) {
-    logger.info(`Password reset requested for non-existent email: ${data.email}`);
-    throw new Error("No account found with this email. Please create an account first.");
+    logger.info(
+      `Password reset requested for non-existent email: ${data.email}`,
+    );
+    throw new Error(
+      "No account found with this email. Please create an account first.",
+    );
   }
 
   const rawToken = crypto.randomBytes(32).toString("hex");
-  const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(rawToken)
+    .digest("hex");
   const tokenExpiry = new Date(Date.now() + 3600 * 1000);
 
   await prisma.user.update({
@@ -217,7 +243,11 @@ export async function requestPasswordReset(input: { email: string }, clientOrigi
     }
   }
   if (!appUrl) {
-    appUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3000";
+    appUrl =
+      process.env.FRONTEND_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.APP_URL ||
+      "http://localhost:3000";
   }
   appUrl = appUrl.replace(/\/$/, "");
 
@@ -260,16 +290,24 @@ export async function requestPasswordReset(input: { email: string }, clientOrigi
         logger.info(`Password reset email successfully sent to ${data.email}`);
       }
     } catch (err) {
-      logger.error(`Failed to send password reset email to ${data.email}: ${err}`);
+      logger.error(
+        `Failed to send password reset email to ${data.email}: ${err}`,
+      );
     }
   }
 
   return { success: true };
 }
 
-export async function resetPasswordWithToken(input: { token: string; password: string }) {
+export async function resetPasswordWithToken(input: {
+  token: string;
+  password: string;
+}) {
   const data = resetPasswordSchema.parse(input);
-  const hashedToken = crypto.createHash("sha256").update(data.token).digest("hex");
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(data.token)
+    .digest("hex");
 
   const user = await prisma.user.findFirst({
     where: {
@@ -307,7 +345,9 @@ export async function sendEmailOtp(input: { email: string }) {
   // Check if email is already registered
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    throw new Error("An account with this email already exists. Please sign in instead.");
+    throw new Error(
+      "An account with this email already exists. Please sign in instead.",
+    );
   }
 
   // Invalidate any previous unused OTPs for this email
@@ -387,7 +427,9 @@ export async function verifyEmailOtp(input: { email: string; code: string }) {
   });
 
   if (!otp) {
-    throw new Error("Invalid or expired verification code. Please request a new one.");
+    throw new Error(
+      "Invalid or expired verification code. Please request a new one.",
+    );
   }
 
   // Mark as used to prevent replay

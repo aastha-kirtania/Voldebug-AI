@@ -39,7 +39,11 @@ export async function handleListAssignments(req: Request, res: Response) {
 
     return apiSuccess(res, assignments);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch assignments", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch assignments",
+      status: 500,
+    });
   }
 }
 
@@ -65,11 +69,19 @@ export async function handleGetAssignment(req: Request, res: Response) {
     });
 
     if (!assignment) {
-      return apiError(res, { code: "NOT_FOUND", message: "Assignment not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Assignment not found",
+        status: 404,
+      });
     }
 
     if ((assignment as any).deletedAt) {
-      return apiError(res, { code: "NOT_FOUND", message: "Assignment not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Assignment not found",
+        status: 404,
+      });
     }
 
     // Role-based boundaries check
@@ -78,25 +90,47 @@ export async function handleGetAssignment(req: Request, res: Response) {
         where: { classId: assignment.classId, userId },
       });
       if (!isMember) {
-        return apiError(res, { code: "FORBIDDEN", message: "You are not enrolled in this class", status: 403 });
+        return apiError(res, {
+          code: "FORBIDDEN",
+          message: "You are not enrolled in this class",
+          status: 403,
+        });
       }
     } else if (req.userRole === "TEACHER") {
-      if (assignment.creatorId !== userId && assignment.class.teacherId !== userId) {
-        return apiError(res, { code: "FORBIDDEN", message: "You do not teach this class", status: 403 });
+      if (
+        assignment.creatorId !== userId &&
+        assignment.class.teacherId !== userId
+      ) {
+        return apiError(res, {
+          code: "FORBIDDEN",
+          message: "You do not teach this class",
+          status: 403,
+        });
       }
     } else if (req.userRole === "ADMIN") {
       const adminUser = await prisma.user.findUnique({
         where: { id: userId },
         select: { schoolId: true },
       });
-      if (!adminUser?.schoolId || adminUser.schoolId !== assignment.class.schoolId) {
-        return apiError(res, { code: "FORBIDDEN", message: "This class belongs to a different school", status: 403 });
+      if (
+        !adminUser?.schoolId ||
+        adminUser.schoolId !== assignment.class.schoolId
+      ) {
+        return apiError(res, {
+          code: "FORBIDDEN",
+          message: "This class belongs to a different school",
+          status: 403,
+        });
       }
     }
 
     return apiSuccess(res, assignment);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch assignment", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch assignment",
+      status: 500,
+    });
   }
 }
 
@@ -104,7 +138,17 @@ export async function handleCreateAssignment(req: Request, res: Response) {
   const userId = req.userId!;
 
   try {
-    const { title, description, classId, suggestedToolId, dueDate, xpReward, earlyBonus, submissionFormats, notifyOnPublish } = req.body;
+    const {
+      title,
+      description,
+      classId,
+      suggestedToolId,
+      dueDate,
+      xpReward,
+      earlyBonus,
+      submissionFormats,
+      notifyOnPublish,
+    } = req.body;
 
     if (!title || !description || !classId || !dueDate) {
       return apiError(res, {
@@ -124,8 +168,16 @@ export async function handleCreateAssignment(req: Request, res: Response) {
     }
 
     const today = new Date();
-    const utcDueDate = Date.UTC(parsedDueDate.getUTCFullYear(), parsedDueDate.getUTCMonth(), parsedDueDate.getUTCDate());
-    const utcToday = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+    const utcDueDate = Date.UTC(
+      parsedDueDate.getUTCFullYear(),
+      parsedDueDate.getUTCMonth(),
+      parsedDueDate.getUTCDate(),
+    );
+    const utcToday = Date.UTC(
+      today.getUTCFullYear(),
+      today.getUTCMonth(),
+      today.getUTCDate(),
+    );
 
     if (utcDueDate < utcToday) {
       return apiError(res, {
@@ -140,7 +192,12 @@ export async function handleCreateAssignment(req: Request, res: Response) {
     });
 
     if (!classObj || classObj.teacherId !== userId) {
-      return apiError(res, { code: "FORBIDDEN", message: "You don't have permission to create assignments for this class", status: 403 });
+      return apiError(res, {
+        code: "FORBIDDEN",
+        message:
+          "You don't have permission to create assignments for this class",
+        status: 403,
+      });
     }
 
     const assignment = await prisma.assignment.create({
@@ -171,7 +228,8 @@ export async function handleCreateAssignment(req: Request, res: Response) {
         select: { userId: true },
       });
 
-      const { createNotification } = await import("../notifications/notifications.service.js");
+      const { createNotification } =
+        await import("../notifications/notifications.service.js");
 
       // Fire and forget notifications
       Promise.all(
@@ -181,14 +239,18 @@ export async function handleCreateAssignment(req: Request, res: Response) {
             type: "ASSIGNMENT_CREATED",
             title: "New Assignment",
             body: `${classObj.name}: ${title} has been posted.`,
-          }).catch(console.error)
-        )
+          }).catch(console.error),
+        ),
       );
     }
 
     return apiSuccess(res, assignment, 201);
   } catch (err) {
-    return apiError(res, { code: "CREATE_FAILED", message: (err as Error).message, status: 400 });
+    return apiError(res, {
+      code: "CREATE_FAILED",
+      message: (err as Error).message,
+      status: 400,
+    });
   }
 }
 
@@ -199,15 +261,24 @@ export async function handleUpdateAssignment(req: Request, res: Response) {
   try {
     const assignment = await prisma.assignment.findUnique({ where: { id } });
     if (!assignment) {
-      return apiError(res, { code: "NOT_FOUND", message: "Assignment not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Assignment not found",
+        status: 404,
+      });
     }
 
     // Only the creator can update
     if (assignment.creatorId !== userId) {
-      return apiError(res, { code: "FORBIDDEN", message: "You can only edit your own assignments", status: 403 });
+      return apiError(res, {
+        code: "FORBIDDEN",
+        message: "You can only edit your own assignments",
+        status: 403,
+      });
     }
 
-    const { title, description, dueDate, xpReward, earlyBonus, status } = req.body;
+    const { title, description, dueDate, xpReward, earlyBonus, status } =
+      req.body;
 
     if (dueDate) {
       const parsedDueDate = new Date(dueDate);
@@ -220,8 +291,16 @@ export async function handleUpdateAssignment(req: Request, res: Response) {
       }
 
       const today = new Date();
-      const utcDueDate = Date.UTC(parsedDueDate.getUTCFullYear(), parsedDueDate.getUTCMonth(), parsedDueDate.getUTCDate());
-      const utcToday = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+      const utcDueDate = Date.UTC(
+        parsedDueDate.getUTCFullYear(),
+        parsedDueDate.getUTCMonth(),
+        parsedDueDate.getUTCDate(),
+      );
+      const utcToday = Date.UTC(
+        today.getUTCFullYear(),
+        today.getUTCMonth(),
+        today.getUTCDate(),
+      );
 
       if (utcDueDate < utcToday) {
         return apiError(res, {
@@ -246,7 +325,11 @@ export async function handleUpdateAssignment(req: Request, res: Response) {
 
     return apiSuccess(res, updated);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to update assignment", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to update assignment",
+      status: 500,
+    });
   }
 }
 
@@ -257,11 +340,19 @@ export async function handleDeleteAssignment(req: Request, res: Response) {
   try {
     const assignment = await prisma.assignment.findUnique({ where: { id } });
     if (!assignment) {
-      return apiError(res, { code: "NOT_FOUND", message: "Assignment not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Assignment not found",
+        status: 404,
+      });
     }
 
     if (assignment.creatorId !== userId) {
-      return apiError(res, { code: "FORBIDDEN", message: "You can only delete your own assignments", status: 403 });
+      return apiError(res, {
+        code: "FORBIDDEN",
+        message: "You can only delete your own assignments",
+        status: 403,
+      });
     }
 
     await prisma.assignment.update({
@@ -271,6 +362,10 @@ export async function handleDeleteAssignment(req: Request, res: Response) {
 
     return apiSuccess(res, { message: "Assignment deleted" });
   } catch (err) {
-    return apiError(res, { code: "DELETE_FAILED", message: (err as Error).message, status: 400 });
+    return apiError(res, {
+      code: "DELETE_FAILED",
+      message: (err as Error).message,
+      status: 400,
+    });
   }
 }

@@ -7,26 +7,46 @@ import { generateUniqueClassCode } from "../../utils/code.js";
 export async function handleUpdateProfile(req: Request, res: Response) {
   const userId = req.userId;
   if (!userId) {
-    return apiError(res, { code: "UNAUTHORIZED", message: "Authentication required", status: 401 });
+    return apiError(res, {
+      code: "UNAUTHORIZED",
+      message: "Authentication required",
+      status: 401,
+    });
   }
 
   try {
     const { name, avatar } = req.body;
 
-    if (name !== undefined && (typeof name !== "string" || name.trim().length < 2)) {
-      return apiError(res, { code: "VALIDATION_ERROR", message: "Name must be at least 2 characters.", status: 400 });
+    if (
+      name !== undefined &&
+      (typeof name !== "string" || name.trim().length < 2)
+    ) {
+      return apiError(res, {
+        code: "VALIDATION_ERROR",
+        message: "Name must be at least 2 characters.",
+        status: 400,
+      });
     }
 
     if (name !== undefined && name.trim().length > 60) {
-      return apiError(res, { code: "VALIDATION_ERROR", message: "Name must be 60 characters or fewer.", status: 400 });
+      return apiError(res, {
+        code: "VALIDATION_ERROR",
+        message: "Name must be 60 characters or fewer.",
+        status: 400,
+      });
     }
 
     const updateData: Record<string, any> = {};
     if (name !== undefined) updateData.name = name.trim();
-    if (avatar !== undefined) updateData.image = avatar ? `avatar:${avatar}` : null;
+    if (avatar !== undefined)
+      updateData.image = avatar ? `avatar:${avatar}` : null;
 
     if (Object.keys(updateData).length === 0) {
-      return apiError(res, { code: "VALIDATION_ERROR", message: "No fields to update.", status: 400 });
+      return apiError(res, {
+        code: "VALIDATION_ERROR",
+        message: "No fields to update.",
+        status: 400,
+      });
     }
 
     const user = await prisma.user.update({
@@ -38,20 +58,36 @@ export async function handleUpdateProfile(req: Request, res: Response) {
     return apiSuccess(res, user);
   } catch (err) {
     console.error("[UPDATE PROFILE] error:", err);
-    return apiError(res, { code: "UPDATE_FAILED", message: (err as Error).message, status: 500 });
+    return apiError(res, {
+      code: "UPDATE_FAILED",
+      message: (err as Error).message,
+      status: 500,
+    });
   }
 }
 
 export async function handleStudentOnboarding(req: Request, res: Response) {
   const userId = req.userId;
   if (!userId) {
-    return apiError(res, { code: "UNAUTHORIZED", message: "Authentication required", status: 401 });
+    return apiError(res, {
+      code: "UNAUTHORIZED",
+      message: "Authentication required",
+      status: 401,
+    });
   }
 
   try {
-    const { gradeLevel, studentId, schoolName, classId, password, avatar } = req.body;
+    const { gradeLevel, studentId, schoolName, classId, password, avatar } =
+      req.body;
 
-    console.log("[STUDENT ONBOARDING] userId:", userId, "hasPassword field:", !!password, "avatar:", avatar);
+    console.log(
+      "[STUDENT ONBOARDING] userId:",
+      userId,
+      "hasPassword field:",
+      !!password,
+      "avatar:",
+      avatar,
+    );
 
     const existingUser = await prisma.user.findUnique({
       where: { id: userId },
@@ -59,25 +95,33 @@ export async function handleStudentOnboarding(req: Request, res: Response) {
     });
 
     if (!existingUser) {
-      return apiError(res, { code: "UNAUTHORIZED", message: "User not found. Please log in or sign up again.", status: 401 });
+      return apiError(res, {
+        code: "UNAUTHORIZED",
+        message: "User not found. Please log in or sign up again.",
+        status: 401,
+      });
     }
 
     if (!schoolName || !schoolName.trim()) {
-      return apiError(res, { code: "VALIDATION_ERROR", message: "School name is mandatory.", status: 400 });
+      return apiError(res, {
+        code: "VALIDATION_ERROR",
+        message: "School name is mandatory.",
+        status: 400,
+      });
     }
 
     const school = await prisma.school.findFirst({
       where: {
         name: { equals: schoolName.trim(), mode: "insensitive" },
-        adminId: { not: null }
-      }
+        adminId: { not: null },
+      },
     });
 
     if (!school) {
       return apiError(res, {
         code: "VALIDATION_ERROR",
         message: "Selected school is not registered by a Principal.",
-        status: 400
+        status: 400,
       });
     }
     const schoolId = school.id;
@@ -93,7 +137,10 @@ export async function handleStudentOnboarding(req: Request, res: Response) {
       }
     }
 
-    console.log("[STUDENT ONBOARDING] existingPasswordHash:", !!existingUser?.passwordHash);
+    console.log(
+      "[STUDENT ONBOARDING] existingPasswordHash:",
+      !!existingUser?.passwordHash,
+    );
 
     let passwordHash: string | undefined;
     if (password && existingUser && !existingUser.passwordHash) {
@@ -103,7 +150,9 @@ export async function handleStudentOnboarding(req: Request, res: Response) {
       passwordHash = await hash(password, 12);
       console.log("[STUDENT ONBOARDING] password hashed, will update DB");
     } else if (password && existingUser?.passwordHash) {
-      console.log("[STUDENT ONBOARDING] skipping — user already has a password");
+      console.log(
+        "[STUDENT ONBOARDING] skipping — user already has a password",
+      );
     }
 
     const user = await prisma.user.update({
@@ -116,44 +165,68 @@ export async function handleStudentOnboarding(req: Request, res: Response) {
         image: avatar ? `avatar:${avatar}` : undefined,
         onboardingStatus: "COMPLETED",
       },
-      select: { id: true, name: true, email: true, role: true, onboardingStatus: true, image: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        onboardingStatus: true,
+        image: true,
+      },
     });
 
     console.log("[STUDENT ONBOARDING] done for user:", user.id);
     return apiSuccess(res, user);
   } catch (err) {
     console.error("[STUDENT ONBOARDING] error:", err);
-    return apiError(res, { code: "ONBOARDING_FAILED", message: (err as Error).message, status: 400 });
+    return apiError(res, {
+      code: "ONBOARDING_FAILED",
+      message: (err as Error).message,
+      status: 400,
+    });
   }
 }
 
 export async function handleTeacherOnboarding(req: Request, res: Response) {
   const userId = req.userId;
   if (!userId) {
-    return apiError(res, { code: "UNAUTHORIZED", message: "Authentication required", status: 401 });
+    return apiError(res, {
+      code: "UNAUTHORIZED",
+      message: "Authentication required",
+      status: 401,
+    });
   }
 
   try {
     const { schoolName, className, password } = req.body;
 
-    console.log("[TEACHER ONBOARDING] userId:", userId, "hasPassword field:", !!password);
+    console.log(
+      "[TEACHER ONBOARDING] userId:",
+      userId,
+      "hasPassword field:",
+      !!password,
+    );
 
     if (!schoolName || !schoolName.trim()) {
-      return apiError(res, { code: "VALIDATION_ERROR", message: "School name is mandatory.", status: 400 });
+      return apiError(res, {
+        code: "VALIDATION_ERROR",
+        message: "School name is mandatory.",
+        status: 400,
+      });
     }
 
     const school = await prisma.school.findFirst({
       where: {
         name: { equals: schoolName.trim(), mode: "insensitive" },
-        adminId: { not: null }
-      }
+        adminId: { not: null },
+      },
     });
 
     if (!school) {
       return apiError(res, {
         code: "VALIDATION_ERROR",
         message: "Selected school is not registered by a Principal.",
-        status: 400
+        status: 400,
       });
     }
     const schoolId = school.id;
@@ -176,7 +249,10 @@ export async function handleTeacherOnboarding(req: Request, res: Response) {
       select: { passwordHash: true },
     });
 
-    console.log("[TEACHER ONBOARDING] existingPasswordHash:", !!existingUser?.passwordHash);
+    console.log(
+      "[TEACHER ONBOARDING] existingPasswordHash:",
+      !!existingUser?.passwordHash,
+    );
 
     let passwordHash: string | undefined;
     if (password && existingUser && !existingUser.passwordHash) {
@@ -186,7 +262,9 @@ export async function handleTeacherOnboarding(req: Request, res: Response) {
       passwordHash = await hash(password, 12);
       console.log("[TEACHER ONBOARDING] password hashed, will update DB");
     } else if (password && existingUser?.passwordHash) {
-      console.log("[TEACHER ONBOARDING] skipping — user already has a password");
+      console.log(
+        "[TEACHER ONBOARDING] skipping — user already has a password",
+      );
     }
 
     const user = await prisma.user.update({
@@ -196,14 +274,24 @@ export async function handleTeacherOnboarding(req: Request, res: Response) {
         ...(passwordHash ? { passwordHash } : {}),
         onboardingStatus: "COMPLETED",
       },
-      select: { id: true, name: true, email: true, role: true, onboardingStatus: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        onboardingStatus: true,
+      },
     });
 
     console.log("[TEACHER ONBOARDING] done for user:", user.id);
     return apiSuccess(res, user);
   } catch (err) {
     console.error("[TEACHER ONBOARDING] error:", err);
-    return apiError(res, { code: "ONBOARDING_FAILED", message: (err as Error).message, status: 400 });
+    return apiError(res, {
+      code: "ONBOARDING_FAILED",
+      message: (err as Error).message,
+      status: 400,
+    });
   }
 }
 
@@ -247,7 +335,7 @@ export async function handleGetRegisteredSchools(req: Request, res: Response) {
   try {
     const schools = await prisma.school.findMany({
       where: {
-        adminId: { not: null }
+        adminId: { not: null },
       },
       select: {
         id: true,
@@ -267,4 +355,3 @@ export async function handleGetRegisteredSchools(req: Request, res: Response) {
     });
   }
 }
-

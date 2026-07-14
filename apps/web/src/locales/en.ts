@@ -32,18 +32,22 @@ export const en = {
     milestoneLocked: "Locked (Lvl {{current}}/{{required}})",
     parentReporting: "Parent Progress Reporting",
     parentShare: "Share my academic progress with my parent/guardian",
-    parentShareSub: "When enabled, a regular academic summary will be generated and logged for email delivery.",
+    parentShareSub:
+      "When enabled, a regular academic summary will be generated and logged for email delivery.",
     parentEmail: "Parent / Guardian Email",
     parentFrequency: "Reporting Frequency",
     parentFreqWeekly: "Weekly (Every Sunday)",
     parentFreqMonthly: "Monthly (1st of the month)",
-    parentPrivacyNote: "🔒 Privacy Isolation Guarantee: To protect your educational privacy, the report never exposes the raw text of your search queries, AI chat logs, or flagged audit warnings. High-level academic metrics only.",
+    parentPrivacyNote:
+      "🔒 Privacy Isolation Guarantee: To protect your educational privacy, the report never exposes the raw text of your search queries, AI chat logs, or flagged audit warnings. High-level academic metrics only.",
     saveSettings: "Save Settings",
     sendTestReport: "Send Test Report Now",
     saveSuccess: "Parent reporting settings saved successfully!",
     saveFail: "Failed to save settings. Please make sure the email is valid.",
-    testSuccess: "Success! Report compiled and printed to server log. (Verification Log ID: {{id}})",
-    testFail: "Failed to compile progress report. Make sure you saved your settings first.",
+    testSuccess:
+      "Success! Report compiled and printed to server log. (Verification Log ID: {{id}})",
+    testFail:
+      "Failed to compile progress report. Make sure you saved your settings first.",
   },
   quiz: {
     takeQuiz: "Take Quiz (+50 XP)",
@@ -53,7 +57,8 @@ export const en = {
     failed: "Quiz Attempt Failed",
     score: "You scored {{score}}% ({{correct}} / {{total}} correct)",
     xpAwarded: "First-time complete: +{{xp}} XP Awarded!",
-    failRequirement: "A minimum score of {{score}}% is required to pass and earn XP.",
+    failRequirement:
+      "A minimum score of {{score}}% is required to pass and earn XP.",
     retry: "Retry Quiz",
     backToDetail: "Back to Detail",
     questionProgress: "Question {{current}} of {{total}}",
@@ -68,5 +73,5 @@ export const en = {
     locked: "Locked",
     completed: "Completed",
     levelLock: "Lvl {{level}} Required",
-  }
+  },
 };

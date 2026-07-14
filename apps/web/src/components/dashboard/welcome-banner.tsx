@@ -10,7 +10,12 @@ interface WelcomeBannerProps {
   currentXP: number;
 }
 
-export function WelcomeBanner({ name, level, xpToNext, currentXP }: WelcomeBannerProps) {
+export function WelcomeBanner({
+  name,
+  level,
+  xpToNext,
+  currentXP,
+}: WelcomeBannerProps) {
   const displayName = name;
 
   return (

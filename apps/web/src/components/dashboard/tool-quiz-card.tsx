@@ -8,10 +8,14 @@ import {
   ArrowRight,
   RefreshCw,
   Loader2,
-  Award
+  Award,
 } from "lucide-react";
 import Confetti from "react-confetti";
-import { useQuiz, useQuizAttempts, useSubmitQuizAttempt } from "@web/hooks/use-quizzes";
+import {
+  useQuiz,
+  useQuizAttempts,
+  useSubmitQuizAttempt,
+} from "@web/hooks/use-quizzes";
 
 interface ToolQuizCardProps {
   toolId: string;
@@ -23,7 +27,9 @@ export function ToolQuizCard({ toolId, brandColor }: ToolQuizCardProps) {
   const { data: attempts, isLoading: isAttemptsLoading } = useQuizAttempts();
   const submitAttempt = useSubmitQuizAttempt();
 
-  const [activeStep, setActiveStep] = useState<"intro" | "quiz" | "result">("intro");
+  const [activeStep, setActiveStep] = useState<"intro" | "quiz" | "result">(
+    "intro",
+  );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showConfetti, setShowConfetti] = useState(false);
@@ -35,11 +41,17 @@ export function ToolQuizCard({ toolId, brandColor }: ToolQuizCardProps) {
     xpEarned: number;
   } | null>(null);
 
-  const [windowDimensions, setWindowDimensions] = useState({ width: 1200, height: 800 });
+  const [windowDimensions, setWindowDimensions] = useState({
+    width: 1200,
+    height: 800,
+  });
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setWindowDimensions({ width: window.innerWidth, height: window.innerHeight });
+      setWindowDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
     }
   }, []);
 
@@ -57,7 +69,8 @@ export function ToolQuizCard({ toolId, brandColor }: ToolQuizCardProps) {
   }
 
   // Find if student has already passed this quiz
-  const hasPassed = attempts?.some((a) => a.quizId === quiz.id && a.passed) ?? false;
+  const hasPassed =
+    attempts?.some((a) => a.quizId === quiz.id && a.passed) ?? false;
   const bestAttempt = attempts
     ?.filter((a) => a.quizId === quiz.id)
     .sort((a, b) => b.score - a.score)[0];
@@ -139,7 +152,9 @@ export function ToolQuizCard({ toolId, brandColor }: ToolQuizCardProps) {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <Brain className="w-5 h-5" style={{ color: brandColor }} />
-                <h3 className="text-base font-semibold text-foreground">{quiz.title}</h3>
+                <h3 className="text-base font-semibold text-foreground">
+                  {quiz.title}
+                </h3>
                 {hasPassed && (
                   <span className="text-[10px] font-bold bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full border border-green-500/20">
                     PASSED
@@ -147,13 +162,19 @@ export function ToolQuizCard({ toolId, brandColor }: ToolQuizCardProps) {
                 )}
               </div>
               <p className="text-xs text-foreground-muted mb-4 max-w-xl">
-                {quiz.description || `Test your knowledge and verify concepts for utilizing this tool.`}
+                {quiz.description ||
+                  `Test your knowledge and verify concepts for utilizing this tool.`}
               </p>
 
               {bestAttempt && (
                 <p className="text-[11px] text-foreground-subtle">
-                  Best Score: <span className="font-semibold text-foreground">{bestAttempt.score}%</span>
-                  {bestAttempt.passed ? " ✅ Passed!" : " 🌟 Keep going — you're improving!"}
+                  Best Score:{" "}
+                  <span className="font-semibold text-foreground">
+                    {bestAttempt.score}%
+                  </span>
+                  {bestAttempt.passed
+                    ? " ✅ Passed!"
+                    : " 🌟 Keep going — you're improving!"}
                 </p>
               )}
             </div>
@@ -267,10 +288,17 @@ export function ToolQuizCard({ toolId, brandColor }: ToolQuizCardProps) {
             )}
 
             <h4 className="text-base font-bold mb-1">
-              {localResult.passed ? "🎉 Amazing — you nailed it!" : "🌟 Nice try — you're getting better!"}
+              {localResult.passed
+                ? "🎉 Amazing — you nailed it!"
+                : "🌟 Nice try — you're getting better!"}
             </h4>
             <p className="text-xs text-foreground-subtle mb-2">
-              You scored <span className="font-semibold text-foreground">{localResult.score}%</span> ({localResult.correctCount} / {localResult.totalQuestions} correct)
+              You scored{" "}
+              <span className="font-semibold text-foreground">
+                {localResult.score}%
+              </span>{" "}
+              ({localResult.correctCount} / {localResult.totalQuestions}{" "}
+              correct)
             </p>
 
             {localResult.passed && localResult.xpEarned > 0 && (
@@ -282,9 +310,12 @@ export function ToolQuizCard({ toolId, brandColor }: ToolQuizCardProps) {
 
             {!localResult.passed && (
               <div className="mb-6 px-4 py-3 rounded-2xl bg-amber-500/8 border border-amber-500/20 max-w-sm text-center">
-                <p className="text-[11px] text-amber-300 font-medium mb-0.5">🤖 Volt Robot says:</p>
+                <p className="text-[11px] text-amber-300 font-medium mb-0.5">
+                  🤖 Volt Robot says:
+                </p>
                 <p className="text-xs text-foreground-subtle leading-relaxed">
-                  "Almost there! You need {quiz.passingScore}% to pass. Let's try together — you're improving every time!"
+                  "Almost there! You need {quiz.passingScore}% to pass. Let's
+                  try together — you're improving every time!"
                 </p>
               </div>
             )}
@@ -295,7 +326,9 @@ export function ToolQuizCard({ toolId, brandColor }: ToolQuizCardProps) {
                 className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-semibold transition-all text-foreground hover:scale-[1.02] active:scale-[0.98]"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>{localResult.passed ? "Play Again" : "Try Again! 💪"}</span>
+                <span>
+                  {localResult.passed ? "Play Again" : "Try Again! 💪"}
+                </span>
               </button>
               <button
                 onClick={() => setActiveStep("intro")}

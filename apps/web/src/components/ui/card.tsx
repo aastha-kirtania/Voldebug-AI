@@ -2,36 +2,29 @@ import type { ElementType, HTMLAttributes } from "react";
 import { forwardRef } from "react";
 import { cn } from "@web/lib/utils";
 
-const Card = forwardRef<
-  HTMLDivElement,
-  HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("card", className)}
-    {...props}
-  />
-));
+const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("card", className)} {...props} />
+  ),
+);
 Card.displayName = "Card";
 
-const CardHeader = forwardRef<
-  HTMLDivElement,
-  HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex flex-col space-y-3 p-6", className)}
-    {...props}
-  />
-));
+const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("flex flex-col space-y-3 p-6", className)}
+      {...props}
+    />
+  ),
+);
 CardHeader.displayName = "CardHeader";
 
-const CardContent = forwardRef<
-  HTMLDivElement,
-  HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-3", className)} {...props} />
-));
+const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("p-6 pt-3", className)} {...props} />
+  ),
+);
 CardContent.displayName = "CardContent";
 
 interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {

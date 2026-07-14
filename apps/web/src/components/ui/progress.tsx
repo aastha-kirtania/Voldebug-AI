@@ -10,7 +10,14 @@ interface ProgressProps extends HTMLAttributes<HTMLDivElement> {
 
 export const Progress = forwardRef<HTMLDivElement, ProgressProps>(
   (
-    { className, value, max = 100, size = "md", glowOnNearComplete = false, ...props },
+    {
+      className,
+      value,
+      max = 100,
+      size = "md",
+      glowOnNearComplete = false,
+      ...props
+    },
     ref,
   ) => {
     const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
@@ -29,10 +36,7 @@ export const Progress = forwardRef<HTMLDivElement, ProgressProps>(
         {...props}
       >
         <div
-          className={cn(
-            "xp-bar-fill",
-            nearLevelUp && "near-levelup",
-          )}
+          className={cn("xp-bar-fill", nearLevelUp && "near-levelup")}
           style={{ width: `${percentage}%` }}
         />
       </div>

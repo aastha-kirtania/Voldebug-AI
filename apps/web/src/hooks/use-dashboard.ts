@@ -110,7 +110,8 @@ export interface DailyChallengeResponse {
 export function useDailyChallenge() {
   return useQuery({
     queryKey: ["daily-challenge"],
-    queryFn: () => api.get<DailyChallengeResponse>("/v1/gamification/challenge"),
+    queryFn: () =>
+      api.get<DailyChallengeResponse>("/v1/gamification/challenge"),
     staleTime: 30_000,
     retry: 2,
   });
@@ -175,7 +176,10 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: UpdateProfileInput) =>
-      api.patch<{ id: string; name: string; image: string }>("/v1/users/profile", data as any),
+      api.patch<{ id: string; name: string; image: string }>(
+        "/v1/users/profile",
+        data as any,
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },

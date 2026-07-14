@@ -15,9 +15,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <AuthProvider>
           <SocketProvider>
             <ToastProvider>
-              <LanguageProvider>
-                {children}
-              </LanguageProvider>
+              <LanguageProvider>{children}</LanguageProvider>
             </ToastProvider>
           </SocketProvider>
         </AuthProvider>

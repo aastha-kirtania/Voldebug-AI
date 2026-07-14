@@ -6,8 +6,18 @@ import { useTools } from "@web/hooks/use-tools";
 import { GradientMesh } from "@web/components/ui/background";
 import { useTranslation } from "@web/context/language-context";
 import {
-  Search, Bot, Code2, Pen, Image, BookOpen,
-  ExternalLink, Sparkles, TrendingUp, ChevronRight, Zap, X
+  Search,
+  Bot,
+  Code2,
+  Pen,
+  Image,
+  BookOpen,
+  ExternalLink,
+  Sparkles,
+  TrendingUp,
+  ChevronRight,
+  Zap,
+  X,
 } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────
@@ -39,39 +49,175 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 // Demo tools for when the database is empty
 const DEMO_TOOLS = [
-  { id: "1", name: "ChatGPT", category: "CHAT_AI", description: "Advanced conversational AI for brainstorming, writing, and answering complex questions.", logoUrl: "", brandColor: "#10a37f", useCases: ["Essay help", "Brainstorming", "Q&A"], subjects: ["All subjects"], usageCount: 1250, createdAt: "" },
-  { id: "2", name: "GitHub Copilot", category: "CODE_AI", description: "AI pair programmer that helps you write code faster and smarter.", logoUrl: "", brandColor: "#1b1f24", useCases: ["Code completion", "Bug fixing", "Learning"], subjects: ["Computer Science", "STEM"], usageCount: 890, createdAt: "" },
-  { id: "3", name: "Midjourney", category: "IMAGE_AI", description: "Generate stunning, high-quality images from text descriptions.", logoUrl: "", brandColor: "#000000", useCases: ["Art projects", "Presentations", "Creative work"], subjects: ["Art", "Design"], usageCount: 756, createdAt: "" },
-  { id: "4", name: "Grammarly", category: "WRITING_AI", description: "Advanced writing assistant that checks grammar, style, and clarity in real time.", logoUrl: "", brandColor: "#15c39a", useCases: ["Essay editing", "Grammar check", "Writing improvement"], subjects: ["English", "All subjects"], usageCount: 1100, createdAt: "" },
-  { id: "5", name: "Perplexity AI", category: "RESEARCH_AI", description: "AI-powered search engine that gives direct, cited answers to research questions.", logoUrl: "", brandColor: "#20b2aa", useCases: ["Research", "Fact-checking", "Learning"], subjects: ["Science", "History", "Research"], usageCount: 680, createdAt: "" },
-  { id: "6", name: "Claude", category: "CHAT_AI", description: "Thoughtful AI assistant excellent at analysis, writing, and nuanced reasoning.", logoUrl: "", brandColor: "#d97706", useCases: ["Analysis", "Writing", "Tutoring"], subjects: ["All subjects"], usageCount: 540, createdAt: "" },
-  { id: "7", name: "Replit", category: "CODE_AI", description: "Online IDE with built-in AI to help you code, run, and share projects.", logoUrl: "", brandColor: "#f26207", useCases: ["Coding projects", "Learning to code", "Collaboration"], subjects: ["Computer Science"], usageCount: 420, createdAt: "" },
-  { id: "8", name: "Canva AI", category: "IMAGE_AI", description: "Design tool with AI image generation and editing for presentations and projects.", logoUrl: "", brandColor: "#00c4cc", useCases: ["Presentations", "Posters", "Social media"], subjects: ["Art", "Business", "All subjects"], usageCount: 890, createdAt: "" },
-  { id: "9", name: "QuillBot", category: "WRITING_AI", description: "AI paraphrasing and summarization tool for better, clearer writing.", logoUrl: "", brandColor: "#4CAF50", useCases: ["Paraphrasing", "Summarizing", "Writing"], subjects: ["English", "All subjects"], usageCount: 650, createdAt: "" },
-  { id: "10", name: "Elicit", category: "RESEARCH_AI", description: "AI research assistant that helps find and summarize academic papers.", logoUrl: "", brandColor: "#5b21b6", useCases: ["Academic research", "Paper summaries", "Literature review"], subjects: ["Science", "Research"], usageCount: 310, createdAt: "" },
+  {
+    id: "1",
+    name: "ChatGPT",
+    category: "CHAT_AI",
+    description:
+      "Advanced conversational AI for brainstorming, writing, and answering complex questions.",
+    logoUrl: "",
+    brandColor: "#10a37f",
+    useCases: ["Essay help", "Brainstorming", "Q&A"],
+    subjects: ["All subjects"],
+    usageCount: 1250,
+    createdAt: "",
+  },
+  {
+    id: "2",
+    name: "GitHub Copilot",
+    category: "CODE_AI",
+    description:
+      "AI pair programmer that helps you write code faster and smarter.",
+    logoUrl: "",
+    brandColor: "#1b1f24",
+    useCases: ["Code completion", "Bug fixing", "Learning"],
+    subjects: ["Computer Science", "STEM"],
+    usageCount: 890,
+    createdAt: "",
+  },
+  {
+    id: "3",
+    name: "Midjourney",
+    category: "IMAGE_AI",
+    description:
+      "Generate stunning, high-quality images from text descriptions.",
+    logoUrl: "",
+    brandColor: "#000000",
+    useCases: ["Art projects", "Presentations", "Creative work"],
+    subjects: ["Art", "Design"],
+    usageCount: 756,
+    createdAt: "",
+  },
+  {
+    id: "4",
+    name: "Grammarly",
+    category: "WRITING_AI",
+    description:
+      "Advanced writing assistant that checks grammar, style, and clarity in real time.",
+    logoUrl: "",
+    brandColor: "#15c39a",
+    useCases: ["Essay editing", "Grammar check", "Writing improvement"],
+    subjects: ["English", "All subjects"],
+    usageCount: 1100,
+    createdAt: "",
+  },
+  {
+    id: "5",
+    name: "Perplexity AI",
+    category: "RESEARCH_AI",
+    description:
+      "AI-powered search engine that gives direct, cited answers to research questions.",
+    logoUrl: "",
+    brandColor: "#20b2aa",
+    useCases: ["Research", "Fact-checking", "Learning"],
+    subjects: ["Science", "History", "Research"],
+    usageCount: 680,
+    createdAt: "",
+  },
+  {
+    id: "6",
+    name: "Claude",
+    category: "CHAT_AI",
+    description:
+      "Thoughtful AI assistant excellent at analysis, writing, and nuanced reasoning.",
+    logoUrl: "",
+    brandColor: "#d97706",
+    useCases: ["Analysis", "Writing", "Tutoring"],
+    subjects: ["All subjects"],
+    usageCount: 540,
+    createdAt: "",
+  },
+  {
+    id: "7",
+    name: "Replit",
+    category: "CODE_AI",
+    description:
+      "Online IDE with built-in AI to help you code, run, and share projects.",
+    logoUrl: "",
+    brandColor: "#f26207",
+    useCases: ["Coding projects", "Learning to code", "Collaboration"],
+    subjects: ["Computer Science"],
+    usageCount: 420,
+    createdAt: "",
+  },
+  {
+    id: "8",
+    name: "Canva AI",
+    category: "IMAGE_AI",
+    description:
+      "Design tool with AI image generation and editing for presentations and projects.",
+    logoUrl: "",
+    brandColor: "#00c4cc",
+    useCases: ["Presentations", "Posters", "Social media"],
+    subjects: ["Art", "Business", "All subjects"],
+    usageCount: 890,
+    createdAt: "",
+  },
+  {
+    id: "9",
+    name: "QuillBot",
+    category: "WRITING_AI",
+    description:
+      "AI paraphrasing and summarization tool for better, clearer writing.",
+    logoUrl: "",
+    brandColor: "#4CAF50",
+    useCases: ["Paraphrasing", "Summarizing", "Writing"],
+    subjects: ["English", "All subjects"],
+    usageCount: 650,
+    createdAt: "",
+  },
+  {
+    id: "10",
+    name: "Elicit",
+    category: "RESEARCH_AI",
+    description:
+      "AI research assistant that helps find and summarize academic papers.",
+    logoUrl: "",
+    brandColor: "#5b21b6",
+    useCases: ["Academic research", "Paper summaries", "Literature review"],
+    subjects: ["Science", "Research"],
+    usageCount: 310,
+    createdAt: "",
+  },
 ];
 
 // ─── Sub-components ───────────────────────────────────────────────────────
 
-function ToolCard({ tool, index }: { tool: typeof DEMO_TOOLS[0]; index: number }) {
+function ToolCard({
+  tool,
+  index,
+}: {
+  tool: (typeof DEMO_TOOLS)[0];
+  index: number;
+}) {
   const { t } = useTranslation();
   const isHindi = t("nav.home") === "होम";
 
   const color = tool.brandColor || CATEGORY_COLORS[tool.category] || "#6366f1";
-  const catLabel = isHindi ? (
-    tool.category === "CHAT_AI" ? "💬 स्टोरी फ़ॉरेस्ट (चैट)" :
-    tool.category === "CODE_AI" ? "🤖 रोबोट फ़ैक्टरी (कोड)" :
-    tool.category === "IMAGE_AI" ? "🎨 क्रिएटिव स्टूडियो (डिजाइन)" :
-    tool.category === "WRITING_AI" ? "📝 राइटर्स सैंक्चुअरी (लेखन)" :
-    tool.category === "RESEARCH_AI" ? "🚀 स्पेस एक्सप्लोरर (अनुसंधान)" : tool.category
-  ) : (CATEGORY_LABEL[tool.category] || tool.category);
+  const catLabel = isHindi
+    ? tool.category === "CHAT_AI"
+      ? "💬 स्टोरी फ़ॉरेस्ट (चैट)"
+      : tool.category === "CODE_AI"
+        ? "🤖 रोबोट फ़ैक्टरी (कोड)"
+        : tool.category === "IMAGE_AI"
+          ? "🎨 क्रिएटिव स्टूडियो (डिजाइन)"
+          : tool.category === "WRITING_AI"
+            ? "📝 राइटर्स सैंक्चुअरी (लेखन)"
+            : tool.category === "RESEARCH_AI"
+              ? "🚀 स्पेस एक्सप्लोरर (अनुसंधान)"
+              : tool.category
+    : CATEGORY_LABEL[tool.category] || tool.category;
 
   return (
     <motion.a
       href={`/dashboard/tools/${tool.id}`}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: index * 0.04 }}
+      transition={{
+        duration: 0.4,
+        ease: [0.16, 1, 0.3, 1],
+        delay: index * 0.04,
+      }}
       className="card p-5 flex flex-col gap-4 group hover:scale-[1.01] transition-transform"
     >
       {/* Header */}
@@ -83,7 +229,9 @@ function ToolCard({ tool, index }: { tool: typeof DEMO_TOOLS[0]; index: number }
           {tool.name[0]}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-display font-semibold text-sm truncate">{tool.name}</p>
+          <p className="font-display font-semibold text-sm truncate">
+            {tool.name}
+          </p>
           <span
             className="inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mt-0.5"
             style={{ backgroundColor: `${color}18`, color }}
@@ -91,9 +239,7 @@ function ToolCard({ tool, index }: { tool: typeof DEMO_TOOLS[0]; index: number }
             {catLabel}
           </span>
         </div>
-        <ExternalLink
-          className="w-4 h-4 text-foreground-subtle opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-        />
+        <ExternalLink className="w-4 h-4 text-foreground-subtle opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
       </div>
 
       {/* Description */}
@@ -105,7 +251,11 @@ function ToolCard({ tool, index }: { tool: typeof DEMO_TOOLS[0]; index: number }
       <div className="flex items-center justify-between pt-1 border-t border-card-border">
         <div className="flex items-center gap-1 text-xs text-foreground-subtle">
           <TrendingUp className="w-3 h-3" />
-          <span>{isHindi ? `${tool.usageCount.toLocaleString()} बार उपयोग` : `${tool.usageCount.toLocaleString()} uses`}</span>
+          <span>
+            {isHindi
+              ? `${tool.usageCount.toLocaleString()} बार उपयोग`
+              : `${tool.usageCount.toLocaleString()} uses`}
+          </span>
         </div>
         <span className="text-xs text-accent-light group-hover:underline flex items-center gap-0.5">
           {isHindi ? "खोलें" : "Open"} <ChevronRight className="w-3 h-3" />
@@ -128,7 +278,10 @@ export default function ToolsPage() {
   const handleSearchChange = useCallback((val: string) => {
     setSearch(val);
     clearTimeout((window as any).__searchTimer);
-    (window as any).__searchTimer = setTimeout(() => setDebouncedSearch(val), 300);
+    (window as any).__searchTimer = setTimeout(
+      () => setDebouncedSearch(val),
+      300,
+    );
   }, []);
 
   const { data: apiTools, isLoading } = useTools({
@@ -141,13 +294,14 @@ export default function ToolsPage() {
 
   const filtered = useMemo(() => {
     let t = allTools;
-    if (activeCategory) t = t.filter((tool) => tool.category === activeCategory);
+    if (activeCategory)
+      t = t.filter((tool) => tool.category === activeCategory);
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
       t = t.filter(
         (tool) =>
           tool.name.toLowerCase().includes(q) ||
-          tool.description.toLowerCase().includes(q)
+          tool.description.toLowerCase().includes(q),
       );
     }
     return t;
@@ -170,7 +324,9 @@ export default function ToolsPage() {
             {isHindi ? "एआई सीखने की दुनिया" : "AI Learning Worlds"}
           </h1>
           <p className="text-sm text-foreground-muted">
-            {isHindi ? `${allTools.length} छात्रों के लिए तैयार की गई जादुई सीखने की दुनिया — खोजना शुरू करने के लिए एक दुनिया चुनें` : `${allTools.length} magical learning worlds curated for students — pick a world to start exploring`}
+            {isHindi
+              ? `${allTools.length} छात्रों के लिए तैयार की गई जादुई सीखने की दुनिया — खोजना शुरू करने के लिए एक दुनिया चुनें`
+              : `${allTools.length} magical learning worlds curated for students — pick a world to start exploring`}
           </p>
         </motion.div>
 
@@ -188,13 +344,20 @@ export default function ToolsPage() {
               type="text"
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder={isHindi ? "नाम या विवरण द्वारा टूल्स खोजें..." : "Search tools by name or description…"}
+              placeholder={
+                isHindi
+                  ? "नाम या विवरण द्वारा टूल्स खोजें..."
+                  : "Search tools by name or description…"
+              }
               className="input-base pl-10 pr-10"
               aria-label="Search AI tools"
             />
             {search && (
               <button
-                onClick={() => { setSearch(""); setDebouncedSearch(""); }}
+                onClick={() => {
+                  setSearch("");
+                  setDebouncedSearch("");
+                }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-subtle hover:text-foreground transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -215,14 +378,21 @@ export default function ToolsPage() {
                 }`}
               >
                 <cat.icon className="w-3.5 h-3.5" />
-                {isHindi ? (
-                  cat.key === "" ? "सभी दुनिया" :
-                  cat.key === "CHAT_AI" ? "💬 स्टोरी फ़ॉरेस्ट (चैट)" :
-                  cat.key === "CODE_AI" ? "🤖 रोबोट फ़ैक्टरी (कोड)" :
-                  cat.key === "IMAGE_AI" ? "🎨 क्रिएटिव स्टूडियो (डिजाइन)" :
-                  cat.key === "WRITING_AI" ? "📝 राइटर्स सैंक्चुअरी (लेखन)" :
-                  cat.key === "RESEARCH_AI" ? "🚀 स्पेस एक्सप्लोरर (अनुसंधान)" : cat.label
-                ) : cat.label}
+                {isHindi
+                  ? cat.key === ""
+                    ? "सभी दुनिया"
+                    : cat.key === "CHAT_AI"
+                      ? "💬 स्टोरी फ़ॉरेस्ट (चैट)"
+                      : cat.key === "CODE_AI"
+                        ? "🤖 रोबोट फ़ैक्टरी (कोड)"
+                        : cat.key === "IMAGE_AI"
+                          ? "🎨 क्रिएटिव स्टूडियो (डिजाइन)"
+                          : cat.key === "WRITING_AI"
+                            ? "📝 राइटर्स सैंक्चुअरी (लेखन)"
+                            : cat.key === "RESEARCH_AI"
+                              ? "🚀 स्पेस एक्सप्लोरर (अनुसंधान)"
+                              : cat.label
+                  : cat.label}
               </button>
             ))}
           </div>
@@ -231,7 +401,13 @@ export default function ToolsPage() {
         {/* Results count */}
         <div className="mt-4 mb-3 flex items-center justify-between">
           <p className="text-xs text-foreground-subtle">
-            {isLoading ? (isHindi ? "लोड हो रहा है..." : "Loading...") : (isHindi ? `कुल ${filtered.length} टूल मिले` : `${filtered.length} tool${filtered.length !== 1 ? "s" : ""} found`)}
+            {isLoading
+              ? isHindi
+                ? "लोड हो रहा है..."
+                : "Loading..."
+              : isHindi
+                ? `कुल ${filtered.length} टूल मिले`
+                : `${filtered.length} tool${filtered.length !== 1 ? "s" : ""} found`}
           </p>
         </div>
 
@@ -251,9 +427,13 @@ export default function ToolsPage() {
             <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center mb-4">
               <Search className="w-8 h-8 text-foreground-subtle opacity-40" />
             </div>
-            <p className="font-display text-base font-semibold mb-1">{isHindi ? "कोई टूल नहीं मिला" : "No tools found"}</p>
+            <p className="font-display text-base font-semibold mb-1">
+              {isHindi ? "कोई टूल नहीं मिला" : "No tools found"}
+            </p>
             <p className="text-sm text-foreground-subtle">
-              {isHindi ? "एक अलग खोज शब्द या श्रेणी का प्रयास करें" : "Try a different search term or category"}
+              {isHindi
+                ? "एक अलग खोज शब्द या श्रेणी का प्रयास करें"
+                : "Try a different search term or category"}
             </p>
           </motion.div>
         ) : (

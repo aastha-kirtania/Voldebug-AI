@@ -4,8 +4,20 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
-  Zap, Trophy, Star, Users, BookOpen, ChevronRight,
-  Flame, Award, ArrowRight, Bot, Code2, Pen, Search, Image
+  Zap,
+  Trophy,
+  Star,
+  Users,
+  BookOpen,
+  ChevronRight,
+  Flame,
+  Award,
+  ArrowRight,
+  Bot,
+  Code2,
+  Pen,
+  Search,
+  Image,
 } from "lucide-react";
 
 // ─── Stagger ─────────────────────────────────────────────────────────────
@@ -13,7 +25,8 @@ import {
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   show: (i = 0) => ({
-    opacity: 1, y: 0,
+    opacity: 1,
+    y: 0,
     transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1], delay: i * 0.08 },
   }),
 };
@@ -100,10 +113,10 @@ function AnimatedCounter({ value }: { value: string }) {
     if (isNaN(target)) {
       return;
     }
-    
+
     const hasDecimal = numericString.includes(".");
     const decimals = hasDecimal ? numericString.split(".")[1].length : 0;
-    
+
     let start = 0;
     const duration = 1200; // 1.2s animation duration
     const startTime = performance.now();
@@ -113,10 +126,10 @@ function AnimatedCounter({ value }: { value: string }) {
     const updateCount = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      
+
       const easeProgress = progress * (2 - progress); // easeOutQuad
       const currentVal = start + easeProgress * (target - start);
-      
+
       setCount(parseFloat(currentVal.toFixed(decimals)));
 
       if (progress < 1) {
@@ -134,7 +147,9 @@ function AnimatedCounter({ value }: { value: string }) {
 
   return (
     <>
-      {count.toLocaleString(undefined, { minimumFractionDigits: numericString.includes(".") ? 1 : 0 })}
+      {count.toLocaleString(undefined, {
+        minimumFractionDigits: numericString.includes(".") ? 1 : 0,
+      })}
       {suffix}
     </>
   );
@@ -146,7 +161,9 @@ export default function LandingPage() {
   const [statsData, setStatsData] = useState(STATS);
 
   useEffect(() => {
-    const apiUrl = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/$/, "");
+    const apiUrl = (
+      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"
+    ).replace(/\/$/, "");
     fetch(`${apiUrl}/v1/health/stats`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((json) => {
@@ -155,7 +172,15 @@ export default function LandingPage() {
           setStatsData([
             { value: `${studentsCount}`, label: "Students Learning" },
             { value: `${toolsCount}`, label: "AI Tools Curated" },
-            { value: totalXP >= 1000000 ? `${(totalXP / 1000000).toFixed(1)}M` : totalXP >= 1000 ? `${(totalXP / 1000).toFixed(1)}k` : `${totalXP}`, label: "XP Awarded This Month" },
+            {
+              value:
+                totalXP >= 1000000
+                  ? `${(totalXP / 1000000).toFixed(1)}M`
+                  : totalXP >= 1000
+                    ? `${(totalXP / 1000).toFixed(1)}k`
+                    : `${totalXP}`,
+              label: "XP Awarded This Month",
+            },
           ]);
         }
       })
@@ -211,7 +236,9 @@ export default function LandingPage() {
           </div>
           <span className="font-display text-base font-bold tracking-tight">
             <span className="text-gradient">VOLDEBUG</span>
-            <span className="text-foreground-subtle text-xs ml-1 font-sans font-normal">AI PORTAL</span>
+            <span className="text-foreground-subtle text-xs ml-1 font-sans font-normal">
+              AI PORTAL
+            </span>
           </span>
         </motion.div>
 
@@ -242,7 +269,10 @@ export default function LandingPage() {
           {/* Left: Copy */}
           <div className="space-y-8">
             <motion.div
-              custom={0} variants={fadeUp} initial="hidden" animate="show"
+              custom={0}
+              variants={fadeUp}
+              initial="hidden"
+              animate="show"
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accent/20 bg-accent/8 text-accent-light text-xs font-medium"
             >
               <Star className="w-3 h-3 fill-current" />
@@ -250,16 +280,26 @@ export default function LandingPage() {
             </motion.div>
 
             <motion.h1
-              custom={1} variants={fadeUp} initial="hidden" animate="show"
+              custom={1}
+              variants={fadeUp}
+              initial="hidden"
+              animate="show"
               className="font-display text-4xl md:text-5xl xl:text-6xl font-bold tracking-tight leading-[1.08]"
             >
-              Learn AI.{" "}
-              <span className="text-gradient">Earn XP.</span>{" "}
-              Level Up{" "}
+              Learn AI. <span className="text-gradient">Earn XP.</span> Level Up{" "}
               <span className="relative whitespace-nowrap">
                 for Real.
-                <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 300 12" fill="none">
-                  <path d="M1 9 C75 3, 175 3, 299 9" stroke="url(#gl)" strokeWidth="3" strokeLinecap="round" />
+                <svg
+                  className="absolute -bottom-2 left-0 w-full"
+                  viewBox="0 0 300 12"
+                  fill="none"
+                >
+                  <path
+                    d="M1 9 C75 3, 175 3, 299 9"
+                    stroke="url(#gl)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
                   <defs>
                     <linearGradient id="gl" x1="0" y1="0" x2="1" y2="0">
                       <stop offset="0%" stopColor="#6366f1" />
@@ -271,15 +311,22 @@ export default function LandingPage() {
             </motion.h1>
 
             <motion.p
-              custom={2} variants={fadeUp} initial="hidden" animate="show"
+              custom={2}
+              variants={fadeUp}
+              initial="hidden"
+              animate="show"
               className="text-foreground-muted text-lg leading-relaxed max-w-xl"
             >
-              Voldebug connects students with curated AI tools through gamified teacher-assigned activities.
-              Earn XP, unlock badges, and climb the leaderboard — all while mastering skills that matter.
+              Voldebug connects students with curated AI tools through gamified
+              teacher-assigned activities. Earn XP, unlock badges, and climb the
+              leaderboard — all while mastering skills that matter.
             </motion.p>
 
             <motion.div
-              custom={3} variants={fadeUp} initial="hidden" animate="show"
+              custom={3}
+              variants={fadeUp}
+              initial="hidden"
+              animate="show"
               className="flex flex-col sm:flex-row items-start sm:items-center gap-4"
             >
               <Link
@@ -299,7 +346,10 @@ export default function LandingPage() {
 
             {/* Social proof */}
             <motion.div
-              custom={4} variants={fadeUp} initial="hidden" animate="show"
+              custom={4}
+              variants={fadeUp}
+              initial="hidden"
+              animate="show"
               className="flex items-center gap-3"
             >
               <div className="flex -space-x-2">
@@ -307,7 +357,15 @@ export default function LandingPage() {
                   <div
                     key={i}
                     className="w-8 h-8 rounded-full border-2 border-bg flex items-center justify-center text-xs font-bold text-white"
-                    style={{ backgroundColor: ["#6366f1", "#06b6d4", "#ec4899", "#f59e0b", "#22c55e"][i] }}
+                    style={{
+                      backgroundColor: [
+                        "#6366f1",
+                        "#06b6d4",
+                        "#ec4899",
+                        "#f59e0b",
+                        "#22c55e",
+                      ][i],
+                    }}
                   >
                     {l}
                   </div>
@@ -331,7 +389,9 @@ export default function LandingPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Trophy className="w-4.5 h-4.5 text-yellow-400" />
-                  <span className="font-display text-sm font-semibold">Class Leaderboard</span>
+                  <span className="font-display text-sm font-semibold">
+                    Class Leaderboard
+                  </span>
                 </div>
                 <span className="xp-badge xp-badge-new text-xs">Live</span>
               </div>
@@ -343,7 +403,9 @@ export default function LandingPage() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.4 + i * 0.07, duration: 0.4 }}
                     className={`flex items-center gap-3 p-2.5 rounded-lg transition-colors ${
-                      i === 0 ? "bg-yellow-400/8 border border-yellow-400/15" : "hover:bg-surface/40"
+                      i === 0
+                        ? "bg-yellow-400/8 border border-yellow-400/15"
+                        : "hover:bg-surface/40"
                     }`}
                   >
                     <span className="w-5 text-center text-sm font-mono text-foreground-subtle">
@@ -352,9 +414,15 @@ export default function LandingPage() {
                     <div className="w-7 h-7 rounded-full bg-surface flex items-center justify-center text-xs font-bold">
                       {entry.name[0]}
                     </div>
-                    <span className="flex-1 text-sm font-medium truncate">{entry.name}</span>
-                    <span className="text-xs text-foreground-subtle">Lv {entry.level}</span>
-                    <span className="stat-number text-sm text-accent-light">{entry.xp.toLocaleString()} XP</span>
+                    <span className="flex-1 text-sm font-medium truncate">
+                      {entry.name}
+                    </span>
+                    <span className="text-xs text-foreground-subtle">
+                      Lv {entry.level}
+                    </span>
+                    <span className="stat-number text-sm text-accent-light">
+                      {entry.xp.toLocaleString()} XP
+                    </span>
                   </motion.div>
                 ))}
               </div>
@@ -370,8 +438,12 @@ export default function LandingPage() {
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-success" />
                 <div>
-                  <p className="text-xs font-bold text-success">+75 XP Earned!</p>
-                  <p className="text-xs text-foreground-subtle">Early submission bonus</p>
+                  <p className="text-xs font-bold text-success">
+                    +75 XP Earned!
+                  </p>
+                  <p className="text-xs text-foreground-subtle">
+                    Early submission bonus
+                  </p>
                 </div>
               </div>
             </motion.div>
@@ -386,8 +458,12 @@ export default function LandingPage() {
               <div className="flex items-center gap-2">
                 <Star className="w-4 h-4 text-accent-light fill-current" />
                 <div>
-                  <p className="text-xs font-bold text-accent-light">Level Up!</p>
-                  <p className="text-xs text-foreground-subtle">You&apos;re now Level 12</p>
+                  <p className="text-xs font-bold text-accent-light">
+                    Level Up!
+                  </p>
+                  <p className="text-xs text-foreground-subtle">
+                    You&apos;re now Level 12
+                  </p>
                 </div>
               </div>
             </motion.div>
@@ -431,7 +507,8 @@ export default function LandingPage() {
             <span className="text-gradient">master AI tools</span>
           </h2>
           <p className="text-foreground-muted text-lg max-w-2xl mx-auto">
-            A complete gamified learning platform designed with students and teachers in mind.
+            A complete gamified learning platform designed with students and
+            teachers in mind.
           </p>
         </motion.div>
 
@@ -450,10 +527,14 @@ export default function LandingPage() {
                   {/* Front Face */}
                   <div className="flip-card-front p-6 flex flex-col justify-between items-start text-left bg-gradient-to-br from-surface to-surface/60">
                     <div className="w-full">
-                      <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl border mb-4 ${f.bg} ${f.color}`}>
+                      <div
+                        className={`inline-flex items-center justify-center w-11 h-11 rounded-xl border mb-4 ${f.bg} ${f.color}`}
+                      >
                         <f.icon className="w-5 h-5" />
                       </div>
-                      <h3 className="font-display text-base font-semibold text-foreground">{f.title}</h3>
+                      <h3 className="font-display text-base font-semibold text-foreground">
+                        {f.title}
+                      </h3>
                       <p className="text-xs text-foreground-muted leading-relaxed line-clamp-2 mt-2">
                         {f.desc}
                       </p>
@@ -464,9 +545,16 @@ export default function LandingPage() {
                   </div>
                   {/* Back Face */}
                   <div className="flip-card-back p-6 flex flex-col justify-center items-center text-center">
-                    <h3 className="font-display text-base font-bold mb-2 text-white">{f.title}</h3>
-                    <p className="text-xs text-white/90 leading-relaxed mb-4">{f.desc}</p>
-                    <Link href="/register" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white text-accent font-semibold text-xs transition-colors hover:bg-slate-100 shadow-md">
+                    <h3 className="font-display text-base font-bold mb-2 text-white">
+                      {f.title}
+                    </h3>
+                    <p className="text-xs text-white/90 leading-relaxed mb-4">
+                      {f.desc}
+                    </p>
+                    <Link
+                      href="/register"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white text-accent font-semibold text-xs transition-colors hover:bg-slate-100 shadow-md"
+                    >
                       Get Started <Zap className="w-3 h-3 text-accent" />
                     </Link>
                   </div>
@@ -485,7 +573,9 @@ export default function LandingPage() {
           viewport={{ once: true }}
           className="flex items-center justify-between mb-8"
         >
-          <h2 className="font-display text-2xl font-bold">Curated AI Tools, Organized for Students</h2>
+          <h2 className="font-display text-2xl font-bold">
+            Curated AI Tools, Organized for Students
+          </h2>
           <Link
             href="/tools"
             className="hidden md:flex items-center gap-1.5 text-sm text-accent-light hover:underline"
@@ -507,11 +597,16 @@ export default function LandingPage() {
             >
               <div
                 className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                style={{ backgroundColor: `${cat.color}18`, border: `1px solid ${cat.color}30` }}
+                style={{
+                  backgroundColor: `${cat.color}18`,
+                  border: `1px solid ${cat.color}30`,
+                }}
               >
                 <cat.icon className="w-6 h-6" style={{ color: cat.color }} />
               </div>
-              <span className="text-sm font-medium text-center">{cat.label}</span>
+              <span className="text-sm font-medium text-center">
+                {cat.label}
+              </span>
             </motion.div>
           ))}
         </div>
@@ -538,7 +633,8 @@ export default function LandingPage() {
               Ready to start your AI journey?
             </h2>
             <p className="text-foreground-muted text-lg max-w-xl mx-auto">
-              Join thousands of students already earning XP, unlocking badges, and learning the tools that power tomorrow.
+              Join thousands of students already earning XP, unlocking badges,
+              and learning the tools that power tomorrow.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
@@ -561,7 +657,10 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/5 py-8 text-center text-xs text-foreground-subtle">
-        <p>© 2025 Voldebug AI Education Portal · Empowering the next generation of AI-literate learners</p>
+        <p>
+          © 2025 Voldebug AI Education Portal · Empowering the next generation
+          of AI-literate learners
+        </p>
       </footer>
     </div>
   );

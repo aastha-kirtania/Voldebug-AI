@@ -31,8 +31,7 @@ function useNotifications() {
 function useUnreadCount() {
   return useQuery({
     queryKey: ["notifications-unread"],
-    queryFn: () =>
-      api.get<{ count: number }>("/v1/notifications/unread-count"),
+    queryFn: () => api.get<{ count: number }>("/v1/notifications/unread-count"),
     staleTime: 15_000,
   });
 }
@@ -43,7 +42,7 @@ export function NotificationBell() {
   const { data, refetch } = useNotifications();
   const { data: unread } = useUnreadCount();
   const unreadCount = unread?.count ?? 0;
-  
+
   const { socket, connected } = useSocket();
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -56,7 +55,10 @@ export function NotificationBell() {
         if (!old) return old;
         return {
           ...old,
-          notifications: old.notifications.map((n: any) => ({ ...n, read: true })),
+          notifications: old.notifications.map((n: any) => ({
+            ...n,
+            read: true,
+          })),
         };
       });
     } catch (e) {
@@ -78,8 +80,10 @@ export function NotificationBell() {
 
     const onNotification = (payload: any) => {
       // 1. Toast Notification natively
-      if (payload.type === "GRADE_RECEIVED") toast.showSuccess(payload.title, payload.body);
-      else if (payload.type !== "XP_AWARDED") toast.showSuccess(payload.title, payload.body);
+      if (payload.type === "GRADE_RECEIVED")
+        toast.showSuccess(payload.title, payload.body);
+      else if (payload.type !== "XP_AWARDED")
+        toast.showSuccess(payload.title, payload.body);
 
       // 2. Safely push the notification down the TanStack Query pipeline
       queryClient.setQueryData(["notifications"], (old: any) => {
@@ -87,7 +91,7 @@ export function NotificationBell() {
         return {
           ...old,
           notifications: [payload, ...old.notifications].slice(0, 10),
-          total: old.total + 1
+          total: old.total + 1,
         };
       });
 
@@ -112,7 +116,8 @@ export function NotificationBell() {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -171,7 +176,9 @@ export function NotificationBell() {
                         {typeIcons[n.type] ?? "·"}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">{n.title}</p>
+                        <p className="text-sm font-medium truncate">
+                          {n.title}
+                        </p>
                         <p className="text-xs text-foreground-subtle line-clamp-2">
                           {n.body}
                         </p>

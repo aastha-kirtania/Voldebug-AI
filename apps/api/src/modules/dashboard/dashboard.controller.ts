@@ -5,50 +5,65 @@ import { apiSuccess, apiError } from "../../utils/api.js";
 export async function handleDashboardStats(req: Request, res: Response) {
   const userId = req.userId;
   if (!userId) {
-    return apiError(res, { code: "UNAUTHORIZED", message: "Authentication required", status: 401 });
+    return apiError(res, {
+      code: "UNAUTHORIZED",
+      message: "Authentication required",
+      status: 401,
+    });
   }
 
   try {
-
-    const [user, xpTransactions, streak, badgesCount, submissions, classMemberships] =
-      await Promise.all([
-        prisma.user.findUnique({
-          where: { id: userId },
-          select: {
-            name: true,
-            role: true,
-            image: true,
-            gradeLevel: true,
-            parentEmail: true,
-            parentReportingEnabled: true,
-            parentReportFrequency: true,
-            school: { select: { name: true } },
-          },
-        }),
-        prisma.xPTransaction.findMany({
-          where: { userId },
-          orderBy: { createdAt: "desc" },
-          select: { id: true, amount: true, createdAt: true, source: true },
-        }),
-        prisma.streak.findUnique({ where: { userId } }),
-        prisma.userBadge.findMany({ 
-          where: { userId },
-          include: { badge: true }
-        }),
-        prisma.submission.count({
-          where: { studentId: userId, deletedAt: null },
-        }),
-        prisma.classMember.findMany({
-          where: { userId },
-          include: {
-            class: {
-              include: {
-                _count: { select: { assignments: { where: { status: "PUBLISHED", deletedAt: null } } } },
+    const [
+      user,
+      xpTransactions,
+      streak,
+      badgesCount,
+      submissions,
+      classMemberships,
+    ] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          name: true,
+          role: true,
+          image: true,
+          gradeLevel: true,
+          parentEmail: true,
+          parentReportingEnabled: true,
+          parentReportFrequency: true,
+          school: { select: { name: true } },
+        },
+      }),
+      prisma.xPTransaction.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, amount: true, createdAt: true, source: true },
+      }),
+      prisma.streak.findUnique({ where: { userId } }),
+      prisma.userBadge.findMany({
+        where: { userId },
+        include: { badge: true },
+      }),
+      prisma.submission.count({
+        where: { studentId: userId, deletedAt: null },
+      }),
+      prisma.classMember.findMany({
+        where: { userId },
+        include: {
+          class: {
+            include: {
+              _count: {
+                select: {
+                  assignments: {
+                    where: { status: "PUBLISHED", deletedAt: null },
+                  },
+                },
               },
             },
           },
-        }),
-      ]);
+        },
+      }),
+    ]);
 
     // Calculate total XP and level
     const totalXP = xpTransactions.reduce((sum, t) => sum + t.amount, 0);
@@ -84,7 +99,7 @@ export async function handleDashboardStats(req: Request, res: Response) {
       });
 
       const xpMap = new Map(
-        allStudentsXP.map((s) => [s.userId, s._sum.amount || 0])
+        allStudentsXP.map((s) => [s.userId, s._sum.amount || 0]),
       );
 
       // Sort by total XP descending and find user's position, ensuring all users have a rank
@@ -127,14 +142,14 @@ export async function handleDashboardStats(req: Request, res: Response) {
       classRank,
       badges: {
         earned: badgesCount.length,
-        items: badgesCount.map(ub => ({
+        items: badgesCount.map((ub) => ({
           id: ub.badge.id,
           key: ub.badge.conditionKey,
           name: ub.badge.name,
           icon: ub.badge.iconUrl,
           desc: ub.badge.description,
-          earnedAt: ub.earnedAt
-        }))
+          earnedAt: ub.earnedAt,
+        })),
       },
       submissionCount: submissions,
       pendingAssignments,

@@ -6,14 +6,28 @@ import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactConfetti from "react-confetti";
 import {
-  Bot, Trophy, Zap, CheckCircle2, ChevronRight,
-  ChevronLeft, User, GraduationCap, AlertCircle, Eye, EyeOff,
-  Building2, BookOpen
+  Bot,
+  Trophy,
+  Zap,
+  CheckCircle2,
+  ChevronRight,
+  ChevronLeft,
+  User,
+  GraduationCap,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  Building2,
+  BookOpen,
 } from "lucide-react";
 import { sound } from "@web/lib/audio";
 
 // Password strength helper
-function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
+function getPasswordStrength(pw: string): {
+  score: number;
+  label: string;
+  color: string;
+} {
   if (!pw) return { score: 0, label: "", color: "" };
   let score = 0;
   if (pw.length >= 8) score++;
@@ -62,7 +76,9 @@ function AvatarStep({
     >
       <div className="text-center mb-4">
         <h2 className="font-display text-2xl font-bold">Choose Your Avatar</h2>
-        <p className="text-foreground-muted text-sm mt-1.5">Pick a helper buddy to guide your AI learning journey!</p>
+        <p className="text-foreground-muted text-sm mt-1.5">
+          Pick a helper buddy to guide your AI learning journey!
+        </p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -86,12 +102,18 @@ function AvatarStep({
             >
               <div className="w-16 h-16 flex items-center justify-center rounded-xl overflow-hidden bg-accent/5">
                 {av.image ? (
-                  <img src={av.image} alt={av.name} className="w-full h-full object-cover" />
+                  <img
+                    src={av.image}
+                    alt={av.name}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <span className="text-4xl">{(av as any).emoji}</span>
                 )}
               </div>
-              <span className={`text-xs font-semibold ${isSelected ? "text-accent-light" : "text-foreground-subtle"}`}>
+              <span
+                className={`text-xs font-semibold ${isSelected ? "text-accent-light" : "text-foreground-subtle"}`}
+              >
                 {av.name}
               </span>
             </motion.button>
@@ -107,19 +129,22 @@ const HOW_IT_WORKS_ITEMS = [
     icon: Bot,
     color: "#6366f1",
     title: "Explore AI Tools",
-    description: "Browse 350+ curated AI tools categorized by subject and use case.",
+    description:
+      "Browse 350+ curated AI tools categorized by subject and use case.",
   },
   {
     icon: GraduationCap,
     color: "#06b6d4",
     title: "Complete Assignments",
-    description: "Your teachers post missions. Use the suggested AI tools to complete them.",
+    description:
+      "Your teachers post missions. Use the suggested AI tools to complete them.",
   },
   {
     icon: Trophy,
     color: "#f59e0b",
     title: "Earn XP & Badges",
-    description: "Every submission earns XP. Level up, unlock badges, and top the leaderboard.",
+    description:
+      "Every submission earns XP. Level up, unlock badges, and top the leaderboard.",
   },
 ];
 
@@ -140,7 +165,8 @@ function WelcomeStep({ name }: { name: string }) {
           Welcome to Voldebug{name ? `, ${name}` : ""}!
         </h2>
         <p className="text-foreground-muted text-base max-w-sm mx-auto leading-relaxed">
-          You're about to join thousands of students learning AI skills through real assignments and friendly competition.
+          You're about to join thousands of students learning AI skills through
+          real assignments and friendly competition.
         </p>
       </div>
 
@@ -171,7 +197,9 @@ function HowItWorksStep() {
     >
       <div className="text-center mb-6">
         <h2 className="font-display text-2xl font-bold">How It Works</h2>
-        <p className="text-foreground-muted text-sm mt-1.5">Three simple steps to master AI tools</p>
+        <p className="text-foreground-muted text-sm mt-1.5">
+          Three simple steps to master AI tools
+        </p>
       </div>
 
       <div className="space-y-3">
@@ -185,13 +213,18 @@ function HowItWorksStep() {
           >
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: `${item.color}18`, border: `1px solid ${item.color}30` }}
+              style={{
+                backgroundColor: `${item.color}18`,
+                border: `1px solid ${item.color}30`,
+              }}
             >
               <item.icon className="w-5 h-5" style={{ color: item.color }} />
             </div>
             <div>
               <h3 className="font-semibold text-sm">{item.title}</h3>
-              <p className="text-xs text-foreground-muted mt-0.5 leading-relaxed">{item.description}</p>
+              <p className="text-xs text-foreground-muted mt-0.5 leading-relaxed">
+                {item.description}
+              </p>
             </div>
             <div className="ml-auto text-foreground-subtle/30 text-2xl font-bold font-display flex-shrink-0">
               {i + 1}
@@ -248,7 +281,9 @@ function SetupStep({
     >
       <div className="text-center mb-4">
         <h2 className="font-display text-2xl font-bold">Set Up Your Profile</h2>
-        <p className="text-foreground-muted text-sm mt-1.5">Just a few details and you're in</p>
+        <p className="text-foreground-muted text-sm mt-1.5">
+          Just a few details and you're in
+        </p>
       </div>
 
       {error && (
@@ -260,7 +295,10 @@ function SetupStep({
 
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <label htmlFor="schoolName" className="text-sm font-medium flex items-center gap-1.5">
+          <label
+            htmlFor="schoolName"
+            className="text-sm font-medium flex items-center gap-1.5"
+          >
             <Building2 className="w-4 h-4 text-foreground-subtle" />
             School Name
             <span className="text-error">*</span>
@@ -287,13 +325,17 @@ function SetupStep({
             </select>
           ) : (
             <div className="p-3.5 rounded-xl bg-warning/8 border border-warning/25 text-warning text-xs leading-relaxed font-medium">
-              ⚠️ No schools have been registered by a Principal yet. Please ask your school administration to register first.
+              ⚠️ No schools have been registered by a Principal yet. Please ask
+              your school administration to register first.
             </div>
           )}
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="gradeLevel" className="text-sm font-medium flex items-center gap-1.5">
+          <label
+            htmlFor="gradeLevel"
+            className="text-sm font-medium flex items-center gap-1.5"
+          >
             <GraduationCap className="w-4 h-4 text-foreground-subtle" />
             Grade Level
             <span className="text-error">*</span>
@@ -315,10 +357,15 @@ function SetupStep({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="studentId" className="text-sm font-medium flex items-center gap-1.5">
+          <label
+            htmlFor="studentId"
+            className="text-sm font-medium flex items-center gap-1.5"
+          >
             <User className="w-4 h-4 text-foreground-subtle" />
             Student ID
-            <span className="text-foreground-subtle text-xs font-normal ml-1">(optional)</span>
+            <span className="text-foreground-subtle text-xs font-normal ml-1">
+              (optional)
+            </span>
           </label>
           <input
             id="studentId"
@@ -335,11 +382,16 @@ function SetupStep({
 
         {!hasPassword && (
           <div className="space-y-1.5">
-            <label htmlFor="password" className="text-sm font-medium flex items-center gap-1.5">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium flex items-center gap-1.5"
+            >
               <Zap className="w-4 h-4 text-foreground-subtle" />
               Set Password
               <span className="text-error">*</span>
-              <span className="text-foreground-subtle text-xs font-normal ml-1">(required to log in via email later)</span>
+              <span className="text-foreground-subtle text-xs font-normal ml-1">
+                (required to log in via email later)
+              </span>
             </label>
             <div className="relative">
               <input
@@ -357,16 +409,26 @@ function SetupStep({
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors"
                 tabIndex={-1}
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
             </div>
             {passwordTouched && password.length > 0 && password.length < 8 && (
-              <p className="text-xs text-error mt-1">Password must be at least 8 characters.</p>
+              <p className="text-xs text-error mt-1">
+                Password must be at least 8 characters.
+              </p>
             )}
 
             {/* Password strength meter */}
             {password.length > 0 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-2">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-2 mt-2"
+              >
                 <div className="flex gap-1.5">
                   {[1, 2, 3, 4].map((i) => {
                     const strength = getPasswordStrength(password);
@@ -374,7 +436,9 @@ function SetupStep({
                       <div
                         key={i}
                         className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                          strength.score >= i ? strength.color : "bg-surface border border-card-border"
+                          strength.score >= i
+                            ? strength.color
+                            : "bg-surface border border-card-border"
                         }`}
                       />
                     );
@@ -383,11 +447,17 @@ function SetupStep({
                 {(() => {
                   const strength = getPasswordStrength(password);
                   return strength.label ? (
-                    <p className={`text-xs font-semibold ${
-                      strength.label === "Weak" ? "text-error" :
-                      strength.label === "Fair" ? "text-warning" :
-                      strength.label === "Good" ? "text-info" : "text-success"
-                    }`}>
+                    <p
+                      className={`text-xs font-semibold ${
+                        strength.label === "Weak"
+                          ? "text-error"
+                          : strength.label === "Fair"
+                            ? "text-warning"
+                            : strength.label === "Good"
+                              ? "text-info"
+                              : "text-success"
+                      }`}
+                    >
                       {strength.label} password
                     </p>
                   ) : null;
@@ -413,7 +483,9 @@ export default function StudentOnboarding() {
   const [schoolName, setSchoolName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("robot");
   const [showConfetti, setShowConfetti] = useState(false);
-  const [registeredSchools, setRegisteredSchools] = useState<{ id: string; name: string }[]>([]);
+  const [registeredSchools, setRegisteredSchools] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [loadingSchools, setLoadingSchools] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -432,7 +504,7 @@ export default function StudentOnboarding() {
             headers: {
               ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
-          }
+          },
         );
         if (res.ok) {
           const json = await res.json();
@@ -470,7 +542,12 @@ export default function StudentOnboarding() {
 
     try {
       const token = (session?.user as any)?.token;
-      console.log("[STUDENT ONBOARDING] token present:", !!token, "| password provided:", !!password);
+      console.log(
+        "[STUDENT ONBOARDING] token present:",
+        !!token,
+        "| password provided:",
+        !!password,
+      );
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/v1/users/onboarding/student`,
         {
@@ -486,12 +563,14 @@ export default function StudentOnboarding() {
             password: password || undefined,
             avatar: selectedAvatar,
           }),
-        }
+        },
       );
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json?.error?.message ?? "Setup failed. Please try again.");
+        throw new Error(
+          json?.error?.message ?? "Setup failed. Please try again.",
+        );
       }
 
       // Refresh session with new onboarding status, password, and avatar image state
@@ -511,7 +590,17 @@ export default function StudentOnboarding() {
     } finally {
       setSubmitting(false);
     }
-  }, [gradeLevel, studentId, schoolName, password, selectedAvatar, session, update, router, hasPassword]);
+  }, [
+    gradeLevel,
+    studentId,
+    schoolName,
+    password,
+    selectedAvatar,
+    session,
+    update,
+    router,
+    hasPassword,
+  ]);
 
   const isLastStep = step === STEPS.length - 1;
   const canNext = step < STEPS.length - 1;
@@ -540,17 +629,19 @@ export default function StudentOnboarding() {
                   i < step
                     ? "w-6 h-6 bg-success text-white"
                     : i === step
-                    ? "w-6 h-6 bg-accent"
-                    : "w-2 h-2 bg-card-border"
+                      ? "w-6 h-6 bg-accent"
+                      : "w-2 h-2 bg-card-border"
                 }`}
               >
                 {i < step && <CheckCircle2 className="w-3.5 h-3.5" />}
-                {i === step && <div className="w-2 h-2 rounded-full bg-white" />}
+                {i === step && (
+                  <div className="w-2 h-2 rounded-full bg-white" />
+                )}
               </div>
               {i < STEPS.length - 1 && (
                 <div
                   className={`h-0.5 w-8 rounded-full transition-all duration-500 ${
-                     i < step ? "bg-success" : "bg-card-border"
+                    i < step ? "bg-success" : "bg-card-border"
                   }`}
                 />
               )}

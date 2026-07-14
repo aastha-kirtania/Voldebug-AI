@@ -20,7 +20,10 @@ export function Badge({
   ...props
 }: BadgeProps) {
   return (
-    <span className={cn("xp-badge", variantClasses[variant], className)} {...props}>
+    <span
+      className={cn("xp-badge", variantClasses[variant], className)}
+      {...props}
+    >
       {children}
     </span>
   );

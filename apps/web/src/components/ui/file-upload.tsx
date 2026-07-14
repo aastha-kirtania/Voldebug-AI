@@ -2,7 +2,15 @@
 
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, FileText, Image, File, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Upload,
+  X,
+  FileText,
+  Image,
+  File,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -24,15 +32,27 @@ interface FileUploadProps {
   className?: string;
 }
 
-const ALLOWED_TYPES = ["application/pdf", "application/msword",
+const ALLOWED_TYPES = [
+  "application/pdf",
+  "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "text/plain", "image/png", "image/jpeg", "image/jpg", "image/webp"];
+  "text/plain",
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+];
 
 const ALLOWED_EXT_LABEL = "PDF, DOCX, TXT, PNG, JPG";
 
 function getFileIcon(type: string) {
   if (type.startsWith("image/")) return Image;
-  if (type === "application/pdf" || type.includes("word") || type === "text/plain") return FileText;
+  if (
+    type === "application/pdf" ||
+    type.includes("word") ||
+    type === "text/plain"
+  )
+    return FileText;
   return File;
 }
 
@@ -66,7 +86,7 @@ export function FileUpload({
       }
       return null;
     },
-    [accept, maxSizeMB]
+    [accept, maxSizeMB],
   );
 
   const simulateUpload = useCallback(
@@ -89,15 +109,22 @@ export function FileUpload({
               setFiles((prev) =>
                 prev.map((f) => {
                   if (f.id === id) {
-                    return { ...f, progress: 100, status: "done", url: finalUrl };
+                    return {
+                      ...f,
+                      progress: 100,
+                      status: "done",
+                      url: finalUrl,
+                    };
                   }
                   return f;
-                })
+                }),
               );
 
               // Notify parent with the URLs
               setFiles((current) => {
-                const doneFiles = current.filter((f) => f.status === "done" && f.url);
+                const doneFiles = current.filter(
+                  (f) => f.status === "done" && f.url,
+                );
                 onFilesChange(doneFiles.map((f) => f.url!));
                 return current;
               });
@@ -108,13 +135,19 @@ export function FileUpload({
         } else {
           setFiles((prev) =>
             prev.map((f) =>
-              f.id === id ? { ...f, progress: Math.min(progress, 99), status: "uploading" } : f
-            )
+              f.id === id
+                ? {
+                    ...f,
+                    progress: Math.min(progress, 99),
+                    status: "uploading",
+                  }
+                : f,
+            ),
           );
         }
       }, 100);
     },
-    [onFilesChange]
+    [onFilesChange],
   );
 
   const addFiles = useCallback(
@@ -132,32 +165,47 @@ export function FileUpload({
       for (const file of toAdd) {
         const err = validateFile(file);
         const id = Math.random().toString(36).slice(2);
-        const preview = file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined;
-        newFiles.push({ file, id, preview, status: err ? "error" : "pending", progress: 0, error: err ?? undefined });
+        const preview = file.type.startsWith("image/")
+          ? URL.createObjectURL(file)
+          : undefined;
+        newFiles.push({
+          file,
+          id,
+          preview,
+          status: err ? "error" : "pending",
+          progress: 0,
+          error: err ?? undefined,
+        });
       }
 
       setFiles((prev) => [...prev, ...newFiles]);
 
       // Kick off upload for valid files
-      newFiles.filter((f) => !f.error).forEach((f) => {
-        setFiles((prev) =>
-          prev.map((p) => (p.id === f.id ? { ...p, status: "uploading" } : p))
-        );
-        simulateUpload(f.id);
-      });
+      newFiles
+        .filter((f) => !f.error)
+        .forEach((f) => {
+          setFiles((prev) =>
+            prev.map((p) =>
+              p.id === f.id ? { ...p, status: "uploading" } : p,
+            ),
+          );
+          simulateUpload(f.id);
+        });
     },
-    [files.length, maxFiles, validateFile, simulateUpload]
+    [files.length, maxFiles, validateFile, simulateUpload],
   );
 
   const removeFile = useCallback(
     (id: string) => {
       setFiles((prev) => {
         const next = prev.filter((f) => f.id !== id);
-        onFilesChange(next.filter((f) => f.status === "done" && f.url).map((f) => f.url!));
+        onFilesChange(
+          next.filter((f) => f.status === "done" && f.url).map((f) => f.url!),
+        );
         return next;
       });
     },
-    [onFilesChange]
+    [onFilesChange],
   );
 
   const handleDrop = useCallback(
@@ -166,7 +214,7 @@ export function FileUpload({
       setIsDragging(false);
       addFiles(e.dataTransfer.files);
     },
-    [addFiles]
+    [addFiles],
   );
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -203,7 +251,9 @@ export function FileUpload({
             isDragging ? "bg-accent/20" : "bg-surface"
           }`}
         >
-          <Upload className={`w-6 h-6 ${isDragging ? "text-accent-light" : "text-foreground-muted"}`} />
+          <Upload
+            className={`w-6 h-6 ${isDragging ? "text-accent-light" : "text-foreground-muted"}`}
+          />
         </motion.div>
 
         <div className="text-center space-y-1">
@@ -248,12 +298,16 @@ export function FileUpload({
                     f.status === "error"
                       ? "border-error/25 bg-error/5"
                       : f.status === "done"
-                      ? "border-success/20 bg-success/5"
-                      : "border-card-border bg-surface/20"
+                        ? "border-success/20 bg-success/5"
+                        : "border-card-border bg-surface/20"
                   }`}
                 >
                   {f.preview ? (
-                    <img src={f.preview} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                    <img
+                      src={f.preview}
+                      alt=""
+                      className="w-9 h-9 rounded-lg object-cover flex-shrink-0"
+                    />
                   ) : (
                     <div className="w-9 h-9 rounded-lg bg-surface flex items-center justify-center flex-shrink-0">
                       <Icon className="w-4.5 h-4.5 text-foreground-muted" />
@@ -261,14 +315,17 @@ export function FileUpload({
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{f.file.name}</p>
+                    <p className="text-sm font-medium truncate">
+                      {f.file.name}
+                    </p>
                     {f.error ? (
                       <p className="text-xs text-error">{f.error}</p>
                     ) : (
                       <div className="space-y-1 mt-1">
                         <p className="text-xs text-foreground-subtle">
                           {formatSize(f.file.size)}
-                          {f.status === "uploading" && ` · ${Math.round(f.progress)}%`}
+                          {f.status === "uploading" &&
+                            ` · ${Math.round(f.progress)}%`}
                           {f.status === "done" && " · Uploaded"}
                         </p>
                         {f.status === "uploading" && (
@@ -286,9 +343,14 @@ export function FileUpload({
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {f.status === "done" && <CheckCircle2 className="w-4 h-4 text-success" />}
+                    {f.status === "done" && (
+                      <CheckCircle2 className="w-4 h-4 text-success" />
+                    )}
                     <button
-                      onClick={(e) => { e.stopPropagation(); removeFile(f.id); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFile(f.id);
+                      }}
                       className="w-6 h-6 rounded-md flex items-center justify-center hover:bg-error/10 hover:text-error text-foreground-subtle transition-colors"
                     >
                       <X className="w-3.5 h-3.5" />

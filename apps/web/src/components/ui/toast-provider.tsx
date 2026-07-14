@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  type ReactNode,
+} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Award, TrendingUp, X, Star } from "lucide-react";
 
@@ -39,15 +45,31 @@ export function useToast() {
 function toastConfig(type: ToastType) {
   switch (type) {
     case "xp":
-      return { icon: Zap, bg: "bg-accent-surface border-accent/20", text: "text-accent-light" };
+      return {
+        icon: Zap,
+        bg: "bg-accent-surface border-accent/20",
+        text: "text-accent-light",
+      };
     case "badge":
-      return { icon: Award, bg: "bg-warning/10 border-warning/20", text: "text-yellow-400" };
+      return {
+        icon: Award,
+        bg: "bg-warning/10 border-warning/20",
+        text: "text-yellow-400",
+      };
     case "level_up":
-      return { icon: Star, bg: "bg-success/10 border-success/20", text: "text-success" };
+      return {
+        icon: Star,
+        bg: "bg-success/10 border-success/20",
+        text: "text-success",
+      };
     case "error":
       return { icon: X, bg: "bg-error/10 border-error/20", text: "text-error" };
     case "success":
-      return { icon: TrendingUp, bg: "bg-success/10 border-success/20", text: "text-success" };
+      return {
+        icon: TrendingUp,
+        bg: "bg-success/10 border-success/20",
+        text: "text-success",
+      };
   }
 }
 
@@ -59,7 +81,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const add = useCallback((t: Omit<Toast, "id">) => {
     const id = Math.random().toString(36).slice(2);
     setToasts((prev) => [...prev, { ...t, id }]);
-    setTimeout(() => setToasts((prev) => prev.filter((x) => x.id !== id)), 3500);
+    setTimeout(
+      () => setToasts((prev) => prev.filter((x) => x.id !== id)),
+      3500,
+    );
   }, []);
 
   const remove = useCallback((id: string) => {
@@ -68,11 +93,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const ctx: ToastContextValue = {
     showXP: (xp, source) =>
-      add({ type: "xp", title: `+${xp} XP Earned!`, message: source ?? "Keep it up!" }),
+      add({
+        type: "xp",
+        title: `+${xp} XP Earned!`,
+        message: source ?? "Keep it up!",
+      }),
     showBadge: (name) =>
       add({ type: "badge", title: "Badge Unlocked!", message: name }),
     showLevelUp: (level) =>
-      add({ type: "level_up", title: `Level Up! You're Level ${level}`, message: "Amazing progress!" }),
+      add({
+        type: "level_up",
+        title: `Level Up! You're Level ${level}`,
+        message: "Amazing progress!",
+      }),
     showSuccess: (title, message) => add({ type: "success", title, message }),
     showError: (title) => add({ type: "error", title }),
   };
@@ -100,9 +133,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   <Icon className="w-4.5 h-4.5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold ${text}`}>{toast.title}</p>
+                  <p className={`text-sm font-semibold ${text}`}>
+                    {toast.title}
+                  </p>
                   {toast.message && (
-                    <p className="text-xs text-foreground-subtle truncate">{toast.message}</p>
+                    <p className="text-xs text-foreground-subtle truncate">
+                      {toast.message}
+                    </p>
                   )}
                 </div>
                 <button

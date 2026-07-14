@@ -9,7 +9,9 @@ interface LanguageContextType {
   setLanguage: (lang: Language) => void;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined,
+);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>("en");
@@ -44,7 +46,10 @@ export function useTranslation() {
     throw new Error("useTranslation must be used within a LanguageProvider");
   }
 
-  const t = (keyPath: string, replacements?: Record<string, string | number>) => {
+  const t = (
+    keyPath: string,
+    replacements?: Record<string, string | number>,
+  ) => {
     const enDictionary: Record<string, any> = {
       nav: {
         home: "Home",
@@ -77,18 +82,22 @@ export function useTranslation() {
         milestoneLocked: `Locked (Lvl ${replacements?.current}/${replacements?.required})`,
         parentReporting: "Parent Progress Reporting",
         parentShare: "Share my academic progress with my parent/guardian",
-        parentShareSub: "When enabled, a regular academic summary will be generated and logged for email delivery.",
+        parentShareSub:
+          "When enabled, a regular academic summary will be generated and logged for email delivery.",
         parentEmail: "Parent / Guardian Email",
         parentFrequency: "Reporting Frequency",
         parentFreqWeekly: "Weekly (Every Sunday)",
         parentFreqMonthly: "Monthly (1st of the month)",
-        parentPrivacyNote: "🔒 Privacy Isolation Guarantee: To protect your educational privacy, the report never exposes the raw text of your search queries, AI chat logs, or flagged audit warnings. High-level academic metrics only.",
+        parentPrivacyNote:
+          "🔒 Privacy Isolation Guarantee: To protect your educational privacy, the report never exposes the raw text of your search queries, AI chat logs, or flagged audit warnings. High-level academic metrics only.",
         saveSettings: "Save Settings",
         sendTestReport: "Send Test Report Now",
         saveSuccess: "Parent reporting settings saved successfully!",
-        saveFail: "Failed to save settings. Please make sure the email is valid.",
+        saveFail:
+          "Failed to save settings. Please make sure the email is valid.",
         testSuccess: `Success! Report compiled and printed to server log. (Verification Log ID: ${replacements?.id})`,
-        testFail: "Failed to compile progress report. Make sure you saved your settings first.",
+        testFail:
+          "Failed to compile progress report. Make sure you saved your settings first.",
       },
       dashboard: {
         greetingMorning: "Good morning",
@@ -117,7 +126,8 @@ export function useTranslation() {
       },
       scoreboard: {
         title: "Hall of Fame",
-        subtitle: "Compete with your classmates, earn XP, and climb to the top of the leaderboard!",
+        subtitle:
+          "Compete with your classmates, earn XP, and climb to the top of the leaderboard!",
         rank: "Rank",
         student: "Student",
         level: "Level",
@@ -136,7 +146,7 @@ export function useTranslation() {
         categoryResearch: "Research",
         requiredLevel: "Required Level",
         useTool: "Use Tool",
-      }
+      },
     };
 
     const hiDictionary: Record<string, any> = {
@@ -171,18 +181,22 @@ export function useTranslation() {
         milestoneLocked: `लॉक (स्तर ${replacements?.current}/${replacements?.required})`,
         parentReporting: "अभिभावक प्रगति रिपोर्टिंग",
         parentShare: "मेरी शैक्षणिक प्रगति मेरे अभिभावक के साथ साझा करें",
-        parentShareSub: "सक्षम होने पर, ईमेल विवरण के लिए एक नियमित शैक्षणिक सारांश उत्पन्न किया जाएगा और लॉग किया जाएगा।",
+        parentShareSub:
+          "सक्षम होने पर, ईमेल विवरण के लिए एक नियमित शैक्षणिक सारांश उत्पन्न किया जाएगा और लॉग किया जाएगा।",
         parentEmail: "अभिभावक का ईमेल",
         parentFrequency: "रिपोर्टिंग आवृत्ति",
         parentFreqWeekly: "साप्ताहिक (हर रविवार)",
         parentFreqMonthly: "मासिक (महीने की 1 तारीख)",
-        parentPrivacyNote: "🔒 गोपनीयता अलगाव गारंटी: आपकी शैक्षणिक गोपनीयता की रक्षा के लिए, यह रिपोर्ट कभी भी आपके खोज प्रश्नों, एआई चैट लॉग, या चेतावनी लॉग को उजागर नहीं करती है। केवल उच्च-स्तरीय शैक्षणिक डेटा भेजा जाता है।",
+        parentPrivacyNote:
+          "🔒 गोपनीयता अलगाव गारंटी: आपकी शैक्षणिक गोपनीयता की रक्षा के लिए, यह रिपोर्ट कभी भी आपके खोज प्रश्नों, एआई चैट लॉग, या चेतावनी लॉग को उजागर नहीं करती है। केवल उच्च-स्तरीय शैक्षणिक डेटा भेजा जाता है।",
         saveSettings: "सेटिंग्स सहेजें",
         sendTestReport: "अभी परीक्षण रिपोर्ट भेजें",
         saveSuccess: "अभिभावक रिपोर्टिंग सेटिंग्स सफलतापूर्वक सहेजी गईं!",
-        saveFail: "सेटिंग्स सहेजने में विफल। कृपया सुनिश्चित करें कि ईमेल मान्य है।",
+        saveFail:
+          "सेटिंग्स सहेजने में विफल। कृपया सुनिश्चित करें कि ईमेल मान्य है।",
         testSuccess: `सफलता! रिपोर्ट संकलित की गई और सर्वर लॉग में मुद्रित की गई। (सत्यापन लॉग आईडी: ${replacements?.id})`,
-        testFail: "प्रगति रिपोर्ट संकलित करने में विफल। सुनिश्चित करें कि आपने पहले अपनी सेटिंग्स सहेज ली हैं।",
+        testFail:
+          "प्रगति रिपोर्ट संकलित करने में विफल। सुनिश्चित करें कि आपने पहले अपनी सेटिंग्स सहेज ली हैं।",
       },
       dashboard: {
         greetingMorning: "सुप्रभात",
@@ -199,7 +213,8 @@ export function useTranslation() {
         assignmentsTitle: "असाइनमेंट",
         assignmentsDue: "देय तिथि",
         assignmentsXP: "एक्सपी",
-        assignmentsNone: "कोई लंबित असाइनमेंट नहीं है! आपने सब पूरा कर लिया है! 🎉",
+        assignmentsNone:
+          "कोई लंबित असाइनमेंट नहीं है! आपने सब पूरा कर लिया है! 🎉",
         scoreboardTitle: "स्कोरबोर्ड",
         badgesTitle: "हाल ही के बैज",
         rank: "रैंक",
@@ -211,13 +226,15 @@ export function useTranslation() {
       },
       scoreboard: {
         title: "हॉल ऑफ फेम",
-        subtitle: "अपने सहपाठियों के साथ प्रतिस्पर्धा करें, एक्सपी अर्जित करें, और लीडरबोर्ड के शीर्ष पर पहुंचें!",
+        subtitle:
+          "अपने सहपाठियों के साथ प्रतिस्पर्धा करें, एक्सपी अर्जित करें, और लीडरबोर्ड के शीर्ष पर पहुंचें!",
         rank: "रैंक",
         student: "छात्र",
         level: "स्तर",
         totalXp: "कुल एक्सपी",
         yourRank: "आपकी वर्तमान रैंक",
-        empty: "अभी तक कोई प्रविष्टि नहीं मिली। रैंकिंग शुरू करने के लिए असाइनमेंट पूरे करें!",
+        empty:
+          "अभी तक कोई प्रविष्टि नहीं मिली। रैंकिंग शुरू करने के लिए असाइनमेंट पूरे करें!",
       },
       tools: {
         title: "एआई टूल्स एक्सप्लोरर",
@@ -230,7 +247,7 @@ export function useTranslation() {
         categoryResearch: "अनुसंधान",
         requiredLevel: "आवश्यक स्तर",
         useTool: "टूल का उपयोग करें",
-      }
+      },
     };
 
     const dictionary = context.language === "hi" ? hiDictionary : enDictionary;
@@ -251,6 +268,6 @@ export function useTranslation() {
   return {
     language: context.language,
     setLanguage: context.setLanguage,
-    t
+    t,
   };
 }

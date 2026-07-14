@@ -8,8 +8,17 @@ import { FileUpload } from "@web/components/ui/file-upload";
 import { Modal } from "@web/components/ui/modal";
 import { useToast } from "@web/components/ui/toast-provider";
 import {
-  ArrowLeft, Clock, User, Calendar, ExternalLink, CheckCircle2,
-  Zap, AlertTriangle, Send, FileText, Sparkles
+  ArrowLeft,
+  Clock,
+  User,
+  Calendar,
+  ExternalLink,
+  CheckCircle2,
+  Zap,
+  AlertTriangle,
+  Send,
+  FileText,
+  Sparkles,
 } from "lucide-react";
 
 // ─── Sophisticated Motion Variants ──────────────────────────────────────
@@ -35,9 +44,17 @@ const itemVariants = {
 
 // ─── Premium UI Sub-components ────────────────────────────────────────────
 
-function GlassCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function GlassCard({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 md:p-8 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}>
+    <div
+      className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 md:p-8 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}
+    >
       {children}
     </div>
   );
@@ -49,12 +66,31 @@ function getTimeLeft(dueDate: string) {
   const now = new Date();
   const due = new Date(dueDate);
   const diff = due.getTime() - now.getTime();
-  if (diff <= 0) return { label: "Overdue", color: "text-error", bg: "bg-error/10 border-error/20" };
+  if (diff <= 0)
+    return {
+      label: "Overdue",
+      color: "text-error",
+      bg: "bg-error/10 border-error/20",
+    };
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  if (days === 0) return { label: `${hours}h left`, color: "text-error", bg: "bg-error/10 border-error/20" };
-  if (days <= 2) return { label: `${days}d ${hours}h left`, color: "text-warning", bg: "bg-warning/10 border-warning/20" };
-  return { label: `${days} days left`, color: "text-success", bg: "bg-success/10 border-success/20" };
+  if (days === 0)
+    return {
+      label: `${hours}h left`,
+      color: "text-error",
+      bg: "bg-error/10 border-error/20",
+    };
+  if (days <= 2)
+    return {
+      label: `${days}d ${hours}h left`,
+      color: "text-warning",
+      bg: "bg-warning/10 border-warning/20",
+    };
+  return {
+    label: `${days} days left`,
+    color: "text-success",
+    bg: "bg-success/10 border-success/20",
+  };
 }
 
 // ─── Countdown component ─────────────────────────────────────────────────
@@ -66,7 +102,9 @@ function Countdown({ dueDate }: { dueDate: string }) {
     return () => clearInterval(timer);
   }, [dueDate]);
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-widest border ${info.bg} ${info.color}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-widest border ${info.bg} ${info.color}`}
+    >
       <Clock className="w-3.5 h-3.5" />
       {info.label}
     </span>
@@ -76,31 +114,54 @@ function Countdown({ dueDate }: { dueDate: string }) {
 // ─── Submit confirmation modal ────────────────────────────────────────────
 
 function SubmitModal({
-  open, onClose, onConfirm, fileCount, xpReward, isLoading,
+  open,
+  onClose,
+  onConfirm,
+  fileCount,
+  xpReward,
+  isLoading,
 }: {
-  open: boolean; onClose: () => void; onConfirm: () => void; fileCount: number; xpReward: number; isLoading: boolean;
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  fileCount: number;
+  xpReward: number;
+  isLoading: boolean;
 }) {
   return (
-    <Modal open={open} onClose={onClose} title="Submit Assignment" maxWidth="sm">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Submit Assignment"
+      maxWidth="sm"
+    >
       <div className="space-y-6">
         <div className="p-5 rounded-[1.5rem] bg-white/[0.02] border border-white/5 space-y-3 shadow-inner">
           <div className="flex items-center gap-3 text-sm">
             <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center border border-accent/20">
               <FileText className="w-4 h-4 text-accent-light" />
             </div>
-            <span className="text-foreground font-medium">{fileCount} file{fileCount !== 1 ? "s" : ""} attached</span>
+            <span className="text-foreground font-medium">
+              {fileCount} file{fileCount !== 1 ? "s" : ""} attached
+            </span>
           </div>
           <div className="flex items-center gap-3 text-sm">
             <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center border border-success/20">
               <Zap className="w-4 h-4 text-success" />
             </div>
-            <span className="text-foreground font-medium">You will earn <span className="font-bold text-success">+{xpReward} XP</span></span>
+            <span className="text-foreground font-medium">
+              You will earn{" "}
+              <span className="font-bold text-success">+{xpReward} XP</span>
+            </span>
           </div>
         </div>
 
         <div className="flex items-start gap-3 text-xs text-warning bg-warning/10 border border-warning/20 rounded-[1rem] p-4">
           <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          <span className="leading-relaxed font-medium">Submissions cannot be edited once confirmed. Make sure your files are correct.</span>
+          <span className="leading-relaxed font-medium">
+            Submissions cannot be edited once confirmed. Make sure your files
+            are correct.
+          </span>
         </div>
 
         <div className="flex gap-3 pt-2">
@@ -136,7 +197,11 @@ function SubmitModal({
 
 // ─── Page ─────────────────────────────────────────────────────────────────
 
-export default function AssignmentDetailPage({ params }: { params: { id: string } }) {
+export default function AssignmentDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const { data: assignment, isLoading } = useAssignment(params.id);
   const { mutateAsync: submit, isPending } = useSubmitAssignment();
   const toast = useToast();
@@ -146,7 +211,8 @@ export default function AssignmentDetailPage({ params }: { params: { id: string 
   const [showModal, setShowModal] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const isAlreadySubmitted = assignment?.submissions && assignment.submissions.length > 0;
+  const isAlreadySubmitted =
+    assignment?.submissions && assignment.submissions.length > 0;
   const canSubmit = fileUrls.length > 0 && !isAlreadySubmitted && !submitted;
 
   const handleConfirmSubmit = useCallback(async () => {
@@ -159,7 +225,10 @@ export default function AssignmentDetailPage({ params }: { params: { id: string 
       });
       setShowModal(false);
       setSubmitted(true);
-      toast.showXP(result.xpAwarded ?? assignment.xpReward, "Assignment submitted!");
+      toast.showXP(
+        result.xpAwarded ?? assignment.xpReward,
+        "Assignment submitted!",
+      );
     } catch (err: any) {
       setShowModal(false);
       toast.showError(err?.message ?? "Submission failed. Try again.");
@@ -171,10 +240,16 @@ export default function AssignmentDetailPage({ params }: { params: { id: string 
       <GradientMesh className="opacity-40" />
 
       <div className="max-w-4xl mx-auto pb-24 lg:pb-12 px-4 md:px-8 pt-8 relative z-10">
-
         {/* Back Button */}
-        <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-          <a href="/dashboard/classroom" className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-foreground-subtle hover:text-foreground hover:bg-white/10 transition-all mb-8 shadow-sm">
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <a
+            href="/dashboard/classroom"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-foreground-subtle hover:text-foreground hover:bg-white/10 transition-all mb-8 shadow-sm"
+          >
             <ArrowLeft className="w-3.5 h-3.5" />
             Back to Quests
           </a>
@@ -207,8 +282,12 @@ export default function AssignmentDetailPage({ params }: { params: { id: string 
                       <CheckCircle2 className="w-5 h-5 text-success" />
                     </div>
                     <div>
-                      <p className="font-bold text-success text-base">Assignment Submitted Successfully</p>
-                      <p className="text-sm font-medium text-success/80 mt-0.5">Your teacher will grade it and provide feedback soon.</p>
+                      <p className="font-bold text-success text-base">
+                        Assignment Submitted Successfully
+                      </p>
+                      <p className="text-sm font-medium text-success/80 mt-0.5">
+                        Your teacher will grade it and provide feedback soon.
+                      </p>
                     </div>
                   </GlassCard>
                 </motion.div>
@@ -235,7 +314,15 @@ export default function AssignmentDetailPage({ params }: { params: { id: string 
                         </span>
                         <span className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
                           <Calendar className="w-4 h-4 opacity-70" />
-                          Due {new Date(assignment.dueDate).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                          Due{" "}
+                          {new Date(assignment.dueDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              weekday: "short",
+                              month: "short",
+                              day: "numeric",
+                            },
+                          )}
                         </span>
                       </div>
                     </div>
@@ -269,7 +356,11 @@ export default function AssignmentDetailPage({ params }: { params: { id: string 
                   <div className="flex items-center gap-4">
                     <div
                       className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-inner border border-white/10"
-                      style={{ backgroundColor: assignment.suggestedTool.brandColor || "var(--color-accent)" }}
+                      style={{
+                        backgroundColor:
+                          assignment.suggestedTool.brandColor ||
+                          "var(--color-accent)",
+                      }}
                     >
                       {assignment.suggestedTool.name[0]}
                     </div>
@@ -278,7 +369,9 @@ export default function AssignmentDetailPage({ params }: { params: { id: string 
                         <Sparkles className="w-3 h-3" />
                         Suggested AI Tool
                       </h2>
-                      <p className="font-semibold text-base text-foreground">{assignment.suggestedTool.name}</p>
+                      <p className="font-semibold text-base text-foreground">
+                        {assignment.suggestedTool.name}
+                      </p>
                     </div>
                   </div>
 
@@ -316,8 +409,12 @@ export default function AssignmentDetailPage({ params }: { params: { id: string 
                   </div>
 
                   <div className="space-y-3 mb-8">
-                    <label htmlFor="notes" className="text-xs font-bold uppercase tracking-widest text-foreground-subtle ml-2">
-                      Note to Teacher <span className="opacity-50">(optional)</span>
+                    <label
+                      htmlFor="notes"
+                      className="text-xs font-bold uppercase tracking-widest text-foreground-subtle ml-2"
+                    >
+                      Note to Teacher{" "}
+                      <span className="opacity-50">(optional)</span>
                     </label>
                     <textarea
                       id="notes"
@@ -357,16 +454,27 @@ export default function AssignmentDetailPage({ params }: { params: { id: string 
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col gap-1">
-                      <span className="text-xs font-medium text-foreground-muted">Status</span>
-                      <span className={`font-semibold text-lg ${assignment.submissions[0].status === "GRADED" ? "text-success" : "text-warning"
-                        }`}>
-                        {assignment.submissions[0].status === "GRADED" ? "Graded" : "Awaiting Grade"}
+                      <span className="text-xs font-medium text-foreground-muted">
+                        Status
+                      </span>
+                      <span
+                        className={`font-semibold text-lg ${
+                          assignment.submissions[0].status === "GRADED"
+                            ? "text-success"
+                            : "text-warning"
+                        }`}
+                      >
+                        {assignment.submissions[0].status === "GRADED"
+                          ? "Graded"
+                          : "Awaiting Grade"}
                       </span>
                     </div>
 
                     {assignment.submissions[0].score != null && (
                       <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col gap-1">
-                        <span className="text-xs font-medium text-foreground-muted">Score</span>
+                        <span className="text-xs font-medium text-foreground-muted">
+                          Score
+                        </span>
                         <span className="font-bold text-xl text-accent-light">
                           {assignment.submissions[0].score}%
                         </span>
@@ -377,7 +485,9 @@ export default function AssignmentDetailPage({ params }: { params: { id: string 
                   {assignment.submissions[0].feedback && (
                     <div className="bg-accent/5 border border-accent/20 rounded-2xl p-5 relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-1 h-full bg-accent" />
-                      <p className="text-xs font-bold uppercase tracking-widest text-accent-light mb-3">Teacher Feedback</p>
+                      <p className="text-xs font-bold uppercase tracking-widest text-accent-light mb-3">
+                        Teacher Feedback
+                      </p>
                       <p className="text-sm font-medium leading-relaxed text-foreground/90 whitespace-pre-wrap">
                         {assignment.submissions[0].feedback}
                       </p>

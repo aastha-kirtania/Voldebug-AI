@@ -69,35 +69,42 @@ export default function AdminDashboardPage() {
           className="flex items-center gap-3 pt-4"
         >
           <Shield className="w-6 h-6 text-accent-light" />
-          <h1 className="font-display text-xl font-bold">{isHindi ? "प्रशासक डैशबोर्ड" : "Admin Dashboard"}</h1>
+          <h1 className="font-display text-xl font-bold">
+            {isHindi ? "प्रशासक डैशबोर्ड" : "Admin Dashboard"}
+          </h1>
         </motion.div>
 
         {/* System Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <StatCard
             icon={<Users className="w-5 h-5" />}
-            value={isLoading ? "..." : (overview?.totalStudents ?? 0) + (overview?.totalTeachers ?? 0)}
+            value={
+              isLoading
+                ? "..."
+                : (overview?.totalStudents ?? 0) +
+                  (overview?.totalTeachers ?? 0)
+            }
             label={isHindi ? "कुल उपयोगकर्ता" : "Total Users"}
             iconBg="bg-accent/10"
             iconColor="text-accent-light"
           />
           <StatCard
             icon={<School className="w-5 h-5" />}
-            value={isLoading ? "..." : overview?.totalClasses ?? 0}
+            value={isLoading ? "..." : (overview?.totalClasses ?? 0)}
             label={isHindi ? "कक्षाएं" : "Classes"}
             iconBg="bg-info/10"
             iconColor="text-info"
           />
           <StatCard
             icon={<GraduationCap className="w-5 h-5" />}
-            value={isLoading ? "..." : overview?.totalAssignments ?? 0}
+            value={isLoading ? "..." : (overview?.totalAssignments ?? 0)}
             label={isHindi ? "असाइनमेंट" : "Assignments"}
             iconBg="bg-success/10"
             iconColor="text-success"
           />
           <StatCard
             icon={<TrendingUp className="w-5 h-5" />}
-            value={isLoading ? "..." : overview?.recentSubmissions ?? 0}
+            value={isLoading ? "..." : (overview?.recentSubmissions ?? 0)}
             label={isHindi ? "सक्रिय सबमिशन (7दिन)" : "Active Submissions (7d)"}
             iconBg="bg-warning/10"
             iconColor="text-warning"
@@ -107,19 +114,25 @@ export default function AdminDashboardPage() {
         {/* School Details */}
         {school && (
           <div className="card p-5">
-            <h2 className="font-display text-lg font-semibold mb-4">{school.name}</h2>
+            <h2 className="font-display text-lg font-semibold mb-4">
+              {school.name}
+            </h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
                 <CheckCircle className="w-5 h-5 text-success" />
                 <div>
-                  <p className="text-xs text-foreground-subtle">{isHindi ? "कुल सदस्य" : "Total Members"}</p>
+                  <p className="text-xs text-foreground-subtle">
+                    {isHindi ? "कुल सदस्य" : "Total Members"}
+                  </p>
                   <p className="stat-number text-xl">{school._count.members}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <GraduationCap className="w-5 h-5 text-info" />
                 <div>
-                  <p className="text-xs text-foreground-subtle">{isHindi ? "कुल कक्षाएं" : "Total Classes"}</p>
+                  <p className="text-xs text-foreground-subtle">
+                    {isHindi ? "कुल कक्षाएं" : "Total Classes"}
+                  </p>
                   <p className="stat-number text-xl">{school._count.classes}</p>
                 </div>
               </div>
@@ -129,16 +142,46 @@ export default function AdminDashboardPage() {
 
         {/* Quick Links */}
         <div className="card p-5">
-          <h2 className="font-display text-lg font-semibold mb-4">{isHindi ? "प्रबंधन और सुरक्षा नियंत्रण" : "Management & Safety Controls"}</h2>
+          <h2 className="font-display text-lg font-semibold mb-4">
+            {isHindi
+              ? "प्रबंधन और सुरक्षा नियंत्रण"
+              : "Management & Safety Controls"}
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <AdminLink href="/dashboard/principal" label={isHindi ? "प्रिंसिपल कमांड सेंटर" : "Principal Command Center"} description={isHindi ? "स्कूल-व्यापी KPI, शिक्षक गिनती, और कक्षा मेट्रिक्स" : "Access school-wide KPIs, teacher count, and class metrics"} />
-            <AdminLink href="/dashboard/principal/audit-logs" label={isHindi ? "CBSE अनुपालन ऑडिट" : "CBSE Compliance Audits"} description={isHindi ? "AI इंटरैक्शन ऑडिट करें, प्रॉम्प्ट फ़िल्टर करें, सुरक्षा लॉग जाँचें" : "Audit AI interactions, filter prompts, check safety logs"} />
+            <AdminLink
+              href="/dashboard/principal"
+              label={
+                isHindi ? "प्रिंसिपल कमांड सेंटर" : "Principal Command Center"
+              }
+              description={
+                isHindi
+                  ? "स्कूल-व्यापी KPI, शिक्षक गिनती, और कक्षा मेट्रिक्स"
+                  : "Access school-wide KPIs, teacher count, and class metrics"
+              }
+            />
+            <AdminLink
+              href="/dashboard/principal/audit-logs"
+              label={isHindi ? "CBSE अनुपालन ऑडिट" : "CBSE Compliance Audits"}
+              description={
+                isHindi
+                  ? "AI इंटरैक्शन ऑडिट करें, प्रॉम्प्ट फ़िल्टर करें, सुरक्षा लॉग जाँचें"
+                  : "Audit AI interactions, filter prompts, check safety logs"
+              }
+            />
             <div className="p-4 rounded-xl border border-white/5 bg-white/[0.01] opacity-70">
               <p className="text-sm font-medium text-foreground-muted flex items-center gap-1.5">
-                <span>{isHindi ? "सिस्टम संरचना" : "System Configurations"}</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent-light border border-accent/20">DB Seeded</span>
+                <span>
+                  {isHindi ? "सिस्टम संरचना" : "System Configurations"}
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-accent/15 text-accent-light border border-accent/20">
+                  DB Seeded
+                </span>
               </p>
-              <p className="text-xs text-foreground-subtle mt-1">{isHindi ? "कक्षा आकार और पैरामीटर माइग्रेशन प्रीसेट्स द्वारा प्रबंधित होते हैं।" : "Class sizes and parameters are managed via migration presets."}</p>
+              <p className="text-xs text-foreground-subtle mt-1">
+                {isHindi
+                  ? "कक्षा आकार और पैरामीटर माइग्रेशन प्रीसेट्स द्वारा प्रबंधित होते हैं।"
+                  : "Class sizes and parameters are managed via migration presets."}
+              </p>
             </div>
           </div>
         </div>
@@ -164,7 +207,9 @@ function StatCard({
 }) {
   return (
     <div className="card p-4">
-      <div className={`inline-flex items-center justify-center w-9 h-9 rounded-lg ${iconBg} ${iconColor} mb-3`}>
+      <div
+        className={`inline-flex items-center justify-center w-9 h-9 rounded-lg ${iconBg} ${iconColor} mb-3`}
+      >
         {icon}
       </div>
       <p className="stat-number text-2xl leading-none">{value}</p>

@@ -15,7 +15,9 @@ export function errorHandler(
       data: null,
       error: {
         code: "VALIDATION_ERROR",
-        message: err.errors.map((e) => `${e.path.join(".")}: ${e.message}`).join(", "),
+        message: err.errors
+          .map((e) => `${e.path.join(".")}: ${e.message}`)
+          .join(", "),
       },
       meta: { timestamp: new Date().toISOString() },
     });

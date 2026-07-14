@@ -12,12 +12,18 @@ interface ModalProps {
   maxWidth?: "sm" | "md" | "lg";
 }
 
-export function Modal({ open, onClose, children, title, maxWidth = "md" }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  children,
+  title,
+  maxWidth = "md",
+}: ModalProps) {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     },
-    [onClose]
+    [onClose],
   );
 
   useEffect(() => {

@@ -70,9 +70,17 @@ const rowVariants = {
 
 // ─── Premium UI Sub-components ────────────────────────────────────────────
 
-function GlassCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function GlassCard({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}>
+    <div
+      className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}
+    >
       {children}
     </div>
   );
@@ -109,7 +117,6 @@ export default function ScoreboardPage() {
       <GradientMesh className="opacity-40" />
 
       <div className="max-w-4xl mx-auto space-y-10 pb-24 lg:pb-12 px-4 md:px-8 pt-8 relative z-10">
-
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -124,7 +131,9 @@ export default function ScoreboardPage() {
             {isHindi ? "हॉल ऑफ फेम" : "Hall of Fame"}
           </h1>
           <p className="text-base text-foreground-subtle font-medium tracking-wide max-w-md mx-auto">
-            {isHindi ? "अपने सहपाठियों के साथ प्रतिस्पर्धा करें, एक्सपी अर्जित करें, और लीडरबोर्ड के शीर्ष पर पहुंचें!" : "Compete with your classmates, earn XP, and climb to the top of the leaderboard!"}
+            {isHindi
+              ? "अपने सहपाठियों के साथ प्रतिस्पर्धा करें, एक्सपी अर्जित करें, और लीडरबोर्ड के शीर्ष पर पहुंचें!"
+              : "Compete with your classmates, earn XP, and climb to the top of the leaderboard!"}
           </p>
         </motion.div>
 
@@ -140,7 +149,9 @@ export default function ScoreboardPage() {
             {second && <PodiumCard entry={second} rank={2} height="h-[75%]" />}
 
             {/* 1st Place */}
-            {first && <PodiumCard entry={first} rank={1} height="h-[95%]" isWinner />}
+            {first && (
+              <PodiumCard entry={first} rank={1} height="h-[95%]" isWinner />
+            )}
 
             {/* 3rd Place */}
             {third && <PodiumCard entry={third} rank={3} height="h-[60%]" />}
@@ -166,7 +177,10 @@ export default function ScoreboardPage() {
             {isLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-16 rounded-2xl bg-white/5 animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-16 rounded-2xl bg-white/5 animate-pulse"
+                  />
                 ))}
               </div>
             ) : rest.length === 0 && top3.length === 0 ? (
@@ -174,10 +188,18 @@ export default function ScoreboardPage() {
             ) : (
               <div className="space-y-2">
                 <div className="flex items-center px-4 py-2 text-[10px] font-bold text-foreground-subtle uppercase tracking-widest">
-                  <span className="w-12 text-center">{isHindi ? "रैंक" : "Rank"}</span>
-                  <span className="flex-1 ml-4">{isHindi ? "छात्र" : "Student"}</span>
-                  <span className="text-right w-24">{isHindi ? "स्तर" : "Level"}</span>
-                  <span className="text-right w-24 hidden md:block">{isHindi ? "कुल एक्सपी" : "Total XP"}</span>
+                  <span className="w-12 text-center">
+                    {isHindi ? "रैंक" : "Rank"}
+                  </span>
+                  <span className="flex-1 ml-4">
+                    {isHindi ? "छात्र" : "Student"}
+                  </span>
+                  <span className="text-right w-24">
+                    {isHindi ? "स्तर" : "Level"}
+                  </span>
+                  <span className="text-right w-24 hidden md:block">
+                    {isHindi ? "कुल एक्सपी" : "Total XP"}
+                  </span>
                 </div>
 
                 <AnimatePresence>
@@ -192,11 +214,15 @@ export default function ScoreboardPage() {
                 </AnimatePresence>
 
                 {/* Pinned user row if logged-in student is far down the list */}
-                {userId && userRank && rest.length > 0 &&
+                {userId &&
+                  userRank &&
+                  rest.length > 0 &&
                   !rest.find((e) => e.userId === userId) &&
                   !top3.find((e) => e.userId === userId) && (
                     <div className="mt-4 pt-4 border-t border-white/10">
-                      <p className="text-[10px] font-bold text-accent-light uppercase tracking-widest mb-3 ml-4">{isHindi ? "आपकी वर्तमान रैंक" : "Your Current Rank"}</p>
+                      <p className="text-[10px] font-bold text-accent-light uppercase tracking-widest mb-3 ml-4">
+                        {isHindi ? "आपकी वर्तमान रैंक" : "Your Current Rank"}
+                      </p>
                       {/* Note: We need the actual entry data for the pinned row, falling back to a placeholder if not in memory */}
                       <LeaderboardRow
                         entry={{
@@ -205,7 +231,7 @@ export default function ScoreboardPage() {
                           name: "You",
                           image: null,
                           level: 0,
-                          totalXP: 0
+                          totalXP: 0,
                         }}
                         isCurrentUser
                         delay={0}
@@ -236,23 +262,25 @@ function PodiumCard({
   isWinner?: boolean;
 }) {
   const getStyles = () => {
-    if (rank === 1) return {
-      bg: "from-amber-400/20 to-yellow-600/10 border-yellow-400/50 shadow-[0_0_30px_rgba(250,204,21,0.2)]",
-      text: "text-yellow-400",
-      badge: "bg-yellow-400 text-yellow-950",
-      icon: <Crown className="w-5 h-5 mb-1 text-yellow-400 drop-shadow-md" />
-    };
-    if (rank === 2) return {
-      bg: "from-slate-300/20 to-slate-500/10 border-slate-300/30",
-      text: "text-slate-300",
-      badge: "bg-slate-300 text-slate-900",
-      icon: <Medal className="w-5 h-5 mb-1 text-slate-300" />
-    };
+    if (rank === 1)
+      return {
+        bg: "from-amber-400/20 to-yellow-600/10 border-yellow-400/50 shadow-[0_0_30px_rgba(250,204,21,0.2)]",
+        text: "text-yellow-400",
+        badge: "bg-yellow-400 text-yellow-950",
+        icon: <Crown className="w-5 h-5 mb-1 text-yellow-400 drop-shadow-md" />,
+      };
+    if (rank === 2)
+      return {
+        bg: "from-slate-300/20 to-slate-500/10 border-slate-300/30",
+        text: "text-slate-300",
+        badge: "bg-slate-300 text-slate-900",
+        icon: <Medal className="w-5 h-5 mb-1 text-slate-300" />,
+      };
     return {
       bg: "from-orange-400/20 to-red-600/10 border-orange-400/30",
       text: "text-orange-400",
       badge: "bg-orange-400 text-orange-950",
-      icon: <Medal className="w-5 h-5 mb-1 text-orange-400" />
+      icon: <Medal className="w-5 h-5 mb-1 text-orange-400" />,
     };
   };
 
@@ -271,14 +299,18 @@ function PodiumCard({
       )}
 
       {/* Rank Badge */}
-      <div className={`absolute -top-4 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm shadow-xl ${styles.badge}`}>
+      <div
+        className={`absolute -top-4 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm shadow-xl ${styles.badge}`}
+      >
         {rank}
       </div>
 
       {styles.icon}
 
       {/* Avatar */}
-      <div className={`w-12 h-12 md:w-16 md:h-16 rounded-[1.25rem] bg-surface flex items-center justify-center text-xl md:text-2xl font-black shadow-inner border border-white/10 ${styles.text}`}>
+      <div
+        className={`w-12 h-12 md:w-16 md:h-16 rounded-[1.25rem] bg-surface flex items-center justify-center text-xl md:text-2xl font-black shadow-inner border border-white/10 ${styles.text}`}
+      >
         {entry.name?.[0]?.toUpperCase() ?? "?"}
       </div>
 
@@ -287,7 +319,8 @@ function PodiumCard({
       </p>
 
       <p className={`font-black text-lg md:text-xl mt-1 ${styles.text}`}>
-        {entry.totalXP.toLocaleString()} <span className="text-xs font-bold uppercase">XP</span>
+        {entry.totalXP.toLocaleString()}{" "}
+        <span className="text-xs font-bold uppercase">XP</span>
       </p>
 
       <p className="text-[10px] font-bold uppercase tracking-widest text-foreground-subtle mt-1 bg-white/5 px-2 py-0.5 rounded-full">
@@ -317,10 +350,11 @@ function LeaderboardRow({
       initial="hidden"
       animate="show"
       transition={{ delay }}
-      className={`flex items-center p-3 md:p-4 rounded-2xl transition-all duration-300 group ${isCurrentUser
-        ? "bg-accent/10 border border-accent/30 shadow-[0_0_20px_rgba(99,102,241,0.15)] relative overflow-hidden"
-        : "bg-white/[0.02] border border-white/5 hover:bg-white/5 hover:border-white/10"
-        }`}
+      className={`flex items-center p-3 md:p-4 rounded-2xl transition-all duration-300 group ${
+        isCurrentUser
+          ? "bg-accent/10 border border-accent/30 shadow-[0_0_20px_rgba(99,102,241,0.15)] relative overflow-hidden"
+          : "bg-white/[0.02] border border-white/5 hover:bg-white/5 hover:border-white/10"
+      }`}
     >
       {/* Current user pulsing background effect */}
       {isCurrentUser && (
@@ -329,19 +363,25 @@ function LeaderboardRow({
 
       {/* Rank */}
       <div className="w-12 flex justify-center relative z-10">
-        <span className={`text-base font-black ${isCurrentUser ? "text-accent-light" : "text-foreground-muted"}`}>
+        <span
+          className={`text-base font-black ${isCurrentUser ? "text-accent-light" : "text-foreground-muted"}`}
+        >
           #{entry.rank}
         </span>
       </div>
 
       {/* Avatar */}
-      <div className={`w-10 h-10 rounded-[1rem] flex items-center justify-center text-sm font-bold ml-2 md:ml-4 relative z-10 shadow-inner ${isCurrentUser ? "bg-accent text-white" : "bg-white/10 text-foreground"}`}>
+      <div
+        className={`w-10 h-10 rounded-[1rem] flex items-center justify-center text-sm font-bold ml-2 md:ml-4 relative z-10 shadow-inner ${isCurrentUser ? "bg-accent text-white" : "bg-white/10 text-foreground"}`}
+      >
         {entry.name?.[0]?.toUpperCase() ?? "?"}
       </div>
 
       {/* Name */}
       <div className="flex-1 ml-4 relative z-10">
-        <span className={`text-sm md:text-base ${isCurrentUser ? "text-white font-bold" : "text-foreground font-medium group-hover:text-white transition-colors"}`}>
+        <span
+          className={`text-sm md:text-base ${isCurrentUser ? "text-white font-bold" : "text-foreground font-medium group-hover:text-white transition-colors"}`}
+        >
           {entry.name ?? "Unknown"}
         </span>
         {isCurrentUser && (
@@ -360,8 +400,12 @@ function LeaderboardRow({
 
       {/* Total XP */}
       <div className="w-24 text-right hidden md:flex items-center justify-end gap-1.5 relative z-10">
-        <Flame className={`w-4 h-4 ${isCurrentUser ? "text-accent-light" : "text-orange-400"}`} />
-        <span className={`text-sm font-black ${isCurrentUser ? "text-accent-light" : "text-foreground"}`}>
+        <Flame
+          className={`w-4 h-4 ${isCurrentUser ? "text-accent-light" : "text-orange-400"}`}
+        />
+        <span
+          className={`text-sm font-black ${isCurrentUser ? "text-accent-light" : "text-foreground"}`}
+        >
           {entry.totalXP.toLocaleString()}
         </span>
       </div>
@@ -378,9 +422,13 @@ function EmptyScoreboard() {
       <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
         <Trophy className="w-8 h-8 text-foreground-subtle opacity-50" />
       </div>
-      <p className="text-lg font-bold text-foreground">{isHindi ? "अभी तक कोई रैंकिंग नहीं" : "No rankings yet"}</p>
+      <p className="text-lg font-bold text-foreground">
+        {isHindi ? "अभी तक कोई रैंकिंग नहीं" : "No rankings yet"}
+      </p>
       <p className="text-sm font-medium text-foreground-subtle mt-1 max-w-sm mx-auto">
-        {isHindi ? "रैंकिंग शुरू करने और लीडरबोर्ड पर चढ़ने के लिए असाइनमेंट पूरे करें!" : "Complete assignments to earn XP and be the first to climb the leaderboard!"}
+        {isHindi
+          ? "रैंकिंग शुरू करने और लीडरबोर्ड पर चढ़ने के लिए असाइनमेंट पूरे करें!"
+          : "Complete assignments to earn XP and be the first to climb the leaderboard!"}
       </p>
     </div>
   );

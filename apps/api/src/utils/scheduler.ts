@@ -3,11 +3,15 @@ import { prisma } from "./prisma.js";
 import { generateParentReport } from "../modules/gamification/parent-report.helper.js";
 
 export function initScheduler() {
-  console.log("[Scheduler] Initializing background progress report scheduler...");
+  console.log(
+    "[Scheduler] Initializing background progress report scheduler...",
+  );
 
   // Runs every Sunday at midnight (0 0 * * 0) to process Weekly reports
   cron.schedule("0 0 * * 0", async () => {
-    console.log("[Scheduler] Running weekly parent progress report dispatcher...");
+    console.log(
+      "[Scheduler] Running weekly parent progress report dispatcher...",
+    );
     try {
       const activeStudents = await prisma.user.findMany({
         where: {
@@ -18,7 +22,9 @@ export function initScheduler() {
         select: { id: true },
       });
 
-      console.log(`[Scheduler] Found ${activeStudents.length} students with weekly parent reports configured.`);
+      console.log(
+        `[Scheduler] Found ${activeStudents.length} students with weekly parent reports configured.`,
+      );
 
       for (const student of activeStudents) {
         try {
@@ -37,13 +43,18 @@ export function initScheduler() {
             // Simulate email dispatch by printing to server logs
             console.log(`\n==================================================`);
             console.log(`[EMAIL SEND] To: ${report.parentEmail}`);
-            console.log(`[EMAIL SEND] Subject: Weekly Progress Report - ${report.studentName}`);
+            console.log(
+              `[EMAIL SEND] Subject: Weekly Progress Report - ${report.studentName}`,
+            );
             console.log(`--------------------------------------------------`);
             console.log(report.markdown);
             console.log(`==================================================\n`);
           }
         } catch (innerErr) {
-          console.error(`[Scheduler] Failed to dispatch report for student ${student.id}:`, innerErr);
+          console.error(
+            `[Scheduler] Failed to dispatch report for student ${student.id}:`,
+            innerErr,
+          );
         }
       }
     } catch (err) {
@@ -53,7 +64,9 @@ export function initScheduler() {
 
   // Runs on the 1st of every month at midnight (0 0 1 * *) to process Monthly reports
   cron.schedule("0 0 1 * *", async () => {
-    console.log("[Scheduler] Running monthly parent progress report dispatcher...");
+    console.log(
+      "[Scheduler] Running monthly parent progress report dispatcher...",
+    );
     try {
       const activeStudents = await prisma.user.findMany({
         where: {
@@ -64,7 +77,9 @@ export function initScheduler() {
         select: { id: true },
       });
 
-      console.log(`[Scheduler] Found ${activeStudents.length} students with monthly parent reports configured.`);
+      console.log(
+        `[Scheduler] Found ${activeStudents.length} students with monthly parent reports configured.`,
+      );
 
       for (const student of activeStudents) {
         try {
@@ -82,13 +97,18 @@ export function initScheduler() {
 
             console.log(`\n==================================================`);
             console.log(`[EMAIL SEND] To: ${report.parentEmail}`);
-            console.log(`[EMAIL SEND] Subject: Monthly Progress Report - ${report.studentName}`);
+            console.log(
+              `[EMAIL SEND] Subject: Monthly Progress Report - ${report.studentName}`,
+            );
             console.log(`--------------------------------------------------`);
             console.log(report.markdown);
             console.log(`==================================================\n`);
           }
         } catch (innerErr) {
-          console.error(`[Scheduler] Failed to dispatch report for student ${student.id}:`, innerErr);
+          console.error(
+            `[Scheduler] Failed to dispatch report for student ${student.id}:`,
+            innerErr,
+          );
         }
       }
     } catch (err) {

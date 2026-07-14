@@ -26,9 +26,17 @@ submissionsRouter.get("/upload-url", handleGetUploadPresignedUrl);
 submissionsRouter.get("/:id", handleGetSubmission);
 
 // Teacher: list submissions for an assignment
-submissionsRouter.get("/assignment/:assignmentId", requireRole("TEACHER"), handleListSubmissionsForAssignment);
+submissionsRouter.get(
+  "/assignment/:assignmentId",
+  requireRole("TEACHER"),
+  handleListSubmissionsForAssignment,
+);
 
 // Teacher: grade a submission
-submissionsRouter.patch("/:id/grade", requireRole("TEACHER"), handleGradeSubmission);
+submissionsRouter.patch(
+  "/:id/grade",
+  requireRole("TEACHER"),
+  handleGradeSubmission,
+);
 
 export { submissionsRouter };

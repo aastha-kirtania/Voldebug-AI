@@ -1,4 +1,9 @@
-import { Plus_Jakarta_Sans, Syne, JetBrains_Mono, Nunito } from "next/font/google";
+import {
+  Plus_Jakarta_Sans,
+  Syne,
+  JetBrains_Mono,
+  Nunito,
+} from "next/font/google";
 import type { ReactNode } from "react";
 import { Providers } from "@web/components/providers";
 import "../styles/globals.css";
@@ -36,11 +41,7 @@ export const metadata = {
   description: "A gamified AI education platform for students and teachers",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"

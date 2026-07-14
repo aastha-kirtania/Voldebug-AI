@@ -35,7 +35,12 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </span>
         </Link>
         <div className="flex items-center gap-3 text-sm text-foreground-subtle">
-          <Link href="/login" className="hover:text-foreground transition-colors">Sign in</Link>
+          <Link
+            href="/login"
+            className="hover:text-foreground transition-colors"
+          >
+            Sign in
+          </Link>
           <Link
             href="/register"
             className="px-3.5 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent-light hover:bg-accent/15 transition-colors text-xs font-medium"
@@ -47,9 +52,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
       {/* Content */}
       <div className="flex-1 flex items-center justify-center relative z-10">
-        <div className="w-full max-w-3xl px-4 py-10">
-          {children}
-        </div>
+        <div className="w-full max-w-3xl px-4 py-10">{children}</div>
       </div>
 
       {/* Footer */}

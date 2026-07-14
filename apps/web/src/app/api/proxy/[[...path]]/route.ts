@@ -23,8 +23,12 @@ async function handleRequest(request: NextRequest, method: string) {
   const user = session?.user as any;
   if (!user?.id) {
     return NextResponse.json(
-      { data: null, error: { code: "UNAUTHORIZED", message: "Not authenticated" }, meta: { timestamp: new Date().toISOString() } },
-      { status: 401 }
+      {
+        data: null,
+        error: { code: "UNAUTHORIZED", message: "Not authenticated" },
+        meta: { timestamp: new Date().toISOString() },
+      },
+      { status: 401 },
     );
   }
 

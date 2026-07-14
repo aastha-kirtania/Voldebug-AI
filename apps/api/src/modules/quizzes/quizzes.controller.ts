@@ -91,7 +91,10 @@ export async function handleSubmitQuizAttempt(req: Request, res: Response) {
     let correctCount = 0;
     for (const q of questions) {
       const selectedIndex = answers[q.id];
-      if (selectedIndex !== undefined && selectedIndex === q.correctAnswerIndex) {
+      if (
+        selectedIndex !== undefined &&
+        selectedIndex === q.correctAnswerIndex
+      ) {
         correctCount++;
       }
     }

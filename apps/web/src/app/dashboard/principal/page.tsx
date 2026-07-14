@@ -46,22 +46,40 @@ const itemVariants = {
 
 // ─── Premium Corporate Sub-components ───────────────────────────────────
 
-function GlassCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function GlassCard({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 lg:p-8 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}>
+    <div
+      className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 lg:p-8 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}
+    >
       {children}
     </div>
   );
 }
 
-function MiniStat({ title, value, icon }: { title: string; value: string | number; icon: React.ReactNode }) {
+function MiniStat({
+  title,
+  value,
+  icon,
+}: {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+}) {
   return (
     <GlassCard className="!p-5 flex items-center gap-4 h-full">
       <div className="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center flex-shrink-0 shadow-inner">
         {icon}
       </div>
       <div>
-        <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">{title}</p>
+        <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">
+          {title}
+        </p>
         <p className="text-2xl font-semibold leading-none">{value}</p>
       </div>
     </GlassCard>
@@ -155,7 +173,10 @@ export default function PrincipalDashboardPage() {
   const userName = session?.user?.name || "Principal";
 
   const { data: overview, isLoading: overviewLoading } = useAdminDashboard();
-  const { data: auditData, isLoading: auditLoading } = useAuditLogs({ limit: 10, flagged: true });
+  const { data: auditData, isLoading: auditLoading } = useAuditLogs({
+    limit: 10,
+    flagged: true,
+  });
   const { t } = useTranslation();
   const isHindi = t("nav.home") === "होम";
 
@@ -185,15 +206,21 @@ export default function PrincipalDashboardPage() {
                 {isHindi ? "प्रिंसिपल कमांड सेंटर" : "Principal Command Center"}
               </h1>
               <p className="text-foreground-subtle text-sm mt-1 max-w-lg">
-                {isHindi ? "स्कूल-व्यापी डेटा और CBSE सुरक्षा अनुपालन —" : "School-wide data and CBSE safety compliance —"}{" "}
-                {overview?.school?.name ?? (isHindi ? "लोड हो रहा है…" : "Loading…")}
+                {isHindi
+                  ? "स्कूल-व्यापी डेटा और CBSE सुरक्षा अनुपालन —"
+                  : "School-wide data and CBSE safety compliance —"}{" "}
+                {overview?.school?.name ??
+                  (isHindi ? "लोड हो रहा है…" : "Loading…")}
               </p>
             </div>
           </div>
         </motion.div>
 
         {/* ── KPI Grid ───────────────────────────────────────────── */}
-        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <motion.div
+          variants={itemVariants}
+          className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4"
+        >
           {overviewLoading ? (
             <>
               <StatSkeleton />
@@ -228,15 +255,22 @@ export default function PrincipalDashboardPage() {
         </motion.div>
 
         {/* ── Institutional Summary Row ────────────────────────── */}
-        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+        <motion.div
+          variants={itemVariants}
+          className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4"
+        >
           <GlassCard className="!p-5">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-9 h-9 rounded-xl bg-[#0D1B2A] border border-[#1B2B40] flex items-center justify-center">
                 <BookOpen className="w-4 h-4 text-sky-400" />
               </div>
-              <p className="text-xs font-bold text-foreground-subtle uppercase tracking-widest">{isHindi ? "असाइनमेंट" : "Assignments"}</p>
+              <p className="text-xs font-bold text-foreground-subtle uppercase tracking-widest">
+                {isHindi ? "असाइनमेंट" : "Assignments"}
+              </p>
             </div>
-            <p className="text-3xl font-bold">{overview?.totalAssignments ?? "—"}</p>
+            <p className="text-3xl font-bold">
+              {overview?.totalAssignments ?? "—"}
+            </p>
             <p className="text-xs text-foreground-subtle mt-1">
               {overview?.totalSubmissions ?? 0} total submissions
             </p>
@@ -247,10 +281,14 @@ export default function PrincipalDashboardPage() {
               <div className="w-9 h-9 rounded-xl bg-[#0D1B2A] border border-[#1B2B40] flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 text-emerald-400" />
               </div>
-              <p className="text-xs font-bold text-foreground-subtle uppercase tracking-widest">{isHindi ? "औसत अंक" : "Average Score"}</p>
+              <p className="text-xs font-bold text-foreground-subtle uppercase tracking-widest">
+                {isHindi ? "औसत अंक" : "Average Score"}
+              </p>
             </div>
             <p className="text-3xl font-bold">
-              {overview?.averageScore != null ? `${overview.averageScore}%` : "—"}
+              {overview?.averageScore != null
+                ? `${overview.averageScore}%`
+                : "—"}
             </p>
             <p className="text-xs text-foreground-subtle mt-1">
               across {overview?.gradedCount ?? 0} graded submissions
@@ -262,9 +300,13 @@ export default function PrincipalDashboardPage() {
               <div className="w-9 h-9 rounded-xl bg-[#0D1B2A] border border-[#1B2B40] flex items-center justify-center">
                 <Building2 className="w-4 h-4 text-amber-400" />
               </div>
-              <p className="text-xs font-bold text-foreground-subtle uppercase tracking-widest">{isHindi ? "इस सप्ताह" : "This Week"}</p>
+              <p className="text-xs font-bold text-foreground-subtle uppercase tracking-widest">
+                {isHindi ? "इस सप्ताह" : "This Week"}
+              </p>
             </div>
-            <p className="text-3xl font-bold">{overview?.recentSubmissions ?? 0}</p>
+            <p className="text-3xl font-bold">
+              {overview?.recentSubmissions ?? 0}
+            </p>
             <p className="text-xs text-foreground-subtle mt-1">
               submissions in the last 7 days
             </p>
@@ -280,8 +322,16 @@ export default function PrincipalDashboardPage() {
                   <FileWarning className="w-5 h-5 text-red-400" />
                 </div>
                 <div>
-                  <h2 className="font-display text-lg font-semibold">{isHindi ? "हाल की सुरक्षा सूचनाएं" : "Recent Safety Alerts"}</h2>
-                  <p className="text-xs text-foreground-subtle">{isHindi ? "AI सुरक्षा फ़िल्टर द्वारा चिह्नित अनुचित प्रॉम्प्ट" : "Blocked inappropriate prompts flagged by AI safety filters"}</p>
+                  <h2 className="font-display text-lg font-semibold">
+                    {isHindi
+                      ? "हाल की सुरक्षा सूचनाएं"
+                      : "Recent Safety Alerts"}
+                  </h2>
+                  <p className="text-xs text-foreground-subtle">
+                    {isHindi
+                      ? "AI सुरक्षा फ़िल्टर द्वारा चिह्नित अनुचित प्रॉम्प्ट"
+                      : "Blocked inappropriate prompts flagged by AI safety filters"}
+                  </p>
                 </div>
               </div>
               <span className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest">
@@ -300,8 +350,14 @@ export default function PrincipalDashboardPage() {
                 <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-8 h-8 text-emerald-400" />
                 </div>
-                <p className="text-foreground-subtle text-sm font-medium">{isHindi ? "सब ठीक है" : "All Clear"}</p>
-                <p className="text-foreground-subtle/60 text-xs mt-1">{isHindi ? "कोई सुरक्षा उल्लंघन नहीं मिला" : "No safety violations detected"}</p>
+                <p className="text-foreground-subtle text-sm font-medium">
+                  {isHindi ? "सब ठीक है" : "All Clear"}
+                </p>
+                <p className="text-foreground-subtle/60 text-xs mt-1">
+                  {isHindi
+                    ? "कोई सुरक्षा उल्लंघन नहीं मिला"
+                    : "No safety violations detected"}
+                </p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -310,7 +366,11 @@ export default function PrincipalDashboardPage() {
                     key={log.id}
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.04, duration: 0.5, ease: smoothEase }}
+                    transition={{
+                      delay: idx * 0.04,
+                      duration: 0.5,
+                      ease: smoothEase,
+                    }}
                     className="p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-red-500/15 hover:bg-red-500/[0.03] transition-all duration-300 group"
                   >
                     <div className="flex items-start justify-between gap-3 mb-2.5">
@@ -326,7 +386,9 @@ export default function PrincipalDashboardPage() {
                             <Clock className="w-3 h-3" />
                             <span>{timeAgo(log.timestamp, isHindi)}</span>
                             <span className="text-white/10">|</span>
-                            <span className="text-violet-400/80">{log.toolUsed}</span>
+                            <span className="text-violet-400/80">
+                              {log.toolUsed}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -334,7 +396,9 @@ export default function PrincipalDashboardPage() {
                     </div>
                     <div className="pl-11">
                       <p className="text-xs text-foreground-subtle/80 leading-relaxed bg-red-500/[0.04] border border-red-500/10 rounded-lg px-3 py-2">
-                        <span className="font-semibold text-red-400/90">{isHindi ? "प्रॉम्प्ट: " : "Prompt: "}</span>
+                        <span className="font-semibold text-red-400/90">
+                          {isHindi ? "प्रॉम्प्ट: " : "Prompt: "}
+                        </span>
                         {truncateText(log.promptText, 180)}
                       </p>
                     </div>
@@ -344,7 +408,6 @@ export default function PrincipalDashboardPage() {
             )}
           </GlassCard>
         </motion.div>
-
       </motion.div>
     </div>
   );

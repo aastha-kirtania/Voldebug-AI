@@ -21,7 +21,14 @@ const sizeClasses: Record<NonNullable<ButtonProps["size"]>, string> = {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, variant = "primary", size = "md", children, disabled, ...props },
+    {
+      className,
+      variant = "primary",
+      size = "md",
+      children,
+      disabled,
+      ...props
+    },
     ref,
   ) => {
     return (

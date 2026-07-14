@@ -6,11 +6,7 @@ export function generateToken(payload: {
   email: string;
   role: string;
 }): string {
-  return jwt.sign(
-    payload,
-    env.JWT_SECRET,
-    { expiresIn: "30d" },
-  );
+  return jwt.sign(payload, env.JWT_SECRET, { expiresIn: "30d" });
 }
 
 export function verifyToken(token: string): {

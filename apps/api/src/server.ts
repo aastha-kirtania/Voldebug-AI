@@ -9,7 +9,7 @@ import { initScheduler } from "./utils/scheduler.js";
 
 const server = app.listen(env.PORT, env.HOST, () => {
   logger.info(
-    `API server running on http://${env.HOST}:${env.PORT} (${env.NODE_ENV})`
+    `API server running on http://${env.HOST}:${env.PORT} (${env.NODE_ENV})`,
   );
 });
 

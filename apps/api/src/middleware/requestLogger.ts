@@ -20,11 +20,7 @@ const logger = winston.createLogger({
 
 export { logger };
 
-export function requestLogger(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
+export function requestLogger(req: Request, res: Response, next: NextFunction) {
   const requestId = randomUUID();
   const start = Date.now();
 

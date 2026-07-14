@@ -8,7 +8,8 @@ function SessionSync() {
   const { data: session } = useSession();
 
   useEffect(() => {
-    const token = (session as any)?.accessToken || (session as any)?.user?.token;
+    const token =
+      (session as any)?.accessToken || (session as any)?.user?.token;
     api.setToken(token || null);
   }, [session]);
 

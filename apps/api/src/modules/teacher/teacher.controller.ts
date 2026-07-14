@@ -21,12 +21,14 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
       }),
       prisma.tool.findMany({
         select: { name: true, brandColor: true },
-      })
+      }),
     ]);
 
     const schoolName = teacherUser?.school?.name || null;
     const classIds = classes.map((c) => c.id);
-    const studentIds = Array.from(new Set(classes.flatMap((c) => c.members.map((m) => m.userId))));
+    const studentIds = Array.from(
+      new Set(classes.flatMap((c) => c.members.map((m) => m.userId))),
+    );
 
     // Phase 2: Fetch all dashboard metrics and logs in parallel (1 network round-trip)
     const [
@@ -39,22 +41,32 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
       auditLogsForActivity,
       auditLogsForAI,
       logsForDoubts,
-      latestAlerts
+      latestAlerts,
     ] = await Promise.all([
       // 1. Published assignments
       prisma.assignment.findMany({
-        where: { classId: { in: classIds }, status: "PUBLISHED", deletedAt: null },
+        where: {
+          classId: { in: classIds },
+          status: "PUBLISHED",
+          deletedAt: null,
+        },
         select: { id: true },
       }),
       // 2. Pending submissions (using joined filter on classIds)
       prisma.submission.findMany({
         where: {
-          assignment: { classId: { in: classIds }, status: "PUBLISHED", deletedAt: null },
+          assignment: {
+            classId: { in: classIds },
+            status: "PUBLISHED",
+            deletedAt: null,
+          },
           status: "SUBMITTED",
-          deletedAt: null
+          deletedAt: null,
         },
         include: {
-          student: { select: { id: true, name: true, email: true, image: true } },
+          student: {
+            select: { id: true, name: true, email: true, image: true },
+          },
           assignment: { select: { title: true } },
         },
         orderBy: { submittedAt: "desc" },
@@ -77,9 +89,13 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
       // 5. Graded submissions for average stats
       prisma.submission.findMany({
         where: {
-          assignment: { classId: { in: classIds }, status: "PUBLISHED", deletedAt: null },
+          assignment: {
+            classId: { in: classIds },
+            status: "PUBLISHED",
+            deletedAt: null,
+          },
           status: { in: ["GRADED", "RETURNED"] },
-          deletedAt: null
+          deletedAt: null,
         },
         select: { score: true },
       }),
@@ -128,7 +144,7 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
         },
         orderBy: { timestamp: "desc" },
         take: 100,
-      })
+      }),
     ]);
 
     const activeAssignments = assignments.length;
@@ -152,7 +168,8 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
 
     const averageGrade =
       gradedSubmissions.length > 0
-        ? gradedSubmissions.reduce((sum, s) => sum + (s.score || 0), 0) / gradedSubmissions.length
+        ? gradedSubmissions.reduce((sum, s) => sum + (s.score || 0), 0) /
+          gradedSubmissions.length
         : null;
 
     const completionRate =
@@ -205,7 +222,10 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
       }
     });
 
-    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    activities.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
     const recentActivity = activities.slice(0, 10);
 
     // AI Usage Summary compilation
@@ -214,7 +234,9 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
       toolCounts[log.toolUsed] = (toolCounts[log.toolUsed] || 0) + 1;
     });
 
-    const colorMap = new Map(dbTools.map((t) => [t.name.toLowerCase(), t.brandColor]));
+    const colorMap = new Map(
+      dbTools.map((t) => [t.name.toLowerCase(), t.brandColor]),
+    );
     const mostUsedTools = Object.entries(toolCounts)
       .map(([name, count]) => ({
         name,
@@ -225,11 +247,14 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
       .slice(0, 5);
 
     const dailyUsage = auditLogsForAI.filter(
-      (log) => new Date(log.timestamp).getTime() >= Date.now() - 24 * 60 * 60 * 1000
+      (log) =>
+        new Date(log.timestamp).getTime() >= Date.now() - 24 * 60 * 60 * 1000,
     ).length;
 
     const weeklyUsage = auditLogsForAI.filter(
-      (log) => new Date(log.timestamp).getTime() >= Date.now() - 7 * 24 * 60 * 60 * 1000
+      (log) =>
+        new Date(log.timestamp).getTime() >=
+        Date.now() - 7 * 24 * 60 * 60 * 1000,
     ).length;
 
     const aiUsage = {
@@ -241,17 +266,123 @@ export async function handleTeacherDashboard(req: Request, res: Response) {
     // Frequently Asked Doubts compilation
     const wordCounts: Record<string, number> = {};
     const stopwords = new Set([
-      "what", "whats", "how", "why", "who", "whom", "whose", "which", "where", "when", 
-      "the", "a", "an", "is", "are", "was", "were", "been", "being", "have", "has", "had", 
-      "do", "does", "did", "done", "doing", "dont", "doesnt", "didnt", "cant", "cannot",
-      "wont", "should", "shouldnt", "could", "couldnt", "would", "wouldnt", "will", "shall",
-      "of", "to", "in", "for", "on", "with", "at", "by", "from", "about", "against", "between",
-      "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down",
-      "that", "this", "these", "those", "ths", "then", "there", "their", "theirs", "them", "they",
-      "explain", "help", "me", "solve", "using", "your", "yours", "mine", "some", "any", "no",
-      "every", "each", "other", "another", "more", "most", "some", "many", "much", "very",
-      "please", "question", "answer", "query", "find", "give", "show", "write", "make", "take",
-      "get", "tell", "ask", "like", "want", "need", "know", "think", "good", "best", "easy"
+      "what",
+      "whats",
+      "how",
+      "why",
+      "who",
+      "whom",
+      "whose",
+      "which",
+      "where",
+      "when",
+      "the",
+      "a",
+      "an",
+      "is",
+      "are",
+      "was",
+      "were",
+      "been",
+      "being",
+      "have",
+      "has",
+      "had",
+      "do",
+      "does",
+      "did",
+      "done",
+      "doing",
+      "dont",
+      "doesnt",
+      "didnt",
+      "cant",
+      "cannot",
+      "wont",
+      "should",
+      "shouldnt",
+      "could",
+      "couldnt",
+      "would",
+      "wouldnt",
+      "will",
+      "shall",
+      "of",
+      "to",
+      "in",
+      "for",
+      "on",
+      "with",
+      "at",
+      "by",
+      "from",
+      "about",
+      "against",
+      "between",
+      "into",
+      "through",
+      "during",
+      "before",
+      "after",
+      "above",
+      "below",
+      "to",
+      "from",
+      "up",
+      "down",
+      "that",
+      "this",
+      "these",
+      "those",
+      "ths",
+      "then",
+      "there",
+      "their",
+      "theirs",
+      "them",
+      "they",
+      "explain",
+      "help",
+      "me",
+      "solve",
+      "using",
+      "your",
+      "yours",
+      "mine",
+      "some",
+      "any",
+      "no",
+      "every",
+      "each",
+      "other",
+      "another",
+      "more",
+      "most",
+      "some",
+      "many",
+      "much",
+      "very",
+      "please",
+      "question",
+      "answer",
+      "query",
+      "find",
+      "give",
+      "show",
+      "write",
+      "make",
+      "take",
+      "get",
+      "tell",
+      "ask",
+      "like",
+      "want",
+      "need",
+      "know",
+      "think",
+      "good",
+      "best",
+      "easy",
     ]);
 
     logsForDoubts.forEach((log) => {
@@ -374,7 +505,11 @@ export async function handleTeacherClassDetail(req: Request, res: Response) {
     });
 
     if (!cls || cls.teacherId !== userId) {
-      return apiError(res, { code: "NOT_FOUND", message: "Class not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Class not found",
+        status: 404,
+      });
     }
 
     // Compute per-student completion stats
@@ -384,7 +519,13 @@ export async function handleTeacherClassDetail(req: Request, res: Response) {
     const [submissions, streaks, dailyChallenges] = await Promise.all([
       prisma.submission.findMany({
         where: { assignmentId: { in: assignmentIds }, deletedAt: null },
-        select: { studentId: true, assignmentId: true, status: true, score: true, xpAwarded: true },
+        select: {
+          studentId: true,
+          assignmentId: true,
+          status: true,
+          score: true,
+          xpAwarded: true,
+        },
       }),
       prisma.streak.findMany({
         where: { userId: { in: studentIds } },
@@ -399,10 +540,16 @@ export async function handleTeacherClassDetail(req: Request, res: Response) {
 
     const studentStats = cls.members.map((m) => {
       const studentSubs = submissions.filter((s) => s.studentId === m.userId);
-      const completed = studentSubs.filter((s) => s.status === "GRADED" || s.status === "RETURNED").length;
-      const avgScore = studentSubs.length > 0
-        ? Math.round(studentSubs.reduce((acc, s) => acc + (s.score ?? 0), 0) / studentSubs.length)
-        : null;
+      const completed = studentSubs.filter(
+        (s) => s.status === "GRADED" || s.status === "RETURNED",
+      ).length;
+      const avgScore =
+        studentSubs.length > 0
+          ? Math.round(
+              studentSubs.reduce((acc, s) => acc + (s.score ?? 0), 0) /
+                studentSubs.length,
+            )
+          : null;
 
       const streakObj = streaks.find((s) => s.userId === m.userId);
       const challengeObj = dailyChallenges.find((c) => c.userId === m.userId);
@@ -412,7 +559,10 @@ export async function handleTeacherClassDetail(req: Request, res: Response) {
         submissionsCount: studentSubs.length,
         completedCount: completed,
         avgScore,
-        totalXPEarned: studentSubs.reduce((acc, s) => acc + (s.xpAwarded ?? 0), 0),
+        totalXPEarned: studentSubs.reduce(
+          (acc, s) => acc + (s.xpAwarded ?? 0),
+          0,
+        ),
         streak: streakObj ? streakObj.currentStreak : 0,
         challengeCompleted: challengeObj ? challengeObj.completed : false,
       };
@@ -436,23 +586,27 @@ export async function handleTeacherAlerts(req: Request, res: Response) {
   try {
     const classes = await prisma.class.findMany({
       where: { teacherId },
-      include: { members: { select: { userId: true } } }
+      include: { members: { select: { userId: true } } },
     });
 
-    const studentIds = Array.from(new Set(classes.flatMap(c => c.members.map(m => m.userId))));
+    const studentIds = Array.from(
+      new Set(classes.flatMap((c) => c.members.map((m) => m.userId))),
+    );
 
     const alerts = await prisma.auditLog.findMany({
       where: {
         studentId: { in: studentIds },
-        isFlagged: true
+        isFlagged: true,
       },
       include: {
-        student: { select: { id: true, name: true, email: true, gradeLevel: true } }
+        student: {
+          select: { id: true, name: true, email: true, gradeLevel: true },
+        },
       },
-      orderBy: { timestamp: "desc" }
+      orderBy: { timestamp: "desc" },
     });
 
-    const parsedAlerts = alerts.map(a => {
+    const parsedAlerts = alerts.map((a) => {
       let category = "CHEATING";
       let severity = "HIGH";
       try {
@@ -469,7 +623,7 @@ export async function handleTeacherAlerts(req: Request, res: Response) {
         toolUsed: a.toolUsed,
         category,
         severity,
-        timestamp: a.timestamp.toISOString()
+        timestamp: a.timestamp.toISOString(),
       };
     });
 
@@ -478,7 +632,7 @@ export async function handleTeacherAlerts(req: Request, res: Response) {
     return apiError(res, {
       code: "INTERNAL_ERROR",
       message: `Failed to fetch safety alerts: ${err.message}`,
-      status: 500
+      status: 500,
     });
   }
 }
@@ -490,18 +644,20 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
     const [classes, assignmentsForIds, dbTools] = await Promise.all([
       prisma.class.findMany({
         where: { teacherId },
-        include: { members: { select: { userId: true } } }
+        include: { members: { select: { userId: true } } },
       }),
       prisma.assignment.findMany({
         where: { class: { teacherId }, deletedAt: null },
-        select: { id: true }
+        select: { id: true },
       }),
-      prisma.tool.findMany()
+      prisma.tool.findMany(),
     ]);
 
-    const classIds = classes.map(c => c.id);
-    const studentIds = Array.from(new Set(classes.flatMap(c => c.members.map(m => m.userId))));
-    const assignmentIds = assignmentsForIds.map(a => a.id);
+    const classIds = classes.map((c) => c.id);
+    const studentIds = Array.from(
+      new Set(classes.flatMap((c) => c.members.map((m) => m.userId))),
+    );
+    const assignmentIds = assignmentsForIds.map((a) => a.id);
 
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
@@ -516,21 +672,25 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
       logsForDoubts,
       streaks,
       studentSubmissions,
-      flaggedLogs
+      flaggedLogs,
     ] = await Promise.all([
       // 1. All submissions from the last 7 days (to group in JS)
       prisma.submission.findMany({
         where: {
           assignmentId: { in: assignmentIds },
           submittedAt: { gte: sevenDaysAgo },
-          deletedAt: null
+          deletedAt: null,
         },
-        select: { submittedAt: true }
+        select: { submittedAt: true },
       }),
       // 2. Graded submissions
       prisma.submission.findMany({
-        where: { assignmentId: { in: assignmentIds }, status: "GRADED", deletedAt: null },
-        select: { score: true }
+        where: {
+          assignmentId: { in: assignmentIds },
+          status: "GRADED",
+          deletedAt: null,
+        },
+        select: { score: true },
       }),
       // 3. Tool usage logs grouped by tool
       prisma.auditLog.groupBy({
@@ -544,7 +704,9 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
       // 4. Assignments with their graded submissions
       prisma.assignment.findMany({
         where: { classId: { in: classIds }, deletedAt: null },
-        include: { submissions: { where: { status: "GRADED", deletedAt: null } } }
+        include: {
+          submissions: { where: { status: "GRADED", deletedAt: null } },
+        },
       }),
       // 5. Search prompts for doubt analysis
       prisma.auditLog.findMany({
@@ -553,28 +715,36 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
           isFlagged: false,
         },
         select: { promptText: true },
-        take: 100
+        take: 100,
       }),
       // 6. Streaks
       prisma.streak.findMany({
         where: { userId: { in: studentIds } },
-        select: { currentStreak: true }
+        select: { currentStreak: true },
       }),
       // 7. Student submissions for risk assessment
       prisma.submission.findMany({
         where: { studentId: { in: studentIds }, deletedAt: null },
-        include: { student: { select: { id: true, name: true, email: true, image: true } } }
+        include: {
+          student: {
+            select: { id: true, name: true, email: true, image: true },
+          },
+        },
       }),
       // 8. Flagged safety logs (7d)
       prisma.auditLog.findMany({
         where: {
           studentId: { in: studentIds },
           isFlagged: true,
-          timestamp: { gte: sevenDaysAgo }
+          timestamp: { gte: sevenDaysAgo },
         },
-        include: { student: { select: { id: true, name: true, email: true, image: true } } },
-        orderBy: { timestamp: "desc" }
-      })
+        include: {
+          student: {
+            select: { id: true, name: true, email: true, image: true },
+          },
+        },
+        orderBy: { timestamp: "desc" },
+      }),
     ]);
 
     // Group submission counts by day in JS memory
@@ -585,40 +755,68 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
       const nextD = new Date(d);
       nextD.setDate(d.getDate() + 1);
 
-      const count = recentSubmissionsForWeek.filter(s => {
+      const count = recentSubmissionsForWeek.filter((s) => {
         const subDate = new Date(s.submittedAt);
         return subDate >= d && subDate < nextD;
       }).length;
 
       return {
         dayLabel: d.toLocaleDateString("en-US", { weekday: "short" }),
-        count
+        count,
       };
     });
     const weeklySubmissions = submissionDays.reverse();
 
     // Grade Distribution
     const gradeDistribution = [
-      { label: "A (90-100%)", count: gradedSubmissions.filter(s => (s.score ?? 0) >= 90).length, color: "#22c55e" },
-      { label: "B (80-89%)", count: gradedSubmissions.filter(s => (s.score ?? 0) >= 80 && (s.score ?? 0) < 90).length, color: "#6366f1" },
-      { label: "C (70-79%)", count: gradedSubmissions.filter(s => (s.score ?? 0) >= 70 && (s.score ?? 0) < 80).length, color: "#f59e0b" },
-      { label: "D (60-69%)", count: gradedSubmissions.filter(s => (s.score ?? 0) >= 60 && (s.score ?? 0) < 70).length, color: "#ef4444" },
-      { label: "F (<60%)", count: gradedSubmissions.filter(s => (s.score ?? 0) < 60).length, color: "#7f1d1d" },
+      {
+        label: "A (90-100%)",
+        count: gradedSubmissions.filter((s) => (s.score ?? 0) >= 90).length,
+        color: "#22c55e",
+      },
+      {
+        label: "B (80-89%)",
+        count: gradedSubmissions.filter(
+          (s) => (s.score ?? 0) >= 80 && (s.score ?? 0) < 90,
+        ).length,
+        color: "#6366f1",
+      },
+      {
+        label: "C (70-79%)",
+        count: gradedSubmissions.filter(
+          (s) => (s.score ?? 0) >= 70 && (s.score ?? 0) < 80,
+        ).length,
+        color: "#f59e0b",
+      },
+      {
+        label: "D (60-69%)",
+        count: gradedSubmissions.filter(
+          (s) => (s.score ?? 0) >= 60 && (s.score ?? 0) < 70,
+        ).length,
+        color: "#ef4444",
+      },
+      {
+        label: "F (<60%)",
+        count: gradedSubmissions.filter((s) => (s.score ?? 0) < 60).length,
+        color: "#7f1d1d",
+      },
     ];
 
     // Tool Stats mapping
-    const studentToolCounts = studentLogs.map(l => ({
+    const studentToolCounts = studentLogs.map((l) => ({
       name: l.toolUsed,
-      count: l._count.toolUsed
+      count: l._count.toolUsed,
     }));
     studentToolCounts.sort((a, b) => b.count - a.count);
 
-    const colorMap = new Map(dbTools.map((t) => [t.name.toLowerCase(), t.brandColor]));
-    const toolStats = studentToolCounts.slice(0, 5).map(tc => {
+    const colorMap = new Map(
+      dbTools.map((t) => [t.name.toLowerCase(), t.brandColor]),
+    );
+    const toolStats = studentToolCounts.slice(0, 5).map((tc) => {
       return {
         name: tc.name,
         usageCount: tc.count,
-        brandColor: colorMap.get(tc.name.toLowerCase()) || "#6366f1"
+        brandColor: colorMap.get(tc.name.toLowerCase()) || "#6366f1",
       };
     });
 
@@ -627,50 +825,161 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
       const sortedTools = [...dbTools]
         .sort((a, b) => b.usageCount - a.usageCount)
         .slice(0, 5);
-      toolStats.push(...sortedTools.map(t => ({
-        name: t.name,
-        usageCount: t.usageCount,
-        brandColor: t.brandColor
-      })));
+      toolStats.push(
+        ...sortedTools.map((t) => ({
+          name: t.name,
+          usageCount: t.usageCount,
+          brandColor: t.brandColor,
+        })),
+      );
     }
 
     // Weak Concepts compilation
     const weakConcepts = assignmentsWithSubmissions
-      .map(a => {
-        const scores = a.submissions.map(s => s.score ?? 0);
-        const avg = scores.length > 0 ? scores.reduce((sum, s) => sum + s, 0) / scores.length : 100;
+      .map((a) => {
+        const scores = a.submissions.map((s) => s.score ?? 0);
+        const avg =
+          scores.length > 0
+            ? scores.reduce((sum, s) => sum + s, 0) / scores.length
+            : 100;
         return {
           id: a.id,
           title: a.title,
           avgScore: Math.round(avg),
-          submissionsCount: a.submissions.length
+          submissionsCount: a.submissions.length,
         };
       })
-      .filter(a => a.submissionsCount > 0 && a.avgScore < 75)
+      .filter((a) => a.submissionsCount > 0 && a.avgScore < 75)
       .sort((a, b) => a.avgScore - b.avgScore);
 
     // Common doubts compilation
     const wordCounts: Record<string, number> = {};
     const stopwords = new Set([
-      "what", "whats", "how", "why", "who", "whom", "whose", "which", "where", "when", 
-      "the", "a", "an", "is", "are", "was", "were", "been", "being", "have", "has", "had", 
-      "do", "does", "did", "done", "doing", "dont", "doesnt", "didnt", "cant", "cannot",
-      "wont", "should", "shouldnt", "could", "couldnt", "would", "wouldnt", "will", "shall",
-      "of", "to", "in", "for", "on", "with", "at", "by", "from", "about", "against", "between",
-      "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down",
-      "that", "this", "these", "those", "ths", "then", "there", "their", "theirs", "them", "they",
-      "explain", "help", "me", "solve", "using", "your", "yours", "mine", "some", "any", "no",
-      "every", "each", "other", "another", "more", "most", "some", "many", "much", "very",
-      "please", "question", "answer", "query", "find", "give", "show", "write", "make", "take",
-      "get", "tell", "ask", "like", "want", "need", "know", "think", "good", "best", "easy"
+      "what",
+      "whats",
+      "how",
+      "why",
+      "who",
+      "whom",
+      "whose",
+      "which",
+      "where",
+      "when",
+      "the",
+      "a",
+      "an",
+      "is",
+      "are",
+      "was",
+      "were",
+      "been",
+      "being",
+      "have",
+      "has",
+      "had",
+      "do",
+      "does",
+      "did",
+      "done",
+      "doing",
+      "dont",
+      "doesnt",
+      "didnt",
+      "cant",
+      "cannot",
+      "wont",
+      "should",
+      "shouldnt",
+      "could",
+      "couldnt",
+      "would",
+      "wouldnt",
+      "will",
+      "shall",
+      "of",
+      "to",
+      "in",
+      "for",
+      "on",
+      "with",
+      "at",
+      "by",
+      "from",
+      "about",
+      "against",
+      "between",
+      "into",
+      "through",
+      "during",
+      "before",
+      "after",
+      "above",
+      "below",
+      "to",
+      "from",
+      "up",
+      "down",
+      "that",
+      "this",
+      "these",
+      "those",
+      "ths",
+      "then",
+      "there",
+      "their",
+      "theirs",
+      "them",
+      "they",
+      "explain",
+      "help",
+      "me",
+      "solve",
+      "using",
+      "your",
+      "yours",
+      "mine",
+      "some",
+      "any",
+      "no",
+      "every",
+      "each",
+      "other",
+      "another",
+      "more",
+      "most",
+      "some",
+      "many",
+      "much",
+      "very",
+      "please",
+      "question",
+      "answer",
+      "query",
+      "find",
+      "give",
+      "show",
+      "write",
+      "make",
+      "take",
+      "get",
+      "tell",
+      "ask",
+      "like",
+      "want",
+      "need",
+      "know",
+      "think",
+      "good",
+      "best",
+      "easy",
     ]);
 
-    logsForDoubts.forEach(log => {
+    logsForDoubts.forEach((log) => {
       const words = log.promptText
         .toLowerCase()
         .replace(/[^a-zA-Z\s]/g, "")
         .split(/\s+/);
-      words.forEach(w => {
+      words.forEach((w) => {
         if (w.length > 3 && !stopwords.has(w)) {
           wordCounts[w] = (wordCounts[w] || 0) + 1;
         }
@@ -683,13 +992,26 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
       .slice(0, 8);
 
     // Streaks evaluation
-    const avgStreak = streaks.length > 0
-      ? Math.round(streaks.reduce((sum, s) => sum + s.currentStreak, 0) / streaks.length)
-      : 0;
+    const avgStreak =
+      streaks.length > 0
+        ? Math.round(
+            streaks.reduce((sum, s) => sum + s.currentStreak, 0) /
+              streaks.length,
+          )
+        : 0;
 
     // Risk assessment compilation
-    const studentGrades: Record<string, { total: number; count: number; name: string; email: string; image: string | null }> = {};
-    studentSubmissions.forEach(s => {
+    const studentGrades: Record<
+      string,
+      {
+        total: number;
+        count: number;
+        name: string;
+        email: string;
+        image: string | null;
+      }
+    > = {};
+    studentSubmissions.forEach((s) => {
       if (s.status === "GRADED" && s.score !== null) {
         if (!studentGrades[s.studentId]) {
           studentGrades[s.studentId] = {
@@ -697,7 +1019,7 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
             count: 0,
             name: s.student.name || s.student.email || "Student",
             email: s.student.email || "",
-            image: s.student.image
+            image: s.student.image,
           };
         }
         studentGrades[s.studentId].total += s.score;
@@ -715,13 +1037,13 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
           email: d.email,
           image: d.image,
           reason: `Low average grade (${Math.round(avg)}%)`,
-          level: "HIGH"
+          level: "HIGH",
         });
       }
     }
 
-    const flaggedStudentIds = new Set(atRiskStudents.map(s => s.id));
-    flaggedLogs.forEach(log => {
+    const flaggedStudentIds = new Set(atRiskStudents.map((s) => s.id));
+    flaggedLogs.forEach((log) => {
       if (!flaggedStudentIds.has(log.studentId)) {
         flaggedStudentIds.add(log.studentId);
         atRiskStudents.push({
@@ -730,7 +1052,7 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
           email: log.student.email || "",
           image: log.student.image,
           reason: "Safety alert flags triggered",
-          level: "CRITICAL"
+          level: "CRITICAL",
         });
       }
     });
@@ -744,14 +1066,14 @@ export async function handleTeacherAnalytics(req: Request, res: Response) {
       atRiskStudents,
       engagement: {
         avgStreak,
-        totalActiveStudents: studentIds.length
-      }
+        totalActiveStudents: studentIds.length,
+      },
     });
   } catch (err: any) {
     return apiError(res, {
       code: "INTERNAL_ERROR",
       message: `Failed to fetch analytics: ${err.message}`,
-      status: 500
+      status: 500,
     });
   }
 }

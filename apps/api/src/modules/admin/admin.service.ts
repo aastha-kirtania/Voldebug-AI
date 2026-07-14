@@ -75,7 +75,9 @@ export async function getSchoolOverview(adminUserId: string) {
     totalAssignments,
     totalSubmissions,
     recentSubmissions,
-    averageScore: graded._avg.score ? Math.round(graded._avg.score * 10) / 10 : null,
+    averageScore: graded._avg.score
+      ? Math.round(graded._avg.score * 10) / 10
+      : null,
     gradedCount: graded._count.score,
     auditLogs: {
       total: totalAuditLogs,
@@ -89,7 +91,12 @@ export async function getSchoolOverview(adminUserId: string) {
 export async function getAuditLogs(
   limit: number = 20,
   offset: number = 0,
-  filters?: { isFlagged?: boolean; studentId?: string; toolUsed?: string; schoolId?: string },
+  filters?: {
+    isFlagged?: boolean;
+    studentId?: string;
+    toolUsed?: string;
+    schoolId?: string;
+  },
 ) {
   const where: Record<string, any> = {};
 

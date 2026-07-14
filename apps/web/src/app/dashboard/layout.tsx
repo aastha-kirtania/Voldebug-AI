@@ -37,9 +37,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     }
   }, [kidsMode, isInitialized]);
 
-  const brandHref = role === "ADMIN"
-    ? "/dashboard/admin"
-    : (role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student");
+  const brandHref =
+    role === "ADMIN"
+      ? "/dashboard/admin"
+      : role === "TEACHER"
+        ? "/dashboard/teacher"
+        : "/dashboard/student";
   const handleLogout = async () => {
     try {
       if (typeof window !== "undefined") {
@@ -59,7 +62,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex w-64 flex-col border-r border-white/5 p-4 transition-all">
         <div className="px-2 py-4 mb-6">
-          <a href={brandHref} className="font-display text-lg font-bold tracking-tight">
+          <a
+            href={brandHref}
+            className="font-display text-lg font-bold tracking-tight"
+          >
             <span className="text-gradient">VOLDEBUG</span>
             <span className="text-foreground-muted text-xs ml-1.5 font-sans font-normal uppercase">
               {"AI Portal"}
@@ -74,7 +80,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {/* Top bar: language switcher + kids mode toggle + notification bell + logout + user */}
         <header className="sticky top-0 z-40 bg-bg/80 backdrop-blur-sm border-b border-white/5 h-14 flex items-center justify-end px-4 md:px-6 lg:px-8 gap-2 transition-all">
           <LanguageSwitcher />
-          
+
           {/* Kids Mode Toggle */}
           <button
             onClick={() => {
@@ -82,8 +88,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               sound.playClick();
             }}
             className={`w-9 h-9 rounded-lg flex items-center justify-center border transition-all ${
-              kidsMode 
-                ? "bg-[#7c3aed] text-white border-[#7c3aed] shadow-md shadow-violet-200/50" 
+              kidsMode
+                ? "bg-[#7c3aed] text-white border-[#7c3aed] shadow-md shadow-violet-200/50"
                 : "hover:bg-surface/60 border-white/5 text-foreground-muted hover:text-foreground"
             }`}
             title="Theme Toggle"

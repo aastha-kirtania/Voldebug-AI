@@ -5,16 +5,35 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@web/lib/api";
-import { useDashboardStats, useSaveParentSettings, useTriggerParentReport, useUpdateProfile } from "@web/hooks/use-dashboard";
+import {
+  useDashboardStats,
+  useSaveParentSettings,
+  useTriggerParentReport,
+  useUpdateProfile,
+} from "@web/hooks/use-dashboard";
 import { useTranslation } from "@web/context/language-context";
 import { useTeacherDashboard } from "@web/hooks/use-teacher";
 import { useSubmissionHistory } from "@web/hooks/use-classroom";
 import { GradientMesh } from "@web/components/ui/background";
 import {
-  Zap, Trophy, Award, Flame, Star,
-  BookOpen, TrendingUp, Edit3, Users, FileText,
-  Lock, Loader2, Mail, ChevronDown, X, CheckCircle2, AlertCircle,
-  SmilePlus
+  Zap,
+  Trophy,
+  Award,
+  Flame,
+  Star,
+  BookOpen,
+  TrendingUp,
+  Edit3,
+  Users,
+  FileText,
+  Lock,
+  Loader2,
+  Mail,
+  ChevronDown,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  SmilePlus,
 } from "lucide-react";
 
 // ─── Motion Variants ──────────────────────────────────────────────────────
@@ -48,12 +67,16 @@ function xpForLevel(level: number) {
 
 // ─── Avatar options ───────────────────────────────────────────────────────
 const AVATAR_OPTIONS = [
-  { id: "anime-boy",   image: "/avatars/anime-boy.png",   label: "Gaming Boy" },
-  { id: "anime-girl",  image: "/avatars/anime-girl.png",  label: "Anime Girl" },
-  { id: "doge",        image: "/avatars/doge.png",        label: "Doge Meme" },
-  { id: "sigma-chad",  image: "/avatars/sigma-chad.png",  label: "Sigma Chad" },
-  { id: "gaming-noob", image: "/avatars/gaming-noob.png", label: "Gaming Noob" },
-  { id: "banana-cat",  image: "/avatars/banana-cat.png",  label: "Banana Cat" },
+  { id: "anime-boy", image: "/avatars/anime-boy.png", label: "Gaming Boy" },
+  { id: "anime-girl", image: "/avatars/anime-girl.png", label: "Anime Girl" },
+  { id: "doge", image: "/avatars/doge.png", label: "Doge Meme" },
+  { id: "sigma-chad", image: "/avatars/sigma-chad.png", label: "Sigma Chad" },
+  {
+    id: "gaming-noob",
+    image: "/avatars/gaming-noob.png",
+    label: "Gaming Noob",
+  },
+  { id: "banana-cat", image: "/avatars/banana-cat.png", label: "Banana Cat" },
 ];
 
 const OLD_AVATAR_FALLBACK: Record<string, string> = {
@@ -68,31 +91,50 @@ const OLD_AVATAR_FALLBACK: Record<string, string> = {
 function getAvatarDisplay(image: string | null | undefined, name: string) {
   if (image?.startsWith("avatar:")) {
     const id = image.slice(7);
-    const found = AVATAR_OPTIONS.find(a => a.id === id);
+    const found = AVATAR_OPTIONS.find((a) => a.id === id);
     if (found) return { type: "image" as const, value: found.image };
-    if (OLD_AVATAR_FALLBACK[id]) return { type: "image" as const, value: OLD_AVATAR_FALLBACK[id] };
+    if (OLD_AVATAR_FALLBACK[id])
+      return { type: "image" as const, value: OLD_AVATAR_FALLBACK[id] };
   }
   return { type: "initial" as const, value: name[0]?.toUpperCase() ?? "U" };
 }
 
 // ─── Premium UI Sub-components ────────────────────────────────────────────
 
-function GlassCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function GlassCard({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 lg:p-8 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}>
+    <div
+      className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 lg:p-8 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}
+    >
       {children}
     </div>
   );
 }
 
-function MiniStat({ title, value, icon }: { title: string; value: string | number; icon: React.ReactNode }) {
+function MiniStat({
+  title,
+  value,
+  icon,
+}: {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+}) {
   return (
     <GlassCard className="!p-5 flex items-center gap-4 h-full">
       <div className="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center flex-shrink-0">
         {icon}
       </div>
       <div>
-        <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">{title}</p>
+        <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">
+          {title}
+        </p>
         <p className="text-2xl font-medium leading-none">{value}</p>
       </div>
     </GlassCard>
@@ -120,7 +162,10 @@ function EditProfileModal({
     return "";
   });
   const { update } = useSession();
-  const [toast, setToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    msg: string;
+  } | null>(null);
   const updateProfile = useUpdateProfile();
 
   const showToast = (type: "success" | "error", msg: string) => {
@@ -167,7 +212,9 @@ function EditProfileModal({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/5">
-          <h3 className="font-display text-lg font-bold text-foreground">Edit Profile</h3>
+          <h3 className="font-display text-lg font-bold text-foreground">
+            Edit Profile
+          </h3>
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-foreground-muted hover:text-foreground transition-colors"
@@ -220,21 +267,25 @@ function EditProfileModal({
                   <input
                     type="text"
                     value={nameInput}
-                    onChange={e => setNameInput(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && handleSaveName()}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSaveName()}
                     maxLength={60}
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-foreground placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-accent/25 focus:border-accent/30 transition-all"
                     placeholder="Your display name"
                     autoFocus
                   />
-                  <p className="text-[11px] text-foreground-subtle text-right">{nameInput.length}/60</p>
+                  <p className="text-[11px] text-foreground-subtle text-right">
+                    {nameInput.length}/60
+                  </p>
                 </div>
                 <button
                   onClick={handleSaveName}
                   disabled={updateProfile.isPending || !nameInput.trim()}
                   className="w-full py-2.5 bg-accent text-white rounded-xl text-sm font-semibold hover:bg-accent-light transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {updateProfile.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {updateProfile.isPending && (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  )}
                   Save Name
                 </button>
               </motion.div>
@@ -247,9 +298,11 @@ function EditProfileModal({
                 transition={{ duration: 0.2 }}
                 className="space-y-4"
               >
-                <p className="text-sm text-foreground-muted">Choose your learning buddy avatar:</p>
+                <p className="text-sm text-foreground-muted">
+                  Choose your learning buddy avatar:
+                </p>
                 <div className="grid grid-cols-3 gap-3">
-                  {AVATAR_OPTIONS.map(av => (
+                  {AVATAR_OPTIONS.map((av) => (
                     <motion.button
                       key={av.id}
                       whileHover={{ scale: 1.05 }}
@@ -262,11 +315,17 @@ function EditProfileModal({
                       }`}
                     >
                       {(av as any).image ? (
-                        <img src={(av as any).image} alt={av.label} className="w-12 h-12 rounded-xl object-cover" />
+                        <img
+                          src={(av as any).image}
+                          alt={av.label}
+                          className="w-12 h-12 rounded-xl object-cover"
+                        />
                       ) : (
                         <span className="text-3xl">{(av as any).emoji}</span>
                       )}
-                      <span className="text-[11px] font-semibold text-foreground-muted">{av.label}</span>
+                      <span className="text-[11px] font-semibold text-foreground-muted">
+                        {av.label}
+                      </span>
                       {selectedAvatar === av.id && (
                         <CheckCircle2 className="w-3.5 h-3.5 text-accent-light absolute top-2 right-2" />
                       )}
@@ -278,7 +337,9 @@ function EditProfileModal({
                   disabled={updateProfile.isPending || !selectedAvatar}
                   className="w-full py-2.5 bg-accent text-white rounded-xl text-sm font-semibold hover:bg-accent-light transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {updateProfile.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {updateProfile.isPending && (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  )}
                   Save Avatar
                 </button>
               </motion.div>
@@ -298,7 +359,11 @@ function EditProfileModal({
                     : "bg-error/10 border-error/20 text-error"
                 }`}
               >
-                {toast.type === "success" ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {toast.type === "success" ? (
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                ) : (
+                  <AlertCircle className="w-3.5 h-3.5" />
+                )}
                 {toast.msg}
               </motion.div>
             )}
@@ -310,13 +375,30 @@ function EditProfileModal({
 }
 
 // ─── Avatar Display component ─────────────────────────────────────────────
-function AvatarDisplay({ image, name, size = "large" }: { image?: string | null; name: string; size?: "large" | "small" }) {
+function AvatarDisplay({
+  image,
+  name,
+  size = "large",
+}: {
+  image?: string | null;
+  name: string;
+  size?: "large" | "small";
+}) {
   const display = getAvatarDisplay(image, name);
-  const sizeClass = size === "large" ? "w-24 h-24 text-4xl rounded-[2rem] overflow-hidden" : "w-10 h-10 text-lg rounded-xl overflow-hidden";
+  const sizeClass =
+    size === "large"
+      ? "w-24 h-24 text-4xl rounded-[2rem] overflow-hidden"
+      : "w-10 h-10 text-lg rounded-xl overflow-hidden";
   return (
-    <div className={`${sizeClass} bg-gradient-to-br from-accent to-accent-light flex items-center justify-center font-medium shadow-2xl border border-white/10`}>
+    <div
+      className={`${sizeClass} bg-gradient-to-br from-accent to-accent-light flex items-center justify-center font-medium shadow-2xl border border-white/10`}
+    >
       {display.type === "image" ? (
-        <img src={display.value} alt={name} className="w-full h-full object-cover" />
+        <img
+          src={display.value}
+          alt={name}
+          className="w-full h-full object-cover"
+        />
       ) : (
         <span className="text-white">{display.value}</span>
       )}
@@ -347,7 +429,15 @@ interface SchoolOverview {
   };
 }
 
-function AdminProfile({ name: initialName, email, image: initialImage }: { name: string; email: string; image?: string | null }) {
+function AdminProfile({
+  name: initialName,
+  email,
+  image: initialImage,
+}: {
+  name: string;
+  email: string;
+  image?: string | null;
+}) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [displayName, setDisplayName] = useState(initialName);
   const [displayImage, setDisplayImage] = useState(initialImage);
@@ -371,8 +461,12 @@ function AdminProfile({ name: initialName, email, image: initialImage }: { name:
 
   return (
     <div className="max-w-5xl mx-auto pb-24 lg:pb-12 px-4 md:px-8 pt-8 relative z-10">
-      <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
-
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="space-y-6"
+      >
         {/* Profile Hero */}
         <motion.div variants={itemVariants}>
           <GlassCard className="relative overflow-hidden">
@@ -380,18 +474,32 @@ function AdminProfile({ name: initialName, email, image: initialImage }: { name:
 
             <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
               <div className="relative flex-shrink-0">
-                <AvatarDisplay image={displayImage} name={displayName} size="large" />
+                <AvatarDisplay
+                  image={displayImage}
+                  name={displayName}
+                  size="large"
+                />
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap mb-1">
-                  <h1 className="font-display text-3xl font-medium tracking-tight text-foreground">{displayName}</h1>
+                  <h1 className="font-display text-3xl font-medium tracking-tight text-foreground">
+                    {displayName}
+                  </h1>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-accent-light border border-accent/20 bg-accent/10 px-2.5 py-1 rounded-full">
                     Administrator
                   </span>
                 </div>
-                {email && <p className="text-sm font-medium text-foreground-subtle">{email}</p>}
-                {school && <p className="text-xs font-semibold text-foreground-muted mt-1">Managed School: {school.name}</p>}
+                {email && (
+                  <p className="text-sm font-medium text-foreground-subtle">
+                    {email}
+                  </p>
+                )}
+                {school && (
+                  <p className="text-xs font-semibold text-foreground-muted mt-1">
+                    Managed School: {school.name}
+                  </p>
+                )}
               </div>
 
               <button
@@ -407,15 +515,32 @@ function AdminProfile({ name: initialName, email, image: initialImage }: { name:
 
         {/* Administrative Overview */}
         <motion.div variants={itemVariants}>
-          <h2 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-4 ml-2">Administrative Overview</h2>
+          <h2 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-4 ml-2">
+            Administrative Overview
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            <MiniStat title="Total Students" value={overview?.totalStudents ?? 0} icon={<Users className="w-5 h-5 text-indigo-400" />} />
-            <MiniStat title="Total Teachers" value={overview?.totalTeachers ?? 0} icon={<Users className="w-5 h-5 text-amber-400" />} />
-            <MiniStat title="Total Classes" value={overview?.totalClasses ?? 0} icon={<BookOpen className="w-5 h-5 text-emerald-400" />} />
-            <MiniStat title="Total Assignments" value={overview?.totalAssignments ?? 0} icon={<FileText className="w-5 h-5 text-cyan-400" />} />
+            <MiniStat
+              title="Total Students"
+              value={overview?.totalStudents ?? 0}
+              icon={<Users className="w-5 h-5 text-indigo-400" />}
+            />
+            <MiniStat
+              title="Total Teachers"
+              value={overview?.totalTeachers ?? 0}
+              icon={<Users className="w-5 h-5 text-amber-400" />}
+            />
+            <MiniStat
+              title="Total Classes"
+              value={overview?.totalClasses ?? 0}
+              icon={<BookOpen className="w-5 h-5 text-emerald-400" />}
+            />
+            <MiniStat
+              title="Total Assignments"
+              value={overview?.totalAssignments ?? 0}
+              icon={<FileText className="w-5 h-5 text-cyan-400" />}
+            />
           </div>
         </motion.div>
-
       </motion.div>
 
       {/* Edit Modal */}
@@ -435,7 +560,15 @@ function AdminProfile({ name: initialName, email, image: initialImage }: { name:
 }
 
 // ─── Teacher Profile ──────────────────────────────────────────────────────
-function TeacherProfile({ name: initialName, email, image: initialImage }: { name: string; email: string; image?: string | null }) {
+function TeacherProfile({
+  name: initialName,
+  email,
+  image: initialImage,
+}: {
+  name: string;
+  email: string;
+  image?: string | null;
+}) {
   const { data: stats } = useTeacherDashboard();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [displayName, setDisplayName] = useState(initialName);
@@ -448,8 +581,12 @@ function TeacherProfile({ name: initialName, email, image: initialImage }: { nam
 
   return (
     <div className="max-w-5xl mx-auto pb-24 lg:pb-12 px-4 md:px-8 pt-8 relative z-10">
-      <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
-
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="space-y-6"
+      >
         {/* Profile Hero */}
         <motion.div variants={itemVariants}>
           <GlassCard className="relative overflow-hidden">
@@ -457,17 +594,27 @@ function TeacherProfile({ name: initialName, email, image: initialImage }: { nam
 
             <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
               <div className="relative flex-shrink-0">
-                <AvatarDisplay image={displayImage} name={displayName} size="large" />
+                <AvatarDisplay
+                  image={displayImage}
+                  name={displayName}
+                  size="large"
+                />
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap mb-1">
-                  <h1 className="font-display text-3xl font-medium tracking-tight text-foreground">{displayName}</h1>
+                  <h1 className="font-display text-3xl font-medium tracking-tight text-foreground">
+                    {displayName}
+                  </h1>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-accent-light border border-accent/20 bg-accent/10 px-2.5 py-1 rounded-full">
                     Faculty
                   </span>
                 </div>
-                {email && <p className="text-sm font-medium text-foreground-subtle">{email}</p>}
+                {email && (
+                  <p className="text-sm font-medium text-foreground-subtle">
+                    {email}
+                  </p>
+                )}
               </div>
 
               <button
@@ -483,15 +630,36 @@ function TeacherProfile({ name: initialName, email, image: initialImage }: { nam
 
         {/* Academic Overview */}
         <motion.div variants={itemVariants}>
-          <h2 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-4 ml-2">Academic Overview</h2>
+          <h2 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-4 ml-2">
+            Academic Overview
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            <MiniStat title="Active Classes" value={stats?.classInfo?.length ?? 0} icon={<BookOpen className="w-5 h-5 text-indigo-400" />} />
-            <MiniStat title="Total Students" value={stats?.totalStudents ?? 0} icon={<Users className="w-5 h-5 text-amber-400" />} />
-            <MiniStat title="Assignments" value={stats?.activeAssignments ?? 0} icon={<FileText className="w-5 h-5 text-emerald-400" />} />
-            <MiniStat title="Avg Completion" value={stats?.completionRate != null ? `${stats?.completionRate}%` : "—"} icon={<TrendingUp className="w-5 h-5 text-cyan-400" />} />
+            <MiniStat
+              title="Active Classes"
+              value={stats?.classInfo?.length ?? 0}
+              icon={<BookOpen className="w-5 h-5 text-indigo-400" />}
+            />
+            <MiniStat
+              title="Total Students"
+              value={stats?.totalStudents ?? 0}
+              icon={<Users className="w-5 h-5 text-amber-400" />}
+            />
+            <MiniStat
+              title="Assignments"
+              value={stats?.activeAssignments ?? 0}
+              icon={<FileText className="w-5 h-5 text-emerald-400" />}
+            />
+            <MiniStat
+              title="Avg Completion"
+              value={
+                stats?.completionRate != null
+                  ? `${stats?.completionRate}%`
+                  : "—"
+              }
+              icon={<TrendingUp className="w-5 h-5 text-cyan-400" />}
+            />
           </div>
         </motion.div>
-
       </motion.div>
 
       {/* Edit Modal */}
@@ -511,12 +679,22 @@ function TeacherProfile({ name: initialName, email, image: initialImage }: { nam
 }
 
 // ─── Student Profile ──────────────────────────────────────────────────────
-function StudentProfile({ name: initialName, email, image: initialImage }: { name: string; email: string; image?: string | null }) {
+function StudentProfile({
+  name: initialName,
+  email,
+  image: initialImage,
+}: {
+  name: string;
+  email: string;
+  image?: string | null;
+}) {
   const { data: session } = useSession();
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const { data: submissions } = useSubmissionHistory();
 
-  const [downloadingBadgeId, setDownloadingBadgeId] = useState<string | null>(null);
+  const [downloadingBadgeId, setDownloadingBadgeId] = useState<string | null>(
+    null,
+  );
   const [downloadingLevel, setDownloadingLevel] = useState<number | null>(null);
   const { t } = useTranslation();
 
@@ -530,7 +708,10 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
   const [parentEnabled, setParentEnabled] = useState(false);
   const [frequency, setFrequency] = useState("WEEKLY");
   const [testSentResult, setTestSentResult] = useState<string | null>(null);
-  const [saveToast, setSaveToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [saveToast, setSaveToast] = useState<{
+    type: "success" | "error";
+    msg: string;
+  } | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const saveParentSettings = useSaveParentSettings();
@@ -568,25 +749,41 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
         parentReportingEnabled: parentEnabled,
         parentReportFrequency: frequency,
       });
-      showToast("success", t("profile.saveSuccess") || "Settings saved successfully!", 3500);
+      showToast(
+        "success",
+        t("profile.saveSuccess") || "Settings saved successfully!",
+        3500,
+      );
     } catch (err) {
       console.error(err);
-      showToast("error", t("profile.saveFail") || "Failed to save settings. Please try again.");
+      showToast(
+        "error",
+        t("profile.saveFail") || "Failed to save settings. Please try again.",
+      );
     }
   };
 
   const handleSendTestReport = async () => {
     if (!parentEmail || !parentEnabled) {
-      showToast("error", "Please specify a parent email and enable reporting first.");
+      showToast(
+        "error",
+        "Please specify a parent email and enable reporting first.",
+      );
       return;
     }
     setTestSentResult(null);
     try {
       const res = await triggerParentReport.mutateAsync();
-      setTestSentResult(t("profile.testSuccess", { id: res.logId }) || "Test report sent successfully!");
+      setTestSentResult(
+        t("profile.testSuccess", { id: res.logId }) ||
+          "Test report sent successfully!",
+      );
     } catch (err) {
       console.error(err);
-      showToast("error", t("profile.testFail") || "Failed to send test report.");
+      showToast(
+        "error",
+        t("profile.testFail") || "Failed to send test report.",
+      );
     }
   };
 
@@ -597,7 +794,7 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
       const token = (session?.user as any)?.token;
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/v1/gamification/certificate/badge/${badgeId}`,
-        { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } }
+        { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } },
       );
       if (!res.ok) throw new Error("Failed to download certificate");
       const blob = await res.blob();
@@ -625,7 +822,7 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
       const token = (session?.user as any)?.token;
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/v1/gamification/certificate/level/${lvl}`,
-        { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } }
+        { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } },
       );
       if (!res.ok) throw new Error("Failed to download certificate");
       const blob = await res.blob();
@@ -650,21 +847,33 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
   const level = getLevel(totalXP);
   const xpStart = xpForLevel(level);
   const xpEnd = xpForLevel(level + 1);
-  const progress = totalXP > 0 ? Math.round(((totalXP - xpStart) / (xpEnd - xpStart)) * 100) : 0;
+  const progress =
+    totalXP > 0
+      ? Math.round(((totalXP - xpStart) / (xpEnd - xpStart)) * 100)
+      : 0;
 
   const submissionStats = useMemo(() => {
-    if (!submissions) return { total: 0, graded: 0, avgScore: null as number | null };
+    if (!submissions)
+      return { total: 0, graded: 0, avgScore: null as number | null };
     const graded = submissions.filter((s: any) => s.status === "GRADED");
-    const avgScore = graded.length > 0
-      ? Math.round(graded.reduce((acc: number, s: any) => acc + (s.score ?? 0), 0) / graded.length)
-      : null;
+    const avgScore =
+      graded.length > 0
+        ? Math.round(
+            graded.reduce((acc: number, s: any) => acc + (s.score ?? 0), 0) /
+              graded.length,
+          )
+        : null;
     return { total: submissions.length, graded: graded.length, avgScore };
   }, [submissions]);
 
   return (
     <div className="max-w-5xl mx-auto pb-24 lg:pb-12 px-4 md:px-8 pt-8 relative z-10">
-      <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
-
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="space-y-6"
+      >
         {/* Profile Hero & Level Progress */}
         <motion.div variants={itemVariants}>
           <GlassCard className="relative overflow-hidden">
@@ -677,21 +886,36 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
                 onClick={() => setIsEditOpen(true)}
                 title="Change avatar"
               >
-                <AvatarDisplay image={displayImage} name={displayName} size="large" />
+                <AvatarDisplay
+                  image={displayImage}
+                  name={displayName}
+                  size="large"
+                />
                 <div className="absolute inset-0 rounded-[2rem] bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <SmilePlus className="w-7 h-7 text-white" />
                 </div>
               </div>
 
               <div className="flex-1 min-w-0">
-                <h1 className="font-display text-3xl font-medium tracking-tight text-foreground mb-1">{displayName}</h1>
-                {email && <p className="text-sm font-medium text-foreground-subtle mb-4">{email}</p>}
+                <h1 className="font-display text-3xl font-medium tracking-tight text-foreground mb-1">
+                  {displayName}
+                </h1>
+                {email && (
+                  <p className="text-sm font-medium text-foreground-subtle mb-4">
+                    {email}
+                  </p>
+                )}
 
                 {/* Level Progress */}
                 <div className="max-w-md">
                   <div className="flex items-center justify-between text-xs font-medium text-foreground-muted mb-2">
-                    <span>{t("profile.level")} {level}</span>
-                    <span>{(xpEnd - totalXP).toLocaleString()} {t("profile.xp")} to {t("profile.level")} {level + 1}</span>
+                    <span>
+                      {t("profile.level")} {level}
+                    </span>
+                    <span>
+                      {(xpEnd - totalXP).toLocaleString()} {t("profile.xp")} to{" "}
+                      {t("profile.level")} {level + 1}
+                    </span>
                   </div>
                   {statsLoading ? (
                     <div className="h-2 rounded-full bg-white/5 animate-pulse" />
@@ -723,15 +947,31 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
 
         {/* Stats Overview */}
         <motion.div variants={itemVariants}>
-          <h2 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-4 ml-2">{t("profile.statsTitle")}</h2>
+          <h2 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-4 ml-2">
+            {t("profile.statsTitle")}
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-            <MiniStat title={t("profile.statsAssignments")} value={stats?.submissionCount ?? 0} icon={<BookOpen className="w-5 h-5 text-indigo-400" />} />
-            <MiniStat title={t("profile.statsAvgScore")} value={submissionStats.avgScore != null ? `${submissionStats.avgScore}%` : "—"} icon={<Star className="w-5 h-5 text-amber-400" />} />
-            <MiniStat title={t("profile.statsTotalXP")} value={(stats?.xp.total ?? 0).toLocaleString()} icon={<Zap className="w-5 h-5 text-emerald-400" />} />
+            <MiniStat
+              title={t("profile.statsAssignments")}
+              value={stats?.submissionCount ?? 0}
+              icon={<BookOpen className="w-5 h-5 text-indigo-400" />}
+            />
+            <MiniStat
+              title={t("profile.statsAvgScore")}
+              value={
+                submissionStats.avgScore != null
+                  ? `${submissionStats.avgScore}%`
+                  : "—"
+              }
+              icon={<Star className="w-5 h-5 text-amber-400" />}
+            />
+            <MiniStat
+              title={t("profile.statsTotalXP")}
+              value={(stats?.xp.total ?? 0).toLocaleString()}
+              icon={<Zap className="w-5 h-5 text-emerald-400" />}
+            />
           </div>
         </motion.div>
-
-
 
         {/* Level Milestones */}
         <motion.div variants={itemVariants}>
@@ -739,7 +979,9 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
               <div className="flex items-center gap-3">
                 <Trophy className="w-5 h-5 text-amber-400" />
-                <h2 className="text-base font-medium text-foreground tracking-wide">{t("profile.milestones")}</h2>
+                <h2 className="text-base font-medium text-foreground tracking-wide">
+                  {t("profile.milestones")}
+                </h2>
               </div>
             </div>
 
@@ -756,17 +998,27 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold ${
-                        isReached ? "bg-accent text-white" : "bg-white/5 text-foreground-muted"
-                      }`}>
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold ${
+                          isReached
+                            ? "bg-accent text-white"
+                            : "bg-white/5 text-foreground-muted"
+                        }`}
+                      >
                         L{milestoneLvl}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold">{t("profile.level")} {milestoneLvl} {t("profile.milestones")}</p>
+                        <p className="text-sm font-semibold">
+                          {t("profile.level")} {milestoneLvl}{" "}
+                          {t("profile.milestones")}
+                        </p>
                         <p className="text-[11px] text-foreground-subtle">
                           {isReached
                             ? t("profile.milestoneReached")
-                            : t("profile.milestoneLocked", { current: level, required: milestoneLvl })}
+                            : t("profile.milestoneLocked", {
+                                current: level,
+                                required: milestoneLvl,
+                              })}
                         </p>
                       </div>
                     </div>
@@ -868,8 +1120,18 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
                         onChange={(e) => setFrequency(e.target.value)}
                         className="w-full px-4 py-2.5 rounded-xl border border-white/5 bg-white/[0.02] focus:bg-white/5 text-xs text-foreground focus:outline-none transition-colors appearance-none"
                       >
-                        <option value="WEEKLY" className="bg-neutral-900 text-foreground">{t("profile.parentFreqWeekly")}</option>
-                        <option value="MONTHLY" className="bg-neutral-900 text-foreground">{t("profile.parentFreqMonthly")}</option>
+                        <option
+                          value="WEEKLY"
+                          className="bg-neutral-900 text-foreground"
+                        >
+                          {t("profile.parentFreqWeekly")}
+                        </option>
+                        <option
+                          value="MONTHLY"
+                          className="bg-neutral-900 text-foreground"
+                        >
+                          {t("profile.parentFreqMonthly")}
+                        </option>
                       </select>
                     </div>
                   </motion.div>
@@ -888,7 +1150,11 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
                           : "bg-error/10 border-error/20 text-error"
                       }`}
                     >
-                      {saveToast.type === "success" ? <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />}
+                      {saveToast.type === "success" ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+                      ) : (
+                        <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                      )}
                       {saveToast.msg}
                     </motion.div>
                   )}
@@ -906,7 +1172,9 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
                     disabled={saveParentSettings.isPending}
                     className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors disabled:opacity-50"
                   >
-                    {saveParentSettings.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    {saveParentSettings.isPending && (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    )}
                     <span>{t("profile.saveSettings")}</span>
                   </button>
 
@@ -916,7 +1184,9 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
                       disabled={triggerParentReport.isPending}
                       className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold border border-white/10 bg-white/5 text-foreground hover:bg-white/10 transition-all disabled:opacity-50"
                     >
-                      {triggerParentReport.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                      {triggerParentReport.isPending && (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      )}
                       <span>{t("profile.sendTestReport")}</span>
                     </button>
                   )}
@@ -931,7 +1201,6 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
             )}
           </GlassCard>
         </motion.div>
-
       </motion.div>
 
       {/* Edit Profile Modal */}
@@ -953,7 +1222,13 @@ function StudentProfile({ name: initialName, email, image: initialImage }: { nam
 export default function ProfilePage() {
   const { data: session } = useSession();
   const user = session?.user as any;
-  const name = user?.name ?? (user?.role === "TEACHER" ? "Teacher" : (user?.role === "ADMIN" ? "Admin" : "Student"));
+  const name =
+    user?.name ??
+    (user?.role === "TEACHER"
+      ? "Teacher"
+      : user?.role === "ADMIN"
+        ? "Admin"
+        : "Student");
   const email = user?.email ?? "";
   const image = user?.image ?? null;
 

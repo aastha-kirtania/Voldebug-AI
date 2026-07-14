@@ -22,11 +22,21 @@ const CALLBACK_COOKIE_NAMES = [
 ];
 
 function clearAuthCookies(res: NextResponse) {
-  const allNames = [...SESSION_COOKIE_NAMES, ...CSRF_COOKIE_NAMES, ...CALLBACK_COOKIE_NAMES];
+  const allNames = [
+    ...SESSION_COOKIE_NAMES,
+    ...CSRF_COOKIE_NAMES,
+    ...CALLBACK_COOKIE_NAMES,
+  ];
   for (const name of allNames) {
     // Expire the cookie by setting max-age=0 across common paths and domains
     res.cookies.set(name, "", { maxAge: 0, path: "/" });
-    res.cookies.set(name, "", { maxAge: 0, path: "/", secure: true, httpOnly: true, sameSite: "lax" });
+    res.cookies.set(name, "", {
+      maxAge: 0,
+      path: "/",
+      secure: true,
+      httpOnly: true,
+      sameSite: "lax",
+    });
   }
   // Set a short-lived flag so middleware knows the user explicitly logged out
   res.cookies.set("voldebug_logged_out", "1", { maxAge: 10, path: "/" });

@@ -25,6 +25,10 @@ assignmentsRouter.post("/", requireRole("TEACHER"), handleCreateAssignment);
 assignmentsRouter.patch("/:id", requireRole("TEACHER"), handleUpdateAssignment);
 
 // Teacher: soft-delete assignment
-assignmentsRouter.delete("/:id", requireRole("TEACHER"), handleDeleteAssignment);
+assignmentsRouter.delete(
+  "/:id",
+  requireRole("TEACHER"),
+  handleDeleteAssignment,
+);
 
 export { assignmentsRouter };

@@ -118,7 +118,9 @@ export async function updateStreak(userId: string): Promise<number> {
   // Calculate calendar days difference
   const lastDateTime = new Date(lastDate).getTime();
   const todayTime = new Date(today).getTime();
-  const diffDays = Math.round((todayTime - lastDateTime) / (1000 * 60 * 60 * 24));
+  const diffDays = Math.round(
+    (todayTime - lastDateTime) / (1000 * 60 * 60 * 24),
+  );
 
   if (diffDays === 1) {
     // Streak continues
@@ -156,7 +158,7 @@ interface DailyChallengeResult {
 }
 
 const CHALLENGES = [
-  "Use an AI Tool today",
+  "Use our AI Doubt Solver today",
   "Submit an assignment",
   "Achieve 90%+ on a graded assignment",
   "Check the scoreboard rankings",
@@ -168,13 +170,15 @@ export function generateChallenge(userId: string, date: string): string {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     const char = seed.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
   return CHALLENGES[Math.abs(hash) % CHALLENGES.length];
 }
 
-export async function getDailyChallenge(userId: string): Promise<DailyChallengeResult> {
+export async function getDailyChallenge(
+  userId: string,
+): Promise<DailyChallengeResult> {
   const today = new Date().toISOString().split("T")[0];
 
   // Try to fetch existing challenge

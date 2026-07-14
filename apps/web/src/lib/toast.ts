@@ -47,7 +47,9 @@ export function useToast() {
   useEffect(() => {
     listeners.add(set);
     set([...toasts]);
-    return () => { listeners.delete(set); };
+    return () => {
+      listeners.delete(set);
+    };
   }, []);
   return current;
 }

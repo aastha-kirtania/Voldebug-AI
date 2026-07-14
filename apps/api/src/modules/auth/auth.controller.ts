@@ -1,5 +1,15 @@
 import type { Request, Response } from "express";
-import { registerUser, loginUser, setUserRole, getUserById, createUserFromProvider, requestPasswordReset, resetPasswordWithToken, sendEmailOtp, verifyEmailOtp } from "./auth.service.js";
+import {
+  registerUser,
+  loginUser,
+  setUserRole,
+  getUserById,
+  createUserFromProvider,
+  requestPasswordReset,
+  resetPasswordWithToken,
+  sendEmailOtp,
+  verifyEmailOtp,
+} from "./auth.service.js";
 import { apiSuccess, apiError } from "../../utils/api.js";
 import { generateToken } from "../../utils/jwt.js";
 import { logger } from "../../middleware/requestLogger.js";

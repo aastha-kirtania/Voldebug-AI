@@ -1,7 +1,10 @@
 import type { Request, Response } from "express";
 import { prisma } from "../../utils/prisma.js";
 import { apiSuccess, apiError } from "../../utils/api.js";
-import { completeDailyChallenge, awardXP } from "../gamification/gamification.service.js";
+import {
+  completeDailyChallenge,
+  awardXP,
+} from "../gamification/gamification.service.js";
 
 export async function handleCreateSubmission(req: Request, res: Response) {
   const userId = req.userId!;
@@ -23,11 +26,19 @@ export async function handleCreateSubmission(req: Request, res: Response) {
     });
 
     if (!assignment || (assignment as any).deletedAt) {
-      return apiError(res, { code: "NOT_FOUND", message: "Assignment not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Assignment not found",
+        status: 404,
+      });
     }
 
     if (assignment.status !== "PUBLISHED") {
-      return apiError(res, { code: "INVALID_STATE", message: "Cannot submit to unpublished assignment", status: 400 });
+      return apiError(res, {
+        code: "INVALID_STATE",
+        message: "Cannot submit to unpublished assignment",
+        status: 400,
+      });
     }
 
     // Check if student already has a submission
@@ -36,10 +47,18 @@ export async function handleCreateSubmission(req: Request, res: Response) {
     });
 
     if (existing) {
-      return apiError(res, { code: "ALREADY_SUBMITTED", message: "You already submitted this assignment", status: 409 });
+      return apiError(res, {
+        code: "ALREADY_SUBMITTED",
+        message: "You already submitted this assignment",
+        status: 409,
+      });
     }
 
-    const isEarly = new Date() < new Date(new Date(assignment.dueDate).getTime() - 2 * 24 * 60 * 60 * 1000);
+    const isEarly =
+      new Date() <
+      new Date(
+        new Date(assignment.dueDate).getTime() - 2 * 24 * 60 * 60 * 1000,
+      );
 
     const submission = await prisma.submission.create({
       data: {
@@ -66,10 +85,11 @@ export async function handleCreateSubmission(req: Request, res: Response) {
       userId,
       totalXP,
       (isEarly ? "EARLY_SUBMISSION" : "ASSIGNMENT_SUBMIT") as any,
-      assignmentId
+      assignmentId,
     );
 
-    const { createNotification } = await import("../notifications/notifications.service.js");
+    const { createNotification } =
+      await import("../notifications/notifications.service.js");
     const sessionUser = await prisma.user.findUnique({ where: { id: userId } });
     createNotification({
       userId: assignment.creatorId,
@@ -83,7 +103,11 @@ export async function handleCreateSubmission(req: Request, res: Response) {
 
     return apiSuccess(res, { ...submission, xpAwarded: totalXP }, 201);
   } catch (err) {
-    return apiError(res, { code: "SUBMIT_FAILED", message: (err as Error).message, status: 400 });
+    return apiError(res, {
+      code: "SUBMIT_FAILED",
+      message: (err as Error).message,
+      status: 400,
+    });
   }
 }
 
@@ -106,12 +130,20 @@ export async function handleGetSubmission(req: Request, res: Response) {
     });
 
     if (!submission) {
-      return apiError(res, { code: "NOT_FOUND", message: "Submission not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Submission not found",
+        status: 404,
+      });
     }
 
     return apiSuccess(res, submission);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch submission", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch submission",
+      status: 500,
+    });
   }
 }
 
@@ -137,7 +169,11 @@ export async function handleGetSubmissionHistory(req: Request, res: Response) {
 
     return apiSuccess(res, submissions);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch submissions", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch submissions",
+      status: 500,
+    });
   }
 }
 
@@ -159,7 +195,10 @@ export async function handleGetUploadPresignedUrl(req: Request, res: Response) {
   });
 }
 
-export async function handleListSubmissionsForAssignment(req: Request, res: Response) {
+export async function handleListSubmissionsForAssignment(
+  req: Request,
+  res: Response,
+) {
   const { assignmentId } = req.params;
 
   try {
@@ -167,14 +206,23 @@ export async function handleListSubmissionsForAssignment(req: Request, res: Resp
       where: { assignmentId, deletedAt: null },
       include: {
         student: { select: { id: true, name: true, email: true, image: true } },
-        assignment: { include: { suggestedTool: true, creator: { select: { id: true, name: true, email: true } } } },
+        assignment: {
+          include: {
+            suggestedTool: true,
+            creator: { select: { id: true, name: true, email: true } },
+          },
+        },
       },
       orderBy: { submittedAt: "asc" },
     });
 
     return apiSuccess(res, submissions);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch submissions", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch submissions",
+      status: 500,
+    });
   }
 }
 
@@ -195,12 +243,20 @@ export async function handleGradeSubmission(req: Request, res: Response) {
     });
 
     if (!submission) {
-      return apiError(res, { code: "NOT_FOUND", message: "Submission not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Submission not found",
+        status: 404,
+      });
     }
 
     // Only the class teacher can grade
     if (submission.assignment.class.teacherId !== graderId) {
-      return apiError(res, { code: "FORBIDDEN", message: "Only the class teacher can grade this submission", status: 403 });
+      return apiError(res, {
+        code: "FORBIDDEN",
+        message: "Only the class teacher can grade this submission",
+        status: 403,
+      });
     }
 
     const updated = await prisma.submission.update({
@@ -224,12 +280,13 @@ export async function handleGradeSubmission(req: Request, res: Response) {
         submission.studentId,
         Number(xpAwarded),
         "ASSIGNMENT_GRADE" as any,
-        submission.assignmentId
+        submission.assignmentId,
       );
     }
 
-    const { createNotification } = await import("../notifications/notifications.service.js");
-    
+    const { createNotification } =
+      await import("../notifications/notifications.service.js");
+
     createNotification({
       userId: submission.studentId,
       type: "GRADE_RECEIVED",
@@ -239,11 +296,18 @@ export async function handleGradeSubmission(req: Request, res: Response) {
 
     // Complete Daily Challenge if score is 90% or higher
     if (score && Number(score) >= 90) {
-      completeDailyChallenge(submission.studentId, "Achieve 90%+ on a graded assignment").catch(console.error);
+      completeDailyChallenge(
+        submission.studentId,
+        "Achieve 90%+ on a graded assignment",
+      ).catch(console.error);
     }
 
     return apiSuccess(res, updated);
   } catch (err) {
-    return apiError(res, { code: "GRADE_FAILED", message: (err as Error).message, status: 400 });
+    return apiError(res, {
+      code: "GRADE_FAILED",
+      message: (err as Error).message,
+      status: 400,
+    });
   }
 }

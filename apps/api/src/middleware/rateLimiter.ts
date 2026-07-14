@@ -7,7 +7,10 @@ export const limiter = rateLimit({
   max: isDev ? 10000 : 1000, // 1000 requests per window
   message: {
     data: null,
-    error: { code: "RATE_LIMIT_EXCEEDED", message: "Too many requests, please try again later." },
+    error: {
+      code: "RATE_LIMIT_EXCEEDED",
+      message: "Too many requests, please try again later.",
+    },
     meta: { timestamp: new Date().toISOString() },
   },
   standardHeaders: true,
@@ -19,7 +22,10 @@ export const authLimiter = rateLimit({
   max: isDev ? 1000 : 30, // 30 requests per window for auth routes in prod, 1000 in dev
   message: {
     data: null,
-    error: { code: "RATE_LIMIT_EXCEEDED", message: "Too many authentication attempts. Please try again later." },
+    error: {
+      code: "RATE_LIMIT_EXCEEDED",
+      message: "Too many authentication attempts. Please try again later.",
+    },
     meta: { timestamp: new Date().toISOString() },
   },
   standardHeaders: true,

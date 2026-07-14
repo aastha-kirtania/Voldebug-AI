@@ -60,7 +60,8 @@ export function useAuditLogs(options?: {
   const params = new URLSearchParams();
   if (options?.limit) params.set("limit", String(options.limit));
   if (options?.offset) params.set("offset", String(options.offset));
-  if (options?.flagged !== undefined) params.set("flagged", String(options.flagged));
+  if (options?.flagged !== undefined)
+    params.set("flagged", String(options.flagged));
 
   const qs = params.toString();
   const path = `/v1/admin/audit-logs${qs ? `?${qs}` : ""}`;

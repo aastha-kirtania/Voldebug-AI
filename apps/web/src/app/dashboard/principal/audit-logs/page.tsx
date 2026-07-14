@@ -70,9 +70,17 @@ const expandVariants = {
 
 // ─── Sub-components ─────────────────────────────────────────────────────
 
-function GlassCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function GlassCard({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 lg:p-8 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}>
+    <div
+      className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 lg:p-8 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}
+    >
       {children}
     </div>
   );
@@ -129,9 +137,11 @@ function FilterButton({
       {icon}
       {label}
       {count !== undefined && (
-        <span className={`ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
-          active ? "bg-white/15" : "bg-white/5"
-        }`}>
+        <span
+          className={`ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+            active ? "bg-white/15" : "bg-white/5"
+          }`}
+        >
           {count}
         </span>
       )}
@@ -189,9 +199,7 @@ function AuditLogRow({ log }: { log: AuditLogEntry }) {
   return (
     <div
       className={`border-b border-white/[0.03] transition-colors duration-300 ${
-        log.isFlagged
-          ? "hover:bg-red-500/[0.03]"
-          : "hover:bg-white/[0.02]"
+        log.isFlagged ? "hover:bg-red-500/[0.03]" : "hover:bg-white/[0.02]"
       } ${expanded ? (log.isFlagged ? "bg-red-500/[0.02]" : "bg-white/[0.015]") : ""}`}
     >
       {/* ── Clickable Row ───────────────────────────────────── */}
@@ -210,12 +218,16 @@ function AuditLogRow({ log }: { log: AuditLogEntry }) {
         </div>
 
         {/* Student avatar */}
-        <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 border ${
-          log.isFlagged
-            ? "bg-red-500/10 border-red-500/20"
-            : `bg-[${NAVY}] border-[${NAVY_BORDER}]`
-        }`}>
-          <User className={`w-4 h-4 ${log.isFlagged ? "text-red-400" : "text-sky-400"}`} />
+        <div
+          className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 border ${
+            log.isFlagged
+              ? "bg-red-500/10 border-red-500/20"
+              : `bg-[${NAVY}] border-[${NAVY_BORDER}]`
+          }`}
+        >
+          <User
+            className={`w-4 h-4 ${log.isFlagged ? "text-red-400" : "text-sky-400"}`}
+          />
         </div>
 
         {/* Data columns */}
@@ -223,13 +235,19 @@ function AuditLogRow({ log }: { log: AuditLogEntry }) {
           {/* Date/Time */}
           <div className="hidden md:block">
             <p className="text-xs font-medium">{formattedDate}</p>
-            <p className="text-[10px] text-foreground-subtle">{formattedTime}</p>
+            <p className="text-[10px] text-foreground-subtle">
+              {formattedTime}
+            </p>
           </div>
 
           {/* Student Name */}
           <div className="min-w-0">
-            <p className="text-sm font-medium truncate">{log.student?.name ?? "Unknown"}</p>
-            <p className="text-[10px] text-foreground-subtle truncate md:hidden">{formattedDate} · {formattedTime}</p>
+            <p className="text-sm font-medium truncate">
+              {log.student?.name ?? "Unknown"}
+            </p>
+            <p className="text-[10px] text-foreground-subtle truncate md:hidden">
+              {formattedDate} · {formattedTime}
+            </p>
           </div>
 
           {/* Tool */}
@@ -238,7 +256,9 @@ function AuditLogRow({ log }: { log: AuditLogEntry }) {
           </div>
 
           {/* Prompt snippet */}
-          <p className="text-xs text-foreground-subtle truncate hidden md:block">{truncatedPrompt}</p>
+          <p className="text-xs text-foreground-subtle truncate hidden md:block">
+            {truncatedPrompt}
+          </p>
 
           {/* Status */}
           <div className="hidden md:flex justify-end">
@@ -272,11 +292,13 @@ function AuditLogRow({ log }: { log: AuditLogEntry }) {
                     Student Prompt
                   </span>
                 </div>
-                <div className={`text-xs leading-relaxed rounded-xl px-4 py-3 border ${
-                  log.isFlagged
-                    ? "bg-red-500/[0.05] border-red-500/15 text-red-200/90"
-                    : "bg-white/[0.02] border-white/5 text-foreground-subtle"
-                }`}>
+                <div
+                  className={`text-xs leading-relaxed rounded-xl px-4 py-3 border ${
+                    log.isFlagged
+                      ? "bg-red-500/[0.05] border-red-500/15 text-red-200/90"
+                      : "bg-white/[0.02] border-white/5 text-foreground-subtle"
+                  }`}
+                >
                   {log.promptText}
                 </div>
               </div>
@@ -340,7 +362,10 @@ export default function AuditLogsPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const handlePrev = useCallback(() => setPage((p) => Math.max(0, p - 1)), []);
-  const handleNext = useCallback(() => setPage((p) => Math.min(totalPages - 1, p + 1)), [totalPages]);
+  const handleNext = useCallback(
+    () => setPage((p) => Math.min(totalPages - 1, p + 1)),
+    [totalPages],
+  );
 
   // Reset to page 0 when filter changes
   const handleFilter = useCallback((mode: FilterMode) => {
@@ -372,14 +397,18 @@ export default function AuditLogsPage() {
                 AI Audit Logs
               </h1>
               <p className="text-foreground-subtle text-sm mt-1">
-                Comprehensive record of all student AI interactions — review prompts, responses, and safety flags
+                Comprehensive record of all student AI interactions — review
+                prompts, responses, and safety flags
               </p>
             </div>
           </div>
         </motion.div>
 
         {/* ── Toolbar: Filters + Pagination Summary ──────────── */}
-        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+        >
           <div className="flex items-center gap-2 flex-wrap">
             <FilterButton
               label="All Logs"
@@ -403,7 +432,8 @@ export default function AuditLogsPage() {
           </div>
 
           <p className="text-[11px] text-foreground-subtle font-medium">
-            Showing {logs.length > 0 ? page * PAGE_SIZE + 1 : 0}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total} entries
+            Showing {logs.length > 0 ? page * PAGE_SIZE + 1 : 0}–
+            {Math.min((page + 1) * PAGE_SIZE, total)} of {total} entries
           </p>
         </motion.div>
 
@@ -414,11 +444,21 @@ export default function AuditLogsPage() {
             <div className="hidden md:grid grid-cols-[40px_36px_140px_1fr_100px_1fr_90px] gap-4 items-center px-6 py-3 border-b border-white/5 bg-white/[0.02]">
               <span /> {/* expand chevron */}
               <span /> {/* avatar */}
-              <span className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest">Date/Time</span>
-              <span className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest">Student</span>
-              <span className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest">Tool</span>
-              <span className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest">Prompt</span>
-              <span className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest text-right">Status</span>
+              <span className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest">
+                Date/Time
+              </span>
+              <span className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest">
+                Student
+              </span>
+              <span className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest">
+                Tool
+              </span>
+              <span className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest">
+                Prompt
+              </span>
+              <span className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest text-right">
+                Status
+              </span>
             </div>
 
             {/* Rows */}
@@ -434,7 +474,9 @@ export default function AuditLogsPage() {
                   <Shield className="w-8 h-8 text-emerald-400" />
                 </div>
                 <p className="text-foreground-subtle text-sm font-medium">
-                  {filter === "flagged" ? "No Flagged Entries" : "No Audit Logs Found"}
+                  {filter === "flagged"
+                    ? "No Flagged Entries"
+                    : "No Audit Logs Found"}
                 </p>
                 <p className="text-foreground-subtle/60 text-xs mt-1">
                   {filter === "flagged"
@@ -462,24 +504,27 @@ export default function AuditLogsPage() {
                   Previous
                 </button>
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
-                    const pageNum = totalPages <= 5
-                      ? i
-                      : Math.max(0, Math.min(page - 2, totalPages - 5)) + i;
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setPage(pageNum)}
-                        className={`w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-all ${
-                          pageNum === page
-                            ? "bg-white/10 border border-white/15 text-white"
-                            : "text-foreground-subtle hover:bg-white/5"
-                        }`}
-                      >
-                        {pageNum + 1}
-                      </button>
-                    );
-                  })}
+                  {Array.from({ length: Math.min(totalPages, 5) }).map(
+                    (_, i) => {
+                      const pageNum =
+                        totalPages <= 5
+                          ? i
+                          : Math.max(0, Math.min(page - 2, totalPages - 5)) + i;
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setPage(pageNum)}
+                          className={`w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-all ${
+                            pageNum === page
+                              ? "bg-white/10 border border-white/15 text-white"
+                              : "text-foreground-subtle hover:bg-white/5"
+                          }`}
+                        >
+                          {pageNum + 1}
+                        </button>
+                      );
+                    },
+                  )}
                 </div>
                 <button
                   onClick={handleNext}

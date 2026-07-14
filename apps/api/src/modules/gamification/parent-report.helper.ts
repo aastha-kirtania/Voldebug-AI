@@ -18,9 +18,9 @@ export async function generateParentReport(studentId: string): Promise<{
       quizAttempts: {
         where: { passed: true },
         include: {
-          quiz: true
-        }
-      }
+          quiz: true,
+        },
+      },
     },
   });
 
@@ -32,10 +32,16 @@ export async function generateParentReport(studentId: string): Promise<{
   const totalXP = student.xpTransactions.reduce((sum, t) => sum + t.amount, 0);
   const currentLevel = Math.floor(Math.sqrt(totalXP / 100)) + 1;
   const submissionsCount = student.submissions.length;
-  const gradedSubmissions = student.submissions.filter((s) => s.status === "GRADED");
-  const averageScore = gradedSubmissions.length > 0
-    ? Math.round(gradedSubmissions.reduce((sum, s) => sum + (s.score ?? 0), 0) / gradedSubmissions.length)
-    : null;
+  const gradedSubmissions = student.submissions.filter(
+    (s) => s.status === "GRADED",
+  );
+  const averageScore =
+    gradedSubmissions.length > 0
+      ? Math.round(
+          gradedSubmissions.reduce((sum, s) => sum + (s.score ?? 0), 0) /
+            gradedSubmissions.length,
+        )
+      : null;
 
   // 2. Filter achievements in the last 7 days
   const oneWeekAgo = new Date();

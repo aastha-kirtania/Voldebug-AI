@@ -116,10 +116,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               token.name = user.name;
               token.image = json.data.image ?? user.image;
               token.role = json.data.role ?? "STUDENT";
-              token.onboardingStatus = json.data.onboardingStatus ?? "NOT_STARTED";
+              token.onboardingStatus =
+                json.data.onboardingStatus ?? "NOT_STARTED";
               token.hasPassword = json.data.hasPassword ?? false;
               token.backendToken = json.data.token; // backend JWT for API calls
-              console.log("[AUTH JWT] OAuth success, backendToken present:", !!token.backendToken);
+              console.log(
+                "[AUTH JWT] OAuth success, backendToken present:",
+                !!token.backendToken,
+              );
             } else {
               console.error("[AUTH JWT] OAuth API returned error:", json);
             }
@@ -139,8 +143,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (trigger === "update" && updateData) {
         console.log("[AUTH JWT] update trigger, data:", updateData);
         if (updateData.role != null) token.role = updateData.role;
-        if (updateData.onboardingStatus != null) token.onboardingStatus = updateData.onboardingStatus;
-        if (updateData.hasPassword != null) token.hasPassword = updateData.hasPassword;
+        if (updateData.onboardingStatus != null)
+          token.onboardingStatus = updateData.onboardingStatus;
+        if (updateData.hasPassword != null)
+          token.hasPassword = updateData.hasPassword;
         if (updateData.image !== undefined) token.image = updateData.image;
         if (updateData.name !== undefined) token.name = updateData.name;
       }
@@ -157,7 +163,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.onboardingStatus = token.onboardingStatus as string;
         session.user.hasPassword = token.hasPassword as boolean;
         session.user.token = token.backendToken as string | undefined;
-        console.log("[AUTH SESSION] returning session, token present in user:", !!session.user.token);
+        console.log(
+          "[AUTH SESSION] returning session, token present in user:",
+          !!session.user.token,
+        );
       }
       return session;
     },

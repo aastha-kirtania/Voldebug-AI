@@ -7,8 +7,15 @@ import { DoubtSolver } from "@web/components/dashboard/doubt-solver";
 import { ToolQuizCard } from "@web/components/dashboard/tool-quiz-card";
 import { GradientMesh } from "@web/components/ui/background";
 import {
-  ArrowLeft, ExternalLink, Users, BookOpen, Lightbulb,
-  CheckCircle2, Tag, ChevronRight, Zap
+  ArrowLeft,
+  ExternalLink,
+  Users,
+  BookOpen,
+  Lightbulb,
+  CheckCircle2,
+  Tag,
+  ChevronRight,
+  Zap,
 } from "lucide-react";
 
 // ─── Category label map ───────────────────────────────────────────────────
@@ -23,18 +30,42 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 // ─── Demo fallback for this tool ──────────────────────────────────────────
 
-const DEMO_TOOLS: Record<string, {
-  name: string; category: string; description: string; brandColor: string;
-  useCases: string[]; subjects: string[]; usageCount: number;
-  howTo: string[]; examplePrompts: string[]; proTips: string[];
-}> = {
+const DEMO_TOOLS: Record<
+  string,
+  {
+    name: string;
+    category: string;
+    description: string;
+    brandColor: string;
+    useCases: string[];
+    subjects: string[];
+    usageCount: number;
+    howTo: string[];
+    examplePrompts: string[];
+    proTips: string[];
+  }
+> = {
   default: {
     name: "ChatGPT",
     category: "CHAT_AI",
-    description: "ChatGPT is an advanced conversational AI that can help you with brainstorming, writing essays, explaining complex concepts, debugging code, and much more. It understands context and provides detailed, thoughtful responses.",
+    description:
+      "ChatGPT is an advanced conversational AI that can help you with brainstorming, writing essays, explaining complex concepts, debugging code, and much more. It understands context and provides detailed, thoughtful responses.",
     brandColor: "#10a37f",
-    useCases: ["Essay brainstorming and drafting", "Explaining difficult concepts", "Answering research questions", "Writing feedback and editing", "Learning new topics interactively"],
-    subjects: ["English", "Science", "History", "Mathematics", "Computer Science", "All subjects"],
+    useCases: [
+      "Essay brainstorming and drafting",
+      "Explaining difficult concepts",
+      "Answering research questions",
+      "Writing feedback and editing",
+      "Learning new topics interactively",
+    ],
+    subjects: [
+      "English",
+      "Science",
+      "History",
+      "Mathematics",
+      "Computer Science",
+      "All subjects",
+    ],
     usageCount: 1250,
     howTo: [
       "Navigate to chatgpt.com and create a free account",
@@ -68,9 +99,18 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
   const t = tool
     ? {
         ...tool,
-        howTo: ["Open the tool in a new tab", "Create an account if required", "Type your question or prompt", "Explore the tool's features"],
+        howTo: [
+          "Open the tool in a new tab",
+          "Create an account if required",
+          "Type your question or prompt",
+          "Explore the tool's features",
+        ],
         examplePrompts: tool.useCases.map((uc) => `"Help me with: ${uc}"`),
-        proTips: ["Start with simple prompts", "Experiment with different phrasings", "Save outputs you find useful"],
+        proTips: [
+          "Start with simple prompts",
+          "Experiment with different phrasings",
+          "Save outputs you find useful",
+        ],
       }
     : DEMO_TOOLS.default;
 
@@ -127,8 +167,10 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
                 borderColor: `${color}25`,
               }}
             >
-              <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-[60px]"
-                style={{ backgroundColor: `${color}20` }} />
+              <div
+                className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-[60px]"
+                style={{ backgroundColor: `${color}20` }}
+              />
 
               <div className="relative z-10 flex items-start gap-5 flex-wrap">
                 <div
@@ -139,7 +181,9 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <h1 className="font-display text-2xl font-bold">{t.name}</h1>
+                    <h1 className="font-display text-2xl font-bold">
+                      {t.name}
+                    </h1>
                     <span
                       className="text-xs font-medium px-2.5 py-1 rounded-full"
                       style={{ backgroundColor: `${color}18`, color }}
@@ -159,7 +203,10 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white shadow-lg transition-all hover:opacity-90"
-                  style={{ backgroundColor: color, boxShadow: `0 4px 20px ${color}40` }}
+                  style={{
+                    backgroundColor: color,
+                    boxShadow: `0 4px 20px ${color}40`,
+                  }}
                 >
                   <ExternalLink className="w-4 h-4" />
                   Open Tool
@@ -195,7 +242,9 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {t.subjects.map((s, i) => (
-                    <span key={i} className="tag">{s}</span>
+                    <span key={i} className="tag">
+                      {s}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -239,7 +288,10 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
                     <div
                       key={i}
                       className="p-3 rounded-xl text-xs text-foreground/80 font-mono leading-relaxed"
-                      style={{ backgroundColor: `${color}08`, border: `1px solid ${color}18` }}
+                      style={{
+                        backgroundColor: `${color}08`,
+                        border: `1px solid ${color}18`,
+                      }}
                     >
                       {p}
                     </div>
@@ -274,18 +326,20 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
 
             {/* Tool Quiz Card */}
             <div className="pt-4">
-              <ToolQuizCard
-                toolId={params.id}
-                brandColor={color}
-              />
+              <ToolQuizCard toolId={params.id} brandColor={color} />
             </div>
 
             {/* CTA */}
             <div
               className="card p-6 text-center"
-              style={{ background: `linear-gradient(135deg, ${color}08, transparent)`, borderColor: `${color}20` }}
+              style={{
+                background: `linear-gradient(135deg, ${color}08, transparent)`,
+                borderColor: `${color}20`,
+              }}
             >
-              <p className="font-display text-base font-semibold mb-2">Ready to try {t.name}?</p>
+              <p className="font-display text-base font-semibold mb-2">
+                Ready to try {t.name}?
+              </p>
               <p className="text-sm text-foreground-muted mb-4">
                 Open the tool and complete your assignment to earn XP.
               </p>
@@ -294,7 +348,10 @@ export default function ToolDetailPage({ params }: { params: { id: string } }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90"
-                style={{ backgroundColor: color, boxShadow: `0 4px 20px ${color}30` }}
+                style={{
+                  backgroundColor: color,
+                  boxShadow: `0 4px 20px ${color}30`,
+                }}
               >
                 <ExternalLink className="w-4 h-4" />
                 Open {t.name}

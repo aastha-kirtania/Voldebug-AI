@@ -6,7 +6,8 @@ export class ApiClient {
   private token: string | null = null;
 
   constructor(baseURL?: string) {
-    this.baseURL = baseURL ?? env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+    this.baseURL =
+      baseURL ?? env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
   }
 
   setToken(token: string | null) {
@@ -17,14 +18,15 @@ export class ApiClient {
     // 1. Prepare our headers
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...(options?.headers as Record<string, string>)
+      ...(options?.headers as Record<string, string>),
     };
 
     // 2. Fetch the current session from NextAuth only if we don't have a cached token
     let token = this.token;
     if (!token && typeof window !== "undefined") {
       const session = await getSession();
-      token = (session as any)?.accessToken || (session as any)?.user?.token || null;
+      token =
+        (session as any)?.accessToken || (session as any)?.user?.token || null;
       if (token) {
         this.token = token;
       }

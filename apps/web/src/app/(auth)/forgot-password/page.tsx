@@ -13,34 +13,41 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState<string>();
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = useCallback(async (e: FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(undefined);
+  const handleSubmit = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      setLoading(true);
+      setError(undefined);
 
-    try {
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/$/, "");
-      const res = await fetch(`${apiUrl}/v1/auth/forgot-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
+      try {
+        const apiUrl = (
+          process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"
+        ).replace(/\/$/, "");
+        const res = await fetch(`${apiUrl}/v1/auth/forgot-password`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        });
 
-      const json = await res.json();
+        const json = await res.json();
 
-      if (!res.ok) {
-        throw new Error(json.error?.message || "Failed to request password reset.");
+        if (!res.ok) {
+          throw new Error(
+            json.error?.message || "Failed to request password reset.",
+          );
+        }
+
+        setSuccess(true);
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
       }
-
-      setSuccess(true);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }, [email]);
+    },
+    [email],
+  );
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -50,7 +57,6 @@ export default function ForgotPasswordPage() {
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="bg-card border border-card-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-6"
       >
-
         {/* Header & Logo */}
         <div className="text-center space-y-4">
           <motion.div
@@ -102,9 +108,12 @@ export default function ForgotPasswordPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <h3 className="font-semibold text-foreground">Check your email</h3>
+              <h3 className="font-semibold text-foreground">
+                Check your email
+              </h3>
               <p className="text-sm text-foreground-muted px-4 leading-relaxed">
-                If that email exists, we've sent a link to reset your password. (Check your server logs in development!)
+                If that email exists, we've sent a link to reset your password.
+                (Check your server logs in development!)
               </p>
             </div>
             <Link
@@ -118,7 +127,10 @@ export default function ForgotPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-foreground">
+              <label
+                htmlFor="email"
+                className="text-sm font-medium text-foreground"
+              >
                 Email address
               </label>
               <div className="relative">

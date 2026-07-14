@@ -29,7 +29,7 @@ import {
   X,
   Loader2,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 
 // ─── Sophisticated Motion Variants ──────────────────────────────────────
@@ -55,29 +55,62 @@ const itemVariants = {
 
 // ─── Premium UI Sub-components ────────────────────────────────────────────
 
-function GlassCard({ children, className = "", kidsMode = false }: { children: React.ReactNode; className?: string; kidsMode?: boolean }) {
+function GlassCard({
+  children,
+  className = "",
+  kidsMode = false,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  kidsMode?: boolean;
+}) {
   if (kidsMode) {
     return (
-      <div className={`kids-card p-6 lg:p-8 bg-white border-2 border-gray-100 ${className}`}>
+      <div
+        className={`kids-card p-6 lg:p-8 bg-white border-2 border-gray-100 ${className}`}
+      >
         {children}
       </div>
     );
   }
   return (
-    <div className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 lg:p-8 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}>
+    <div
+      className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 lg:p-8 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}
+    >
       {children}
     </div>
   );
 }
 
-function MiniStat({ title, value, icon, colorClass = "text-accent-light", bgClass = "bg-accent/10", kidsMode = false }: { title: string; value: string | number; icon: React.ReactNode; colorClass?: string; bgClass?: string; kidsMode?: boolean }) {
+function MiniStat({
+  title,
+  value,
+  icon,
+  colorClass = "text-accent-light",
+  bgClass = "bg-accent/10",
+  kidsMode = false,
+}: {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  colorClass?: string;
+  bgClass?: string;
+  kidsMode?: boolean;
+}) {
   return (
-    <GlassCard className="!p-5 flex items-center gap-4 h-full" kidsMode={kidsMode}>
-      <div className={`w-12 h-12 rounded-full ${kidsMode ? "bg-violet-100" : bgClass} flex items-center justify-center flex-shrink-0 shadow-inner`}>
+    <GlassCard
+      className="!p-5 flex items-center gap-4 h-full"
+      kidsMode={kidsMode}
+    >
+      <div
+        className={`w-12 h-12 rounded-full ${kidsMode ? "bg-violet-100" : bgClass} flex items-center justify-center flex-shrink-0 shadow-inner`}
+      >
         <div className={kidsMode ? "text-violet-500" : colorClass}>{icon}</div>
       </div>
       <div>
-        <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">{title}</p>
+        <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">
+          {title}
+        </p>
         <p className="text-2xl font-semibold leading-none">{value}</p>
       </div>
     </GlassCard>
@@ -112,7 +145,13 @@ function timeAgo(dateStr: string, isHindi: boolean): string {
 
 // ─── Safety Alerts Sub-component ────────────────────────────────────────
 
-function SafetyAlertsTable({ alerts, isHindi }: { alerts: any[]; isHindi: boolean }) {
+function SafetyAlertsTable({
+  alerts,
+  isHindi,
+}: {
+  alerts: any[];
+  isHindi: boolean;
+}) {
   const [showAll, setShowAll] = useState(false);
   const displayedAlerts = showAll ? alerts : alerts.slice(0, 3);
   const hasMore = alerts.length > 3;
@@ -125,7 +164,9 @@ function SafetyAlertsTable({ alerts, isHindi }: { alerts: any[]; isHindi: boolea
             <tr className="border-b border-white/5 text-[10px] font-bold text-foreground-subtle uppercase tracking-wider">
               <th className="pb-3 pr-4">{isHindi ? "छात्र" : "Student"}</th>
               <th className="pb-3 pr-4">{isHindi ? "ग्रेड" : "Grade"}</th>
-              <th className="pb-3 pr-4">{isHindi ? "चिह्नित प्रश्न" : "Flagged Query"}</th>
+              <th className="pb-3 pr-4">
+                {isHindi ? "चिह्नित प्रश्न" : "Flagged Query"}
+              </th>
               <th className="pb-3 pr-4">{isHindi ? "AI टूल" : "AI Tool"}</th>
               <th className="pb-3 pr-4">{isHindi ? "श्रेणी" : "Category"}</th>
               <th className="pb-3 pr-4">{isHindi ? "गंभीरता" : "Severity"}</th>
@@ -134,10 +175,20 @@ function SafetyAlertsTable({ alerts, isHindi }: { alerts: any[]; isHindi: boolea
           </thead>
           <tbody className="divide-y divide-white/5 text-xs text-foreground-muted font-medium">
             {displayedAlerts.map((alert) => (
-              <tr key={alert.id} className="hover:bg-white/[0.01] transition-all">
-                <td className="py-3.5 pr-4 text-foreground font-semibold">{alert.studentName}</td>
-                <td className="py-3.5 pr-4">{isHindi ? "कक्षा" : "Grade"} {alert.gradeLevel || "—"}</td>
-                <td className="py-3.5 pr-4 italic max-w-xs truncate" title={alert.promptText}>
+              <tr
+                key={alert.id}
+                className="hover:bg-white/[0.01] transition-all"
+              >
+                <td className="py-3.5 pr-4 text-foreground font-semibold">
+                  {alert.studentName}
+                </td>
+                <td className="py-3.5 pr-4">
+                  {isHindi ? "कक्षा" : "Grade"} {alert.gradeLevel || "—"}
+                </td>
+                <td
+                  className="py-3.5 pr-4 italic max-w-xs truncate"
+                  title={alert.promptText}
+                >
                   &quot;{alert.promptText}&quot;
                 </td>
                 <td className="py-3.5 pr-4">{alert.toolUsed}</td>
@@ -151,7 +202,9 @@ function SafetyAlertsTable({ alerts, isHindi }: { alerts: any[]; isHindi: boolea
                     {alert.severity}
                   </span>
                 </td>
-                <td className="py-3.5 text-foreground-subtle">{timeAgo(alert.timestamp, isHindi)}</td>
+                <td className="py-3.5 text-foreground-subtle">
+                  {timeAgo(alert.timestamp, isHindi)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -164,9 +217,15 @@ function SafetyAlertsTable({ alerts, isHindi }: { alerts: any[]; isHindi: boolea
             className="text-xs font-semibold text-accent-light hover:text-accent flex items-center gap-1.5 transition-colors"
           >
             {showAll
-              ? (isHindi ? "कम दिखाएं" : "Show less")
-              : (isHindi ? `${alerts.length - 3} और दिखाएं` : `Show ${alerts.length - 3} more`)}
-            <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${showAll ? "-rotate-90" : "rotate-90"}`} />
+              ? isHindi
+                ? "कम दिखाएं"
+                : "Show less"
+              : isHindi
+                ? `${alerts.length - 3} और दिखाएं`
+                : `Show ${alerts.length - 3} more`}
+            <ChevronRight
+              className={`w-3.5 h-3.5 transition-transform duration-200 ${showAll ? "-rotate-90" : "rotate-90"}`}
+            />
           </button>
         </div>
       )}
@@ -219,7 +278,9 @@ export default function TeacherDashboardPage() {
       { name: classNameInput.trim() },
       {
         onSuccess: (resData) => {
-          setCreateClassSuccess(`Class successfully created with code: ${resData.class.joinCode}`);
+          setCreateClassSuccess(
+            `Class successfully created with code: ${resData.class.joinCode}`,
+          );
           setClassNameInput("");
           setTimeout(() => {
             setIsCreateClassOpen(false);
@@ -227,9 +288,11 @@ export default function TeacherDashboardPage() {
           }, 2500);
         },
         onError: (err: any) => {
-          setCreateClassError(err?.message ?? "Failed to create class. Please try again.");
+          setCreateClassError(
+            err?.message ?? "Failed to create class. Please try again.",
+          );
         },
-      }
+      },
     );
   };
 
@@ -238,7 +301,9 @@ export default function TeacherDashboardPage() {
   }
 
   return (
-    <div className={`min-h-screen relative selection:bg-accent/30 transition-all ${kidsMode ? "kids-mode pb-20 bg-[#fefdf8]" : ""}`}>
+    <div
+      className={`min-h-screen relative selection:bg-accent/30 transition-all ${kidsMode ? "kids-mode pb-20 bg-[#fefdf8]" : ""}`}
+    >
       <GradientMesh className="opacity-40" />
 
       <div className="max-w-7xl mx-auto space-y-8 pb-24 lg:pb-12 px-4 md:px-8 pt-8 relative z-10">
@@ -260,20 +325,30 @@ export default function TeacherDashboardPage() {
               </div>
               <div className="mascot-bubble border-violet-200">
                 <p className="text-sm font-bold text-gray-600">
-                  🎉 Volt Bot says: <span className="text-[#7c3aed]">"You are doing an awesome job managing your students today, Teacher! Keep up the positive guidance! 🌟"</span>
+                  🎉 Volt Bot says:{" "}
+                  <span className="text-[#7c3aed]">
+                    "You are doing an awesome job managing your students today,
+                    Teacher! Keep up the positive guidance! 🌟"
+                  </span>
                 </p>
               </div>
             </motion.div>
           )}
 
           {/* Header Section */}
-          <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-col md:flex-row md:items-end justify-between gap-6"
+          >
             <div>
               <h1 className="font-display text-4xl md:text-5xl font-medium tracking-tight text-foreground">
-                {getGreeting(isHindi)}, <span className="text-foreground-muted">{userName}.</span>
+                {getGreeting(isHindi)},{" "}
+                <span className="text-foreground-muted">{userName}.</span>
               </h1>
               <p className="text-sm md:text-base text-foreground-subtle mt-3 font-medium tracking-wide">
-                {isHindi ? "आपके डैशबोर्ड में आपका स्वागत है। यहाँ आपकी कक्षाओं और छात्रों की सुरक्षा का अवलोकन है।" : "Welcome to your dashboard. Here is your classes and students safety overview."}
+                {isHindi
+                  ? "आपके डैशबोर्ड में आपका स्वागत है। यहाँ आपकी कक्षाओं और छात्रों की सुरक्षा का अवलोकन है।"
+                  : "Welcome to your dashboard. Here is your classes and students safety overview."}
               </p>
               {data?.schoolName && (
                 <div className="flex flex-wrap items-center gap-2 mt-2 text-xs md:text-sm text-foreground-subtle font-medium">
@@ -282,14 +357,20 @@ export default function TeacherDashboardPage() {
               )}
             </div>
 
-            <div className={`flex items-center gap-4 bg-surface/30 backdrop-blur-xl border border-white/5 px-5 py-3 rounded-2xl shadow-xl ${kidsMode ? "kids-card bg-white" : ""}`}>
+            <div
+              className={`flex items-center gap-4 bg-surface/30 backdrop-blur-xl border border-white/5 px-5 py-3 rounded-2xl shadow-xl ${kidsMode ? "kids-card bg-white" : ""}`}
+            >
               <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center border border-accent/20">
                 <GraduationCap className="w-5 h-5 text-accent-light" />
               </div>
               <div>
-                <p className="text-xs text-foreground-subtle font-medium uppercase tracking-wider mb-0.5">{isHindi ? "भूमिका" : "Role"}</p>
+                <p className="text-xs text-foreground-subtle font-medium uppercase tracking-wider mb-0.5">
+                  {isHindi ? "भूमिका" : "Role"}
+                </p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-semibold leading-none text-accent-light">{isHindi ? "शिक्षक" : "Educator"}</span>
+                  <span className="text-sm font-semibold leading-none text-accent-light">
+                    {isHindi ? "शिक्षक" : "Educator"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -336,44 +417,60 @@ export default function TeacherDashboardPage() {
 
           {/* Row 2: Recent Activity & Quick Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
             {/* Chronological Activity Feed */}
             <motion.div variants={itemVariants} className="lg:col-span-2">
-              <GlassCard className="h-full flex flex-col justify-between" kidsMode={kidsMode}>
+              <GlassCard
+                className="h-full flex flex-col justify-between"
+                kidsMode={kidsMode}
+              >
                 <div>
                   <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
                     <div className="flex items-center gap-3">
                       <Activity className="w-5 h-5 text-foreground-muted" />
-                      <h2 className="text-base font-medium text-foreground tracking-wide">{isHindi ? "हाल की छात्र गतिविधि" : "Recent Student Activity"}</h2>
+                      <h2 className="text-base font-medium text-foreground tracking-wide">
+                        {isHindi
+                          ? "हाल की छात्र गतिविधि"
+                          : "Recent Student Activity"}
+                      </h2>
                     </div>
                   </div>
 
                   {isLoading ? (
                     <div className="space-y-4">
                       {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="h-16 rounded-2xl bg-white/5 animate-pulse" />
+                        <div
+                          key={i}
+                          className="h-16 rounded-2xl bg-white/5 animate-pulse"
+                        />
                       ))}
                     </div>
-                  ) : !data?.recentActivity || data.recentActivity.length === 0 ? (
+                  ) : !data?.recentActivity ||
+                    data.recentActivity.length === 0 ? (
                     <div className="text-center py-12 text-foreground-muted">
-                      {isHindi ? "हाल ही में कोई छात्र गतिविधि दर्ज नहीं हुई।" : "No student activity logged recently."}
+                      {isHindi
+                        ? "हाल ही में कोई छात्र गतिविधि दर्ज नहीं हुई।"
+                        : "No student activity logged recently."}
                     </div>
                   ) : (
                     <div className="space-y-3">
                       {data.recentActivity.map((act) => {
-                        let badgeColor = "bg-white/5 text-foreground-muted border-white/5";
+                        let badgeColor =
+                          "bg-white/5 text-foreground-muted border-white/5";
                         let icon = <FileText className="w-3.5 h-3.5" />;
                         if (act.type === "SAFETY_ALERT") {
                           badgeColor = "bg-error/10 text-error border-error/20";
                           icon = <AlertTriangle className="w-3.5 h-3.5" />;
                         } else if (act.type === "SUBMISSION") {
-                          badgeColor = "bg-warning/10 text-warning border-warning/20";
+                          badgeColor =
+                            "bg-warning/10 text-warning border-warning/20";
                           icon = <Clock className="w-3.5 h-3.5" />;
                         } else if (act.type === "COMPLETION") {
-                          badgeColor = "bg-success/10 text-success border-success/20";
+                          badgeColor =
+                            "bg-success/10 text-success border-success/20";
                           icon = <CheckSquare className="w-3.5 h-3.5" />;
                         } else if (act.type === "AI_USE") {
-                          badgeColor = "bg-accent/10 text-accent-light border-accent/20";
+                          badgeColor =
+                            "bg-accent/10 text-accent-light border-accent/20";
                           icon = <BrainCircuit className="w-3.5 h-3.5" />;
                         }
 
@@ -383,14 +480,21 @@ export default function TeacherDashboardPage() {
                             className="flex items-center justify-between p-4 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.04] transition-all duration-300 gap-4"
                           >
                             <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${badgeColor}`}>
+                              <div
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center border ${badgeColor}`}
+                              >
                                 {icon}
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium text-foreground truncate">
-                                  <span className="font-semibold text-foreground-muted">{act.studentName}</span> {act.detail}
+                                  <span className="font-semibold text-foreground-muted">
+                                    {act.studentName}
+                                  </span>{" "}
+                                  {act.detail}
                                 </p>
-                                <p className="text-[10px] text-foreground-subtle mt-0.5">{timeAgo(act.timestamp, isHindi)}</p>
+                                <p className="text-[10px] text-foreground-subtle mt-0.5">
+                                  {timeAgo(act.timestamp, isHindi)}
+                                </p>
                               </div>
                             </div>
                             <span className="text-[11px] font-bold uppercase tracking-widest text-foreground-subtle hidden sm:inline-block">
@@ -418,7 +522,9 @@ export default function TeacherDashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <PlusCircle className="w-5 h-5 text-accent-light" />
-                      <span className="text-sm font-medium text-foreground">{isHindi ? "असाइनमेंट बनाएं" : "Create Assignment"}</span>
+                      <span className="text-sm font-medium text-foreground">
+                        {isHindi ? "असाइनमेंट बनाएं" : "Create Assignment"}
+                      </span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-foreground-subtle group-hover:text-foreground transition-colors" />
                   </a>
@@ -429,14 +535,17 @@ export default function TeacherDashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <CheckSquare className="w-5 h-5 text-warning" />
-                      <span className="text-sm font-medium text-foreground">{isHindi ? "सबमिशन समीक्षा करें" : "Review Submissions"}</span>
+                      <span className="text-sm font-medium text-foreground">
+                        {isHindi ? "सबमिशन समीक्षा करें" : "Review Submissions"}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {data?.pendingSubmissions != null && data.pendingSubmissions > 0 && (
-                        <span className="px-2 py-0.5 rounded-full bg-warning/20 border border-warning/30 text-[10px] font-bold text-warning">
-                          {data.pendingSubmissions}
-                        </span>
-                      )}
+                      {data?.pendingSubmissions != null &&
+                        data.pendingSubmissions > 0 && (
+                          <span className="px-2 py-0.5 rounded-full bg-warning/20 border border-warning/30 text-[10px] font-bold text-warning">
+                            {data.pendingSubmissions}
+                          </span>
+                        )}
                       <ChevronRight className="w-4 h-4 text-foreground-subtle group-hover:text-foreground transition-colors" />
                     </div>
                   </a>
@@ -447,7 +556,9 @@ export default function TeacherDashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <Megaphone className="w-5 h-5 text-info" />
-                      <span className="text-sm font-medium text-foreground">{isHindi ? "सूचना भेजें" : "Send Announcement"}</span>
+                      <span className="text-sm font-medium text-foreground">
+                        {isHindi ? "सूचना भेजें" : "Send Announcement"}
+                      </span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-foreground-subtle group-hover:text-foreground transition-colors" />
                   </a>
@@ -458,7 +569,9 @@ export default function TeacherDashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <FileText className="w-5 h-5 text-success" />
-                      <span className="text-sm font-medium text-foreground">{isHindi ? "रिपोर्ट देखें" : "View Reports"}</span>
+                      <span className="text-sm font-medium text-foreground">
+                        {isHindi ? "रिपोर्ट देखें" : "View Reports"}
+                      </span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-foreground-subtle group-hover:text-foreground transition-colors" />
                   </a>
@@ -469,10 +582,12 @@ export default function TeacherDashboardPage() {
 
           {/* Row 3: AI Usage Summary & Classes */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
             {/* AI Usage Summary */}
             <motion.div variants={itemVariants}>
-              <GlassCard className="h-full flex flex-col justify-between" kidsMode={kidsMode}>
+              <GlassCard
+                className="h-full flex flex-col justify-between"
+                kidsMode={kidsMode}
+              >
                 <div>
                   <h3 className="text-xs font-bold text-foreground-subtle uppercase tracking-widest mb-6 flex items-center gap-2">
                     <BrainCircuit className="w-4 h-4 text-accent-light" />
@@ -481,20 +596,37 @@ export default function TeacherDashboardPage() {
 
                   {isLoading ? (
                     <div className="space-y-4">
-                      {[1, 2, 3].map((i) => <div key={i} className="h-8 rounded bg-white/5 animate-pulse" />)}
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className="h-8 rounded bg-white/5 animate-pulse"
+                        />
+                      ))}
                     </div>
-                  ) : !data?.aiUsage || data.aiUsage.mostUsedTools.length === 0 ? (
-                    <div className="text-center py-8 text-foreground-subtle text-xs">{isHindi ? "कोई AI उपयोग दर्ज नहीं।" : "No AI usage logged."}</div>
+                  ) : !data?.aiUsage ||
+                    data.aiUsage.mostUsedTools.length === 0 ? (
+                    <div className="text-center py-8 text-foreground-subtle text-xs">
+                      {isHindi
+                        ? "कोई AI उपयोग दर्ज नहीं।"
+                        : "No AI usage logged."}
+                    </div>
                   ) : (
                     <div className="space-y-4">
                       {data.aiUsage.mostUsedTools.map((tool) => {
-                        const maxCount = Math.max(...data.aiUsage.mostUsedTools.map(t => t.count));
-                        const percent = maxCount > 0 ? (tool.count / maxCount) * 100 : 0;
+                        const maxCount = Math.max(
+                          ...data.aiUsage.mostUsedTools.map((t) => t.count),
+                        );
+                        const percent =
+                          maxCount > 0 ? (tool.count / maxCount) * 100 : 0;
                         return (
                           <div key={tool.name} className="space-y-1.5">
                             <div className="flex items-center justify-between text-xs font-medium">
-                              <span className="text-foreground-muted">{tool.name}</span>
-                              <span className="text-foreground font-semibold">{tool.count} {isHindi ? "बार" : "uses"}</span>
+                              <span className="text-foreground-muted">
+                                {tool.name}
+                              </span>
+                              <span className="text-foreground font-semibold">
+                                {tool.count} {isHindi ? "बार" : "uses"}
+                              </span>
                             </div>
                             <div className="h-2 bg-surface rounded-full overflow-hidden border border-white/5">
                               <motion.div
@@ -515,12 +647,20 @@ export default function TeacherDashboardPage() {
                 {!isLoading && data?.aiUsage && (
                   <div className="grid grid-cols-2 gap-4 mt-6 pt-5 border-t border-white/5 text-center">
                     <div>
-                      <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">{isHindi ? "दैनिक" : "Daily Count"}</p>
-                      <p className="text-xl font-semibold text-foreground">{data.aiUsage.dailyUsage}</p>
+                      <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">
+                        {isHindi ? "दैनिक" : "Daily Count"}
+                      </p>
+                      <p className="text-xl font-semibold text-foreground">
+                        {data.aiUsage.dailyUsage}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">{isHindi ? "साप्ताहिक" : "Weekly Count"}</p>
-                      <p className="text-xl font-semibold text-foreground">{data.aiUsage.weeklyUsage}</p>
+                      <p className="text-[10px] font-bold text-foreground-subtle uppercase tracking-widest mb-1">
+                        {isHindi ? "साप्ताहिक" : "Weekly Count"}
+                      </p>
+                      <p className="text-xl font-semibold text-foreground">
+                        {data.aiUsage.weeklyUsage}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -546,11 +686,18 @@ export default function TeacherDashboardPage() {
 
                 {isLoading ? (
                   <div className="space-y-3">
-                    {[1, 2].map((i) => <div key={i} className="h-12 rounded-xl bg-white/5 animate-pulse" />)}
+                    {[1, 2].map((i) => (
+                      <div
+                        key={i}
+                        className="h-12 rounded-xl bg-white/5 animate-pulse"
+                      />
+                    ))}
                   </div>
                 ) : !data?.classInfo || data.classInfo.length === 0 ? (
                   <div className="text-center py-8 text-foreground-subtle text-xs flex-1 flex items-center justify-center">
-                    {isHindi ? "अभी तक कोई कक्षा निर्धारित नहीं।" : "No classes assigned yet."}
+                    {isHindi
+                      ? "अभी तक कोई कक्षा निर्धारित नहीं।"
+                      : "No classes assigned yet."}
                   </div>
                 ) : (
                   <div className="space-y-2 flex-1 overflow-y-auto">
@@ -570,7 +717,8 @@ export default function TeacherDashboardPage() {
                             </span>
                           )}
                           <span className="text-[10px] font-semibold text-foreground-subtle bg-surface px-2 py-0.5 rounded-md border border-white/5">
-                            {cls._count?.members ?? 0} {isHindi ? "छात्र" : "students"}
+                            {cls._count?.members ?? 0}{" "}
+                            {isHindi ? "छात्र" : "students"}
                           </span>
                           <ExternalLink className="w-3.5 h-3.5 text-foreground-subtle opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
@@ -588,24 +736,36 @@ export default function TeacherDashboardPage() {
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
                 <div className="flex items-center gap-3">
                   <ShieldAlert className="w-5 h-5 text-error" />
-                  <h2 className="text-base font-medium text-foreground tracking-wide">{isHindi ? "सुरक्षा अलर्ट" : "Safety Alerts Preview"}</h2>
+                  <h2 className="text-base font-medium text-foreground tracking-wide">
+                    {isHindi ? "सुरक्षा अलर्ट" : "Safety Alerts Preview"}
+                  </h2>
                 </div>
               </div>
 
               {isLoading ? (
                 <div className="space-y-4">
-                  {[1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-white/5 animate-pulse" />)}
+                  {[1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="h-16 rounded-xl bg-white/5 animate-pulse"
+                    />
+                  ))}
                 </div>
-              ) : !data?.safetyAlertsPreview || data.safetyAlertsPreview.length === 0 ? (
+              ) : !data?.safetyAlertsPreview ||
+                data.safetyAlertsPreview.length === 0 ? (
                 <div className="text-center py-8 text-foreground-muted text-xs">
-                  {isHindi ? "हाल ही में कोई सुरक्षा झंडा नहीं। सभी छात्र शैक्षणिक ईमानदारी के नियमों का पालन कर रहे हैं।" : "No safety flags triggered recently. All students are following academic integrity rules."}
+                  {isHindi
+                    ? "हाल ही में कोई सुरक्षा झंडा नहीं। सभी छात्र शैक्षणिक ईमानदारी के नियमों का पालन कर रहे हैं।"
+                    : "No safety flags triggered recently. All students are following academic integrity rules."}
                 </div>
               ) : (
-                <SafetyAlertsTable alerts={data.safetyAlertsPreview} isHindi={isHindi} />
+                <SafetyAlertsTable
+                  alerts={data.safetyAlertsPreview}
+                  isHindi={isHindi}
+                />
               )}
             </GlassCard>
           </motion.div>
-
         </motion.div>
       </div>
 
@@ -636,16 +796,24 @@ export default function TeacherDashboardPage() {
                 <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-2">
                   <Plus className="w-6 h-6 text-accent-light" />
                 </div>
-                <h3 className="font-display text-xl font-bold text-foreground">{isHindi ? "नई कक्षा बनाएं" : "Create a New Class"}</h3>
+                <h3 className="font-display text-xl font-bold text-foreground">
+                  {isHindi ? "नई कक्षा बनाएं" : "Create a New Class"}
+                </h3>
                 <p className="text-sm text-foreground-subtle">
-                  {isHindi ? "एक अद्वितीय 6-अक्षर कोड तुरंत बनाया जाएगा" : "A unique 6-character code will be generated instantly"}
+                  {isHindi
+                    ? "एक अद्वितीय 6-अक्षर कोड तुरंत बनाया जाएगा"
+                    : "A unique 6-character code will be generated instantly"}
                 </p>
               </div>
 
               {(createClassMutation.isError || createClassError) && (
                 <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-error/15 border border-error/25 text-error text-xs">
                   <AlertCircle className="w-4.5 h-4.5 flex-shrink-0" />
-                  <span>{createClassError || (createClassMutation.error as any)?.message || "Failed to create class."}</span>
+                  <span>
+                    {createClassError ||
+                      (createClassMutation.error as any)?.message ||
+                      "Failed to create class."}
+                  </span>
                 </div>
               )}
 
@@ -654,13 +822,20 @@ export default function TeacherDashboardPage() {
                   <div className="w-10 h-10 rounded-full bg-success/15 border border-success/30 flex items-center justify-center text-success mx-auto">
                     <CheckCircle2 className="w-5 h-5" />
                   </div>
-                  <p className="text-sm font-semibold text-foreground">{createClassSuccess}</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {createClassSuccess}
+                  </p>
                 </div>
               ) : (
                 <form onSubmit={handleCreateClassSubmit} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label htmlFor="modalClassName" className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider">
-                      {isHindi ? "कक्षा / पाठ्यक्रम का नाम" : "Class / Course Name"}
+                    <label
+                      htmlFor="modalClassName"
+                      className="text-xs font-semibold text-foreground-subtle uppercase tracking-wider"
+                    >
+                      {isHindi
+                        ? "कक्षा / पाठ्यक्रम का नाम"
+                        : "Class / Course Name"}
                     </label>
                     <input
                       id="modalClassName"
@@ -676,7 +851,9 @@ export default function TeacherDashboardPage() {
 
                   <button
                     type="submit"
-                    disabled={createClassMutation.isPending || !classNameInput.trim()}
+                    disabled={
+                      createClassMutation.isPending || !classNameInput.trim()
+                    }
                     className="w-full py-3 bg-gradient-to-r from-accent to-accent-light hover:from-accent/90 hover:to-accent-light/90 text-white font-semibold rounded-xl shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center"
                   >
                     {createClassMutation.isPending && (

@@ -3,17 +3,36 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { GradientMesh } from "@web/components/ui/background";
-import { useTeacherDashboard, useTeacherAnalytics } from "@web/hooks/use-teacher";
+import {
+  useTeacherDashboard,
+  useTeacherAnalytics,
+} from "@web/hooks/use-teacher";
 import { useTranslation } from "@web/context/language-context";
 import {
-  BarChart3, TrendingUp, Users, BookOpen, Award,
-  AlertTriangle, CheckCircle2, Zap, ExternalLink,
-  ChevronDown, ChevronUp
+  BarChart3,
+  TrendingUp,
+  Users,
+  BookOpen,
+  Award,
+  AlertTriangle,
+  CheckCircle2,
+  Zap,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 // ─── Mini bar chart ───────────────────────────────────────────────────────
 
-function MiniBar({ value, max, color }: { value: number; max: number; color: string }) {
+function MiniBar({
+  value,
+  max,
+  color,
+}: {
+  value: number;
+  max: number;
+  color: string;
+}) {
   const pct = max > 0 ? (value / max) * 100 : 0;
   return (
     <div className="flex items-center gap-2">
@@ -26,7 +45,9 @@ function MiniBar({ value, max, color }: { value: number; max: number; color: str
           style={{ backgroundColor: color }}
         />
       </div>
-      <span className="text-xs text-foreground-muted w-8 text-right">{value}</span>
+      <span className="text-xs text-foreground-muted w-8 text-right">
+        {value}
+      </span>
     </div>
   );
 }
@@ -56,15 +77,20 @@ const MAX_TOOL = TOP_TOOLS[0].uses;
 // ─── Page ─────────────────────────────────────────────────────────────────
 
 export default function TeacherAnalyticsPage() {
-  const { data: dashboardData, isLoading: isDashboardLoading } = useTeacherDashboard();
-  const { data: analyticsData, isLoading: isAnalyticsLoading } = useTeacherAnalytics();
+  const { data: dashboardData, isLoading: isDashboardLoading } =
+    useTeacherDashboard();
+  const { data: analyticsData, isLoading: isAnalyticsLoading } =
+    useTeacherAnalytics();
 
   const isLoading = isDashboardLoading || isAnalyticsLoading;
   const { t } = useTranslation();
   const isHindi = t("nav.home") === "होम";
 
   const weeklySubmissions = analyticsData?.weeklySubmissions ?? [];
-  const maxSubmission = Math.max(...weeklySubmissions.map((s: any) => s.count), 0);
+  const maxSubmission = Math.max(
+    ...weeklySubmissions.map((s: any) => s.count),
+    0,
+  );
 
   const gradeDistribution = analyticsData?.gradeDistribution ?? [];
   const maxGrade = Math.max(...gradeDistribution.map((g: any) => g.count), 0);
@@ -82,7 +108,11 @@ export default function TeacherAnalyticsPage() {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 16 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+    },
   };
 
   return (
@@ -101,7 +131,9 @@ export default function TeacherAnalyticsPage() {
             {isHindi ? "कक्षा विश्लेषण" : "Class Analytics"}
           </h1>
           <p className="text-sm text-foreground-muted mt-0.5">
-            {isHindi ? "प्रदर्शन स्तर, पूर्णता दर, और छात्र गतिविधि" : "Performance insights, completion rates, and student activity"}
+            {isHindi
+              ? "प्रदर्शन स्तर, पूर्णता दर, और छात्र गतिविधि"
+              : "Performance insights, completion rates, and student activity"}
           </p>
         </motion.div>
 
@@ -112,19 +144,54 @@ export default function TeacherAnalyticsPage() {
           className="space-y-6"
         >
           {/* Overview stats */}
-          <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <motion.div
+            variants={itemVariants}
+            className="grid grid-cols-2 md:grid-cols-4 gap-3"
+          >
             {[
-              { label: isHindi ? "कुल छात्र" : "Total Students", value: dashboardData?.totalStudents ?? 0, icon: Users, color: "#6366f1" },
-              { label: isHindi ? "पूर्णता दर" : "Completion Rate", value: dashboardData ? `${Math.round(dashboardData.completionRate)}%` : "—", icon: CheckCircle2, color: "#22c55e" },
-              { label: isHindi ? "औसत ग्रेड" : "Average Grade", value: dashboardData?.averageGrade != null ? `${Math.round(dashboardData.averageGrade)}%` : "—", icon: TrendingUp, color: "#f59e0b" },
-              { label: isHindi ? "सक्रिय असाइनमेंट" : "Active Assignments", value: dashboardData?.activeAssignments ?? 0, icon: BookOpen, color: "#06b6d4" },
+              {
+                label: isHindi ? "कुल छात्र" : "Total Students",
+                value: dashboardData?.totalStudents ?? 0,
+                icon: Users,
+                color: "#6366f1",
+              },
+              {
+                label: isHindi ? "पूर्णता दर" : "Completion Rate",
+                value: dashboardData
+                  ? `${Math.round(dashboardData.completionRate)}%`
+                  : "—",
+                icon: CheckCircle2,
+                color: "#22c55e",
+              },
+              {
+                label: isHindi ? "औसत ग्रेड" : "Average Grade",
+                value:
+                  dashboardData?.averageGrade != null
+                    ? `${Math.round(dashboardData.averageGrade)}%`
+                    : "—",
+                icon: TrendingUp,
+                color: "#f59e0b",
+              },
+              {
+                label: isHindi ? "सक्रिय असाइनमेंट" : "Active Assignments",
+                value: dashboardData?.activeAssignments ?? 0,
+                icon: BookOpen,
+                color: "#06b6d4",
+              },
             ].map((s) => (
               <div key={s.label} className="card p-4">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-3" style={{ backgroundColor: `${s.color}18` }}>
+                <div
+                  className="w-9 h-9 rounded-lg flex items-center justify-center mb-3"
+                  style={{ backgroundColor: `${s.color}18` }}
+                >
                   <s.icon className="w-4.5 h-4.5" style={{ color: s.color }} />
                 </div>
-                <p className="stat-number text-2xl leading-none">{isLoading ? "—" : s.value}</p>
-                <p className="text-xs text-foreground-subtle mt-1.5">{s.label}</p>
+                <p className="stat-number text-2xl leading-none">
+                  {isLoading ? "—" : s.value}
+                </p>
+                <p className="text-xs text-foreground-subtle mt-1.5">
+                  {s.label}
+                </p>
               </div>
             ))}
           </motion.div>
@@ -138,19 +205,33 @@ export default function TeacherAnalyticsPage() {
               </h2>
               <div className="flex items-end justify-between gap-3 h-36 pt-4">
                 {isLoading ? (
-                  <div className="w-full h-full flex items-center justify-center text-xs text-foreground-muted">Loading chart...</div>
+                  <div className="w-full h-full flex items-center justify-center text-xs text-foreground-muted">
+                    Loading chart...
+                  </div>
                 ) : weeklySubmissions.length === 0 ? (
-                  <div className="w-full h-full flex items-center justify-center text-xs text-foreground-muted">{isHindi ? "साप्ताहिक डेटा उपलब्ध नहीं" : "No weekly data available"}</div>
+                  <div className="w-full h-full flex items-center justify-center text-xs text-foreground-muted">
+                    {isHindi
+                      ? "साप्ताहिक डेटा उपलब्ध नहीं"
+                      : "No weekly data available"}
+                  </div>
                 ) : (
                   weeklySubmissions.map((s: any, i: number) => {
-                    const pct = maxSubmission > 0 ? (s.count / maxSubmission) * 100 : 0;
+                    const pct =
+                      maxSubmission > 0 ? (s.count / maxSubmission) * 100 : 0;
                     return (
-                      <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                      <div
+                        key={i}
+                        className="flex-1 flex flex-col items-center gap-2 h-full justify-end"
+                      >
                         <div className="w-full h-24 flex items-end relative">
                           <motion.div
                             initial={{ height: 0 }}
                             animate={{ height: `${pct}%` }}
-                            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: i * 0.05 }}
+                            transition={{
+                              duration: 0.7,
+                              ease: [0.16, 1, 0.3, 1],
+                              delay: i * 0.05,
+                            }}
                             className="w-full rounded-t-md min-h-[4px] relative group cursor-default"
                             style={{ backgroundColor: "#6366f1" }}
                           >
@@ -159,7 +240,9 @@ export default function TeacherAnalyticsPage() {
                             </span>
                           </motion.div>
                         </div>
-                        <span className="text-[10px] text-foreground-subtle whitespace-nowrap">{s.dayLabel}</span>
+                        <span className="text-[10px] text-foreground-subtle whitespace-nowrap">
+                          {s.dayLabel}
+                        </span>
                       </div>
                     );
                   })
@@ -175,15 +258,26 @@ export default function TeacherAnalyticsPage() {
               </h2>
               <div className="space-y-3">
                 {isLoading ? (
-                  <div className="py-8 text-center text-xs text-foreground-muted">Loading distribution...</div>
+                  <div className="py-8 text-center text-xs text-foreground-muted">
+                    Loading distribution...
+                  </div>
                 ) : gradeDistribution.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-foreground-muted">{isHindi ? "अभी तक कोई ग्रेडेड सबमिशन नहीं" : "No graded submissions yet"}</div>
+                  <div className="py-8 text-center text-xs text-foreground-muted">
+                    {isHindi
+                      ? "अभी तक कोई ग्रेडेड सबमिशन नहीं"
+                      : "No graded submissions yet"}
+                  </div>
                 ) : (
                   gradeDistribution.map((g: any) => (
                     <div key={g.label}>
                       <div className="flex items-center justify-between text-xs mb-1">
                         <span className="text-foreground-muted">{g.label}</span>
-                        <span className="font-semibold" style={{ color: g.color }}>{g.count} {isHindi ? "छात्र" : "students"}</span>
+                        <span
+                          className="font-semibold"
+                          style={{ color: g.color }}
+                        >
+                          {g.count} {isHindi ? "छात्र" : "students"}
+                        </span>
                       </div>
                       <MiniBar value={g.count} max={maxGrade} color={g.color} />
                     </div>
@@ -200,23 +294,39 @@ export default function TeacherAnalyticsPage() {
               </h2>
               <div className="space-y-3">
                 {isLoading ? (
-                  <div className="py-8 text-center text-xs text-foreground-muted">Loading tools stats...</div>
+                  <div className="py-8 text-center text-xs text-foreground-muted">
+                    Loading tools stats...
+                  </div>
                 ) : topTools.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-foreground-muted">{isHindi ? "कोई टूल गतिविधि दर्ज नहीं" : "No tool activity logged"}</div>
+                  <div className="py-8 text-center text-xs text-foreground-muted">
+                    {isHindi
+                      ? "कोई टूल गतिविधि दर्ज नहीं"
+                      : "No tool activity logged"}
+                  </div>
                 ) : (
                   topTools.map((tool: any, i: number) => (
                     <div key={tool.name}>
                       <div className="flex items-center justify-between text-xs mb-1">
                         <span className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-md flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0"
-                            style={{ backgroundColor: tool.brandColor }}>
+                          <span
+                            className="w-5 h-5 rounded-md flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0"
+                            style={{ backgroundColor: tool.brandColor }}
+                          >
                             {i + 1}
                           </span>
-                          <span className="text-foreground-muted">{tool.name}</span>
+                          <span className="text-foreground-muted">
+                            {tool.name}
+                          </span>
                         </span>
-                        <span className="font-semibold text-foreground">{tool.usageCount} {isHindi ? "बार" : "uses"}</span>
+                        <span className="font-semibold text-foreground">
+                          {tool.usageCount} {isHindi ? "बार" : "uses"}
+                        </span>
                       </div>
-                      <MiniBar value={tool.usageCount} max={maxTool} color={tool.brandColor} />
+                      <MiniBar
+                        value={tool.usageCount}
+                        max={maxTool}
+                        color={tool.brandColor}
+                      />
                     </div>
                   ))
                 )}
@@ -229,13 +339,22 @@ export default function TeacherAnalyticsPage() {
                 <AlertTriangle className="w-4.5 h-4.5 text-warning" />
                 {isHindi ? "गतिविधि चिह्न" : "Activity Flags"}
               </h2>
-              <p className="text-xs text-foreground-muted mb-4">{isHindi ? "कम गतिविधि या छूटी असाइनमेंट वाले छात्र" : "Students with low activity or missed assignments"}</p>
+              <p className="text-xs text-foreground-muted mb-4">
+                {isHindi
+                  ? "कम गतिविधि या छूटी असाइनमेंट वाले छात्र"
+                  : "Students with low activity or missed assignments"}
+              </p>
 
               {isLoading ? (
-                <div className="py-8 text-center text-xs text-foreground-muted">Loading alerts...</div>
+                <div className="py-8 text-center text-xs text-foreground-muted">
+                  Loading alerts...
+                </div>
               ) : atRiskStudents.length > 0 ? (
                 <div className="space-y-2">
-                  {(showAllAlerts ? atRiskStudents : atRiskStudents.slice(0, 3)).map((student: any) => (
+                  {(showAllAlerts
+                    ? atRiskStudents
+                    : atRiskStudents.slice(0, 3)
+                  ).map((student: any) => (
                     <div
                       key={student.id}
                       className="flex items-center justify-between p-3 rounded-xl border border-card-border bg-surface/20 hover:bg-surface/40 transition-colors"
@@ -243,21 +362,31 @@ export default function TeacherAnalyticsPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-white/5 border border-white/5 flex items-center justify-center font-bold text-xs uppercase text-foreground-subtle overflow-hidden">
                           {student.image ? (
-                            <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
+                            <img
+                              src={student.image}
+                              alt={student.name}
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
                             student.name[0]
                           )}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-foreground">{student.name}</p>
-                          <p className="text-xs text-foreground-subtle">{student.reason}</p>
+                          <p className="text-sm font-medium text-foreground">
+                            {student.name}
+                          </p>
+                          <p className="text-xs text-foreground-subtle">
+                            {student.reason}
+                          </p>
                         </div>
                       </div>
-                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md border ${
-                        student.level === "CRITICAL"
-                          ? "text-red-400 border-red-400/25 bg-red-400/10"
-                          : "text-amber-400 border-amber-400/25 bg-amber-400/10"
-                      }`}>
+                      <span
+                        className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md border ${
+                          student.level === "CRITICAL"
+                            ? "text-red-400 border-red-400/25 bg-red-400/10"
+                            : "text-amber-400 border-amber-400/25 bg-amber-400/10"
+                        }`}
+                      >
                         {student.level}
                       </span>
                     </div>
@@ -274,7 +403,9 @@ export default function TeacherAnalyticsPage() {
                         </>
                       ) : (
                         <>
-                          {isHindi ? `और दिखाएं (${atRiskStudents.length - 3} अधिक)` : `Show More (${atRiskStudents.length - 3} more)`}
+                          {isHindi
+                            ? `और दिखाएं (${atRiskStudents.length - 3} अधिक)`
+                            : `Show More (${atRiskStudents.length - 3} more)`}
                           <ChevronDown className="w-3.5 h-3.5" />
                         </>
                       )}
@@ -284,8 +415,16 @@ export default function TeacherAnalyticsPage() {
               ) : (
                 <div className="flex flex-col items-center py-8 text-center">
                   <CheckCircle2 className="w-8 h-8 text-success opacity-40 mb-2" />
-                  <p className="text-sm text-foreground-muted">{isHindi ? "अभी कोई गतिविधि समस्या नहीं" : "No activity concerns right now"}</p>
-                  <p className="text-xs text-foreground-subtle">{isHindi ? "सभी छात्र सही रास्ते पर हैं" : "All students are on track"}</p>
+                  <p className="text-sm text-foreground-muted">
+                    {isHindi
+                      ? "अभी कोई गतिविधि समस्या नहीं"
+                      : "No activity concerns right now"}
+                  </p>
+                  <p className="text-xs text-foreground-subtle">
+                    {isHindi
+                      ? "सभी छात्र सही रास्ते पर हैं"
+                      : "All students are on track"}
+                  </p>
                 </div>
               )}
             </motion.div>

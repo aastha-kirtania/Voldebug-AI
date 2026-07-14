@@ -43,7 +43,10 @@ export const sendEmailOtpSchema = z.object({
 
 export const verifyEmailOtpSchema = z.object({
   email: z.string().email("Invalid email address"),
-  code: z.string().length(6, "Code must be 6 digits").regex(/^\d{6}$/, "Code must be numeric"),
+  code: z
+    .string()
+    .length(6, "Code must be 6 digits")
+    .regex(/^\d{6}$/, "Code must be numeric"),
 });
 
 export type SendEmailOtpInput = z.infer<typeof sendEmailOtpSchema>;

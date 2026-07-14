@@ -26,12 +26,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (status === "loading") return;
-    
+
     // Connect only when we have a userId to identify the socket with
     const token = session?.user?.id;
     if (!token) return;
 
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:4000";
+    const socketUrl =
+      process.env.NEXT_PUBLIC_SOCKET_URL ?? "http://localhost:4000";
     const s = io(socketUrl, {
       auth: { token },
       transports: ["websocket"],

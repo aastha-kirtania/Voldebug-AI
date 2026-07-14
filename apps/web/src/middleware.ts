@@ -2,7 +2,16 @@ import { auth } from "./lib/auth";
 import { NextResponse } from "next/server";
 
 // Public paths that don't require authentication
-const PUBLIC_PATHS = ["/", "/login", "/register", "/terms", "/privacy", "/forgot-password", "/reset-password", "/tools"];
+const PUBLIC_PATHS = [
+  "/",
+  "/login",
+  "/register",
+  "/terms",
+  "/privacy",
+  "/forgot-password",
+  "/reset-password",
+  "/tools",
+];
 const PUBLIC_PREFIXES = ["/api", "/_next", "/favicon", "/tools"];
 
 // Auth-only setup routes (require session but no role yet)
@@ -36,14 +45,23 @@ export default auth((req) => {
     // Authenticated user on setup routes
     if (isSetupRoute) {
       if (role && onboardingStatus === "COMPLETED") {
-        const dest = role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student";
+        const dest =
+          role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student";
         return NextResponse.redirect(new URL(dest, req.nextUrl));
       }
-      if (onboardingStatus && onboardingStatus !== "NOT_STARTED" && pathname === "/role-select") {
-        const dest = role === "TEACHER" ? "/onboarding/teacher" : "/onboarding/student";
+      if (
+        onboardingStatus &&
+        onboardingStatus !== "NOT_STARTED" &&
+        pathname === "/role-select"
+      ) {
+        const dest =
+          role === "TEACHER" ? "/onboarding/teacher" : "/onboarding/student";
         return NextResponse.redirect(new URL(dest, req.nextUrl));
       }
-      if ((!onboardingStatus || onboardingStatus === "NOT_STARTED") && pathname.startsWith("/onboarding")) {
+      if (
+        (!onboardingStatus || onboardingStatus === "NOT_STARTED") &&
+        pathname.startsWith("/onboarding")
+      ) {
         return NextResponse.redirect(new URL("/role-select", req.nextUrl));
       }
       return NextResponse.next();
@@ -51,7 +69,9 @@ export default auth((req) => {
 
     // Ensure role-based routing for dashboard
     const isTeacherRoute = pathname.startsWith("/dashboard/teacher");
-    const isStudentRoute = pathname.startsWith("/dashboard/student") || pathname.startsWith("/dashboard/classroom");
+    const isStudentRoute =
+      pathname.startsWith("/dashboard/student") ||
+      pathname.startsWith("/dashboard/classroom");
 
     if (role === "STUDENT" && isTeacherRoute) {
       return NextResponse.redirect(new URL("/dashboard/student", req.nextUrl));
@@ -77,10 +97,12 @@ export default auth((req) => {
       return NextResponse.redirect(new URL("/role-select", req.nextUrl));
     }
     if (onboardingStatus === "IN_PROGRESS") {
-      const dest = role === "TEACHER" ? "/onboarding/teacher" : "/onboarding/student";
+      const dest =
+        role === "TEACHER" ? "/onboarding/teacher" : "/onboarding/student";
       return NextResponse.redirect(new URL(dest, req.nextUrl));
     }
-    const dest = role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student";
+    const dest =
+      role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student";
     return NextResponse.redirect(new URL(dest, req.nextUrl));
   }
 

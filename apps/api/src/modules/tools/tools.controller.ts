@@ -9,7 +9,10 @@ export async function handleListTools(req: Request, res: Response) {
   try {
     const { category, search } = req.query;
 
-    const where: { category?: string; search?: { mode: "insensitive"; contains: string } } = {};
+    const where: {
+      category?: string;
+      search?: { mode: "insensitive"; contains: string };
+    } = {};
     if (category) where.category = category as string;
     if (search && typeof search === "string") {
       where.search = { mode: "insensitive", contains: search };
@@ -22,23 +25,42 @@ export async function handleListTools(req: Request, res: Response) {
     const filtered = tools.filter((t) => {
       if (!where.category && !where.search) return true;
       if (where.category && t.category !== where.category) return false;
-      if (where.search && !t.name.toLowerCase().includes((where.search as any).contains.toLowerCase()) &&
-          !t.description.toLowerCase().includes((where.search as any).contains.toLowerCase())) return false;
+      if (
+        where.search &&
+        !t.name
+          .toLowerCase()
+          .includes((where.search as any).contains.toLowerCase()) &&
+        !t.description
+          .toLowerCase()
+          .includes((where.search as any).contains.toLowerCase())
+      )
+        return false;
       return true;
     });
 
     return apiSuccess(res, filtered);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch tools", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch tools",
+      status: 500,
+    });
   }
 }
 
-const DEMO_TOOLS_FALLBACK: Record<string, { name: string; category: string; brandColor: string }> = {
+const DEMO_TOOLS_FALLBACK: Record<
+  string,
+  { name: string; category: string; brandColor: string }
+> = {
   "1": { name: "ChatGPT", category: "CHAT_AI", brandColor: "#10a37f" },
   "2": { name: "GitHub Copilot", category: "CODE_AI", brandColor: "#1b1f24" },
   "3": { name: "Midjourney", category: "IMAGE_AI", brandColor: "#000000" },
   "4": { name: "Grammarly", category: "WRITING_AI", brandColor: "#15c39a" },
-  "5": { name: "Perplexity AI", category: "RESEARCH_AI", brandColor: "#20b2aa" },
+  "5": {
+    name: "Perplexity AI",
+    category: "RESEARCH_AI",
+    brandColor: "#20b2aa",
+  },
   "6": { name: "Claude", category: "CHAT_AI", brandColor: "#d97706" },
   "7": { name: "Replit", category: "CODE_AI", brandColor: "#f26207" },
   "8": { name: "Canva AI", category: "IMAGE_AI", brandColor: "#00c4cc" },
@@ -69,11 +91,19 @@ export async function handleGetTool(req: Request, res: Response) {
       } as any;
     }
     if (!tool) {
-      return apiError(res, { code: "NOT_FOUND", message: "Tool not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Tool not found",
+        status: 404,
+      });
     }
     return apiSuccess(res, tool);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch tool", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch tool",
+      status: 500,
+    });
   }
 }
 
@@ -83,9 +113,17 @@ export async function handleTrackToolUsage(req: Request, res: Response) {
     const exists = await prisma.tool.findUnique({ where: { id } });
     if (!exists) {
       if (DEMO_TOOLS_FALLBACK[id]) {
-        return apiSuccess(res, { id, name: DEMO_TOOLS_FALLBACK[id].name, usageCount: 1 });
+        return apiSuccess(res, {
+          id,
+          name: DEMO_TOOLS_FALLBACK[id].name,
+          usageCount: 1,
+        });
       }
-      return apiError(res, { code: "NOT_FOUND", message: "Tool not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Tool not found",
+        status: 404,
+      });
     }
     const tool = await prisma.tool.update({
       where: { id },
@@ -93,10 +131,13 @@ export async function handleTrackToolUsage(req: Request, res: Response) {
     });
     return apiSuccess(res, tool);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to track tool usage", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to track tool usage",
+      status: 500,
+    });
   }
 }
-
 
 export async function handleToolChat(req: Request, res: Response) {
   try {
@@ -105,11 +146,19 @@ export async function handleToolChat(req: Request, res: Response) {
     const studentId = req.userId;
 
     if (!studentId) {
-      return apiError(res, { code: "UNAUTHORIZED", message: "User not logged in", status: 401 });
+      return apiError(res, {
+        code: "UNAUTHORIZED",
+        message: "User not logged in",
+        status: 401,
+      });
     }
 
     if (!prompt || typeof prompt !== "string" || prompt.trim() === "") {
-      return apiError(res, { code: "BAD_REQUEST", message: "Prompt cannot be empty", status: 400 });
+      return apiError(res, {
+        code: "BAD_REQUEST",
+        message: "Prompt cannot be empty",
+        status: 400,
+      });
     }
 
     let tool = await prisma.tool.findUnique({
@@ -134,7 +183,11 @@ export async function handleToolChat(req: Request, res: Response) {
     }
 
     if (!tool) {
-      return apiError(res, { code: "NOT_FOUND", message: "Tool not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Tool not found",
+        status: 404,
+      });
     }
 
     const student = await prisma.user.findUnique({
@@ -162,7 +215,7 @@ export async function handleToolChat(req: Request, res: Response) {
         blocked: true,
         category,
         severity,
-        message
+        message,
       });
 
       const auditLog = await prisma.auditLog.create({
@@ -172,16 +225,18 @@ export async function handleToolChat(req: Request, res: Response) {
           aiResponse: aiResponsePayload,
           toolUsed: tool.name,
           isFlagged: true,
-        }
+        },
       });
 
       // 2. Find student's teachers
       const memberships = await prisma.classMember.findMany({
         where: { userId: studentId },
-        include: { class: true }
+        include: { class: true },
       });
 
-      const teacherIds = Array.from(new Set(memberships.map(m => m.class.teacherId)));
+      const teacherIds = Array.from(
+        new Set(memberships.map((m) => m.class.teacherId)),
+      );
 
       // 3. Dispatch real-time notification to each teacher
       const studentName = student?.name || "A student";
@@ -200,7 +255,7 @@ export async function handleToolChat(req: Request, res: Response) {
         category,
         severity,
         message,
-        auditLogId: auditLog.id
+        auditLogId: auditLog.id,
       });
     }
 
@@ -210,7 +265,7 @@ export async function handleToolChat(req: Request, res: Response) {
       gradeLevel: activeGrade,
       subject,
       topic,
-      toolName: tool.name
+      toolName: tool.name,
     });
 
     // Save unflagged AuditLog
@@ -221,28 +276,34 @@ export async function handleToolChat(req: Request, res: Response) {
         aiResponse: aiResponseText,
         toolUsed: tool.name,
         isFlagged: false,
-      }
+      },
     });
 
     // Complete Daily Challenge if applicable
-    completeDailyChallenge(studentId, "Use an AI Tool today").catch(console.error);
+    completeDailyChallenge(studentId, "Use our AI Doubt Solver today").catch(
+      console.error,
+    );
 
     // Increment tool usage count if tool exists in database
     const toolExists = await prisma.tool.findUnique({ where: { id } });
     if (toolExists) {
       await prisma.tool.update({
         where: { id },
-        data: { usageCount: { increment: 1 } }
+        data: { usageCount: { increment: 1 } },
       });
     }
 
     return apiSuccess(res, {
       blocked: false,
       response: aiResponseText,
-      auditLogId: auditLog.id
+      auditLogId: auditLog.id,
     });
   } catch (err: any) {
     console.error(err);
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to process chat query", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to process chat query",
+      status: 500,
+    });
   }
 }

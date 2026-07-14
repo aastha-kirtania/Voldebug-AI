@@ -5,12 +5,26 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Users, Lightbulb, Trophy, ChevronRight,
-  ChevronLeft, Building2, BookOpen, Zap, CheckCircle2, AlertCircle, Eye, EyeOff
+  Users,
+  Lightbulb,
+  Trophy,
+  ChevronRight,
+  ChevronLeft,
+  Building2,
+  BookOpen,
+  Zap,
+  CheckCircle2,
+  AlertCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 // Password strength helper
-function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
+function getPasswordStrength(pw: string): {
+  score: number;
+  label: string;
+  color: string;
+} {
   if (!pw) return { score: 0, label: "", color: "" };
   let score = 0;
   if (pw.length >= 8) score++;
@@ -37,19 +51,22 @@ const TEACHER_FEATURES = [
     icon: BookOpen,
     color: "#6366f1",
     title: "Create Assignments",
-    description: "Design AI-powered missions that direct students to the right tools.",
+    description:
+      "Design AI-powered missions that direct students to the right tools.",
   },
   {
     icon: Users,
     color: "#06b6d4",
     title: "Manage Students",
-    description: "Track progress, grade submissions, and keep students engaged.",
+    description:
+      "Track progress, grade submissions, and keep students engaged.",
   },
   {
     icon: Trophy,
     color: "#f59e0b",
     title: "Class Analytics",
-    description: "Real-time insights: completion rates, average scores, and tool usage.",
+    description:
+      "Real-time insights: completion rates, average scores, and tool usage.",
   },
 ];
 
@@ -70,7 +87,8 @@ function WelcomeStep({ name }: { name: string }) {
           Welcome{name ? `, ${name}` : ""}!
         </h2>
         <p className="text-foreground-muted text-base max-w-sm mx-auto leading-relaxed">
-          You're joining a platform designed to make AI literacy accessible for every student. Let's get your classroom set up.
+          You're joining a platform designed to make AI literacy accessible for
+          every student. Let's get your classroom set up.
         </p>
       </div>
 
@@ -93,7 +111,9 @@ function FeaturesStep() {
     >
       <div className="text-center mb-6">
         <h2 className="font-display text-2xl font-bold">Your Teacher Tools</h2>
-        <p className="text-foreground-muted text-sm mt-1.5">Everything you need to run an AI-powered classroom</p>
+        <p className="text-foreground-muted text-sm mt-1.5">
+          Everything you need to run an AI-powered classroom
+        </p>
       </div>
 
       <div className="space-y-3">
@@ -107,13 +127,18 @@ function FeaturesStep() {
           >
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: `${item.color}18`, border: `1px solid ${item.color}30` }}
+              style={{
+                backgroundColor: `${item.color}18`,
+                border: `1px solid ${item.color}30`,
+              }}
             >
               <item.icon className="w-5 h-5" style={{ color: item.color }} />
             </div>
             <div>
               <h3 className="font-semibold text-sm">{item.title}</h3>
-              <p className="text-xs text-foreground-muted mt-0.5 leading-relaxed">{item.description}</p>
+              <p className="text-xs text-foreground-muted mt-0.5 leading-relaxed">
+                {item.description}
+              </p>
             </div>
           </motion.div>
         ))}
@@ -159,7 +184,9 @@ function SetupStep({
     >
       <div className="text-center mb-4">
         <h2 className="font-display text-2xl font-bold">Set Up Your Profile</h2>
-        <p className="text-foreground-muted text-sm mt-1.5">Link to your school and complete setup</p>
+        <p className="text-foreground-muted text-sm mt-1.5">
+          Link to your school and complete setup
+        </p>
       </div>
 
       {error && (
@@ -171,10 +198,15 @@ function SetupStep({
 
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <label htmlFor="schoolName" className="text-sm font-medium flex items-center gap-1.5">
+          <label
+            htmlFor="schoolName"
+            className="text-sm font-medium flex items-center gap-1.5"
+          >
             <Building2 className="w-4 h-4 text-foreground-subtle" />
             School Name
-            <span className="text-error ml-auto text-xs font-normal">required</span>
+            <span className="text-error ml-auto text-xs font-normal">
+              required
+            </span>
           </label>
           {loadingSchools ? (
             <div className="flex items-center gap-2 text-xs text-foreground-subtle py-2">
@@ -198,18 +230,24 @@ function SetupStep({
             </select>
           ) : (
             <div className="p-3.5 rounded-xl bg-warning/8 border border-warning/25 text-warning text-xs leading-relaxed font-medium">
-              ⚠️ No schools have been registered by a Principal yet. Please ask your school administration to register first.
+              ⚠️ No schools have been registered by a Principal yet. Please ask
+              your school administration to register first.
             </div>
           )}
         </div>
 
         {!hasPassword && (
           <div className="space-y-1.5">
-            <label htmlFor="password" className="text-sm font-medium flex items-center gap-1.5">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium flex items-center gap-1.5"
+            >
               <Zap className="w-4 h-4 text-foreground-subtle" />
               Set Password
               <span className="text-error">*</span>
-              <span className="text-foreground-subtle text-xs font-normal ml-1">(required to log in via email later)</span>
+              <span className="text-foreground-subtle text-xs font-normal ml-1">
+                (required to log in via email later)
+              </span>
             </label>
             <div className="relative">
               <input
@@ -227,16 +265,26 @@ function SetupStep({
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors"
                 tabIndex={-1}
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
             </div>
             {passwordTouched && password.length > 0 && password.length < 8 && (
-              <p className="text-xs text-error mt-1">Password must be at least 8 characters.</p>
+              <p className="text-xs text-error mt-1">
+                Password must be at least 8 characters.
+              </p>
             )}
 
             {/* Password strength meter */}
             {password.length > 0 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-2">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-2 mt-2"
+              >
                 <div className="flex gap-1.5">
                   {[1, 2, 3, 4].map((i) => {
                     const strength = getPasswordStrength(password);
@@ -244,7 +292,9 @@ function SetupStep({
                       <div
                         key={i}
                         className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                          strength.score >= i ? strength.color : "bg-surface border border-card-border"
+                          strength.score >= i
+                            ? strength.color
+                            : "bg-surface border border-card-border"
                         }`}
                       />
                     );
@@ -253,11 +303,17 @@ function SetupStep({
                 {(() => {
                   const strength = getPasswordStrength(password);
                   return strength.label ? (
-                    <p className={`text-xs font-semibold ${
-                      strength.label === "Weak" ? "text-error" :
-                      strength.label === "Fair" ? "text-warning" :
-                      strength.label === "Good" ? "text-info" : "text-success"
-                    }`}>
+                    <p
+                      className={`text-xs font-semibold ${
+                        strength.label === "Weak"
+                          ? "text-error"
+                          : strength.label === "Fair"
+                            ? "text-warning"
+                            : strength.label === "Good"
+                              ? "text-info"
+                              : "text-success"
+                      }`}
+                    >
                       {strength.label} password
                     </p>
                   ) : null;
@@ -279,7 +335,9 @@ export default function TeacherOnboarding() {
 
   const [step, setStep] = useState(0);
   const [schoolName, setSchoolName] = useState("");
-  const [registeredSchools, setRegisteredSchools] = useState<{ id: string; name: string }[]>([]);
+  const [registeredSchools, setRegisteredSchools] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [loadingSchools, setLoadingSchools] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -298,7 +356,7 @@ export default function TeacherOnboarding() {
             headers: {
               ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
-          }
+          },
         );
         if (res.ok) {
           const json = await res.json();
@@ -332,7 +390,12 @@ export default function TeacherOnboarding() {
 
     try {
       const token = (session?.user as any)?.token;
-      console.log("[TEACHER ONBOARDING] token present:", !!token, "| password provided:", !!password);
+      console.log(
+        "[TEACHER ONBOARDING] token present:",
+        !!token,
+        "| password provided:",
+        !!password,
+      );
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/v1/users/onboarding/teacher`,
         {
@@ -345,12 +408,14 @@ export default function TeacherOnboarding() {
             schoolName: schoolName.trim(),
             password: password || undefined,
           }),
-        }
+        },
       );
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json?.error?.message ?? "Setup failed. Please try again.");
+        throw new Error(
+          json?.error?.message ?? "Setup failed. Please try again.",
+        );
       }
 
       await update({
@@ -385,15 +450,21 @@ export default function TeacherOnboarding() {
                   i < step
                     ? "w-6 h-6 bg-success"
                     : i === step
-                    ? "w-6 h-6 bg-accent"
-                    : "w-2 h-2 bg-card-border"
+                      ? "w-6 h-6 bg-accent"
+                      : "w-2 h-2 bg-card-border"
                 }`}
               >
-                {i < step && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
-                {i === step && <div className="w-2 h-2 rounded-full bg-white" />}
+                {i < step && (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                )}
+                {i === step && (
+                  <div className="w-2 h-2 rounded-full bg-white" />
+                )}
               </div>
               {i < STEPS.length - 1 && (
-                <div className={`h-0.5 w-8 rounded-full transition-all duration-500 ${i < step ? "bg-success" : "bg-card-border"}`} />
+                <div
+                  className={`h-0.5 w-8 rounded-full transition-all duration-500 ${i < step ? "bg-success" : "bg-card-border"}`}
+                />
               )}
             </div>
           ))}
@@ -431,7 +502,10 @@ export default function TeacherOnboarding() {
           <div className="flex gap-3 mt-8">
             {step > 0 && (
               <button
-                onClick={() => { setStep((s) => s - 1); setError(undefined); }}
+                onClick={() => {
+                  setStep((s) => s - 1);
+                  setError(undefined);
+                }}
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-card-border hover:bg-surface/60 text-sm font-medium transition-all"
               >
                 <ChevronLeft className="w-4 h-4" />

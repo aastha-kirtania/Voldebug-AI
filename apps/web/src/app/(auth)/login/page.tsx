@@ -7,7 +7,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@web/components/ui/input";
 import { Button } from "@web/components/ui/button";
 import Link from "next/link";
-import { Zap, LogIn, Eye, EyeOff, AlertCircle, GraduationCap, BookOpen } from "lucide-react";
+import {
+  Zap,
+  LogIn,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  GraduationCap,
+  BookOpen,
+} from "lucide-react";
 
 // ─── Error messages ───────────────────────────────────────────────────────
 
@@ -15,14 +23,21 @@ const ERROR_MAP: Record<string, string> = {
   CredentialsSignin: "Invalid email or password. Please try again.",
   OAuthSignin: "Google sign-in failed to start. Please try again.",
   OAuthCallbackError: "Google sign-in failed. Try email/password instead.",
-  OAuthAccountNotLinked: "This email is already registered. Please sign in with your original method.",
+  OAuthAccountNotLinked:
+    "This email is already registered. Please sign in with your original method.",
   Configuration: "Server configuration error. Please contact support.",
   Default: "Something went wrong. Please try again.",
 };
 
 // ─── Google sign-in button ────────────────────────────────────────────────
 
-function GoogleButton({ loading, onClick }: { loading: boolean; onClick: () => void }) {
+function GoogleButton({
+  loading,
+  onClick,
+}: {
+  loading: boolean;
+  onClick: () => void;
+}) {
   return (
     <motion.button
       type="button"
@@ -36,11 +51,27 @@ function GoogleButton({ loading, onClick }: { loading: boolean; onClick: () => v
         <div className="w-5 h-5 border-2 border-foreground-subtle/40 border-t-foreground rounded-full animate-spin" />
       ) : (
         // FIXED: Using the standard 48x48 Google G Logo for perfect scaling
-        <svg viewBox="0 0 48 48" className="w-5 h-5 flex-shrink-0" aria-hidden="true">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+        <svg
+          viewBox="0 0 48 48"
+          className="w-5 h-5 flex-shrink-0"
+          aria-hidden="true"
+        >
+          <path
+            fill="#EA4335"
+            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+          />
+          <path
+            fill="#4285F4"
+            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+          />
+          <path
+            fill="#FBBC05"
+            d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+          />
+          <path
+            fill="#34A853"
+            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+          />
         </svg>
       )}
       <span className={loading ? "opacity-60" : ""}>Continue with Google</span>
@@ -160,7 +191,7 @@ function LoginForm() {
       await routeAfterLogin();
       setEmailLoading(false);
     },
-    [email, password, routeAfterLogin]
+    [email, password, routeAfterLogin],
   );
 
   return (
@@ -177,7 +208,11 @@ function LoginForm() {
           <div className="flex flex-col items-center gap-2">
             <motion.div
               animate={{ y: [0, -6, 0] }}
-              transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+              transition={{
+                repeat: Infinity,
+                duration: 2.5,
+                ease: "easeInOut",
+              }}
               className="text-5xl select-none"
             >
               🤖
@@ -228,7 +263,10 @@ function LoginForm() {
         {/* Email/password form */}
         <form onSubmit={handleEmailSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-foreground">
+            <label
+              htmlFor="email"
+              className="text-sm font-medium text-foreground"
+            >
               Email address
             </label>
             <Input
@@ -246,7 +284,10 @@ function LoginForm() {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="password" className="text-sm font-medium text-foreground">
+              <label
+                htmlFor="password"
+                className="text-sm font-medium text-foreground"
+              >
                 Password
               </label>
               <Link
@@ -275,7 +316,11 @@ function LoginForm() {
                 tabIndex={-1}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                {showPassword ? (
+                  <EyeOff className="w-4.5 h-4.5" />
+                ) : (
+                  <Eye className="w-4.5 h-4.5" />
+                )}
               </button>
             </div>
           </div>
@@ -304,7 +349,10 @@ function LoginForm() {
         {/* Create account */}
         <p className="text-center text-sm text-foreground-muted">
           New to Voldebug?{" "}
-          <Link href="/register" className="text-accent font-semibold hover:text-accent-light transition-colors">
+          <Link
+            href="/register"
+            className="text-accent font-semibold hover:text-accent-light transition-colors"
+          >
             Create an account
           </Link>
         </p>

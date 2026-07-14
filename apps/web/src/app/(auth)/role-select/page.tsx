@@ -5,8 +5,15 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  GraduationCap, BookOpen, ChevronRight,
-  Zap, Trophy, Bot, Users, Lightbulb, AlertCircle
+  GraduationCap,
+  BookOpen,
+  ChevronRight,
+  Zap,
+  Trophy,
+  Bot,
+  Users,
+  Lightbulb,
+  AlertCircle,
 } from "lucide-react";
 
 // ─── Role definitions ─────────────────────────────────────────────────────
@@ -15,7 +22,8 @@ const ROLES = [
   {
     id: "STUDENT",
     label: "I'm a Student",
-    description: "Explore AI tools assigned by teachers, earn XP, and climb the class leaderboard.",
+    description:
+      "Explore AI tools assigned by teachers, earn XP, and climb the class leaderboard.",
     icon: GraduationCap,
     color: "#6366f1",
     perks: [
@@ -27,7 +35,8 @@ const ROLES = [
   {
     id: "TEACHER",
     label: "I'm a Teacher",
-    description: "Create assignments, guide students to the right AI tools, and track class analytics.",
+    description:
+      "Create assignments, guide students to the right AI tools, and track class analytics.",
     icon: BookOpen,
     color: "#06b6d4",
     perks: [
@@ -61,9 +70,15 @@ export default function RoleSelectPage() {
     if (user?.onboardingStatus && user.onboardingStatus !== "NOT_STARTED") {
       // Already has chosen a role — skip role-select
       if (user.onboardingStatus === "COMPLETED") {
-        router.replace(user.role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student");
+        router.replace(
+          user.role === "TEACHER" ? "/dashboard/teacher" : "/dashboard/student",
+        );
       } else {
-        router.replace(user.role === "TEACHER" ? "/onboarding/teacher" : "/onboarding/student");
+        router.replace(
+          user.role === "TEACHER"
+            ? "/onboarding/teacher"
+            : "/onboarding/student",
+        );
       }
     }
   }, [status, session, router]);
@@ -84,7 +99,7 @@ export default function RoleSelectPage() {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({ role: selected }),
-        }
+        },
       );
 
       if (!res.ok) {
@@ -96,7 +111,9 @@ export default function RoleSelectPage() {
       await update({ role: selected, onboardingStatus: "IN_PROGRESS" });
 
       // Route to the appropriate onboarding flow
-      router.push(selected === "TEACHER" ? "/onboarding/teacher" : "/onboarding/student");
+      router.push(
+        selected === "TEACHER" ? "/onboarding/teacher" : "/onboarding/student",
+      );
     } catch (err: any) {
       setError(err.message ?? "Something went wrong. Please try again.");
       setLoading(false);
@@ -107,7 +124,9 @@ export default function RoleSelectPage() {
   if (
     status === "loading" ||
     status === "unauthenticated" ||
-    (!loading && (session?.user as any)?.onboardingStatus && (session?.user as any)?.onboardingStatus !== "NOT_STARTED")
+    (!loading &&
+      (session?.user as any)?.onboardingStatus &&
+      (session?.user as any)?.onboardingStatus !== "NOT_STARTED")
   ) {
     return null;
   }
@@ -137,7 +156,8 @@ export default function RoleSelectPage() {
               How will you use Voldebug?
             </h1>
             <p className="text-foreground-muted text-sm mt-2">
-              Choose your role to personalize your experience. You can only do this once.
+              Choose your role to personalize your experience. You can only do
+              this once.
             </p>
           </div>
         </div>
@@ -202,10 +222,15 @@ export default function RoleSelectPage() {
                     transition: "background-color 0.2s",
                   }}
                 >
-                  <role.icon className="w-6 h-6" style={{ color: role.color }} />
+                  <role.icon
+                    className="w-6 h-6"
+                    style={{ color: role.color }}
+                  />
                 </div>
 
-                <h2 className="font-display text-lg font-bold mb-2">{role.label}</h2>
+                <h2 className="font-display text-lg font-bold mb-2">
+                  {role.label}
+                </h2>
                 <p className="text-sm text-foreground-muted leading-relaxed mb-4">
                   {role.description}
                 </p>
@@ -213,8 +238,14 @@ export default function RoleSelectPage() {
                 {/* Perks list */}
                 <ul className="space-y-2">
                   {role.perks.map((perk) => (
-                    <li key={perk.text} className="flex items-center gap-2.5 text-xs text-foreground-muted">
-                      <perk.icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: role.color }} />
+                    <li
+                      key={perk.text}
+                      className="flex items-center gap-2.5 text-xs text-foreground-muted"
+                    >
+                      <perk.icon
+                        className="w-3.5 h-3.5 flex-shrink-0"
+                        style={{ color: role.color }}
+                      />
                       {perk.text}
                     </li>
                   ))}
@@ -255,7 +286,8 @@ export default function RoleSelectPage() {
 
         {/* Footer note */}
         <p className="text-xs text-foreground-subtle text-center">
-          Your role cannot be changed after setup. Contact an admin if you need to switch.
+          Your role cannot be changed after setup. Contact an admin if you need
+          to switch.
         </p>
       </motion.div>
     </div>

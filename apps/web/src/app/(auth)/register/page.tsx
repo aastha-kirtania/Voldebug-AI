@@ -7,13 +7,28 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Input } from "@web/components/ui/input";
 import { Button } from "@web/components/ui/button";
-import { Zap, UserPlus, Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  Zap,
+  UserPlus,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
 
-const API = () => (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/$/, "");
+const API = () =>
+  (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(
+    /\/$/,
+    "",
+  );
 
 // ─── Password strength ────────────────────────────────────────────────────
 
-function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
+function getPasswordStrength(pw: string): {
+  score: number;
+  label: string;
+  color: string;
+} {
   if (!pw) return { score: 0, label: "", color: "" };
   let score = 0;
   if (pw.length >= 8) score++;
@@ -29,7 +44,13 @@ function getPasswordStrength(pw: string): { score: number; label: string; color:
 
 // ─── Google button ────────────────────────────────────────────────────────
 
-function GoogleButton({ loading, onClick }: { loading: boolean; onClick: () => void }) {
+function GoogleButton({
+  loading,
+  onClick,
+}: {
+  loading: boolean;
+  onClick: () => void;
+}) {
   return (
     <motion.button
       type="button"
@@ -42,11 +63,27 @@ function GoogleButton({ loading, onClick }: { loading: boolean; onClick: () => v
       {loading ? (
         <div className="w-5 h-5 border-2 border-foreground-subtle/40 border-t-foreground rounded-full animate-spin" />
       ) : (
-        <svg viewBox="0 0 48 48" className="w-5 h-5 flex-shrink-0" aria-hidden="true">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+        <svg
+          viewBox="0 0 48 48"
+          className="w-5 h-5 flex-shrink-0"
+          aria-hidden="true"
+        >
+          <path
+            fill="#EA4335"
+            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+          />
+          <path
+            fill="#4285F4"
+            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+          />
+          <path
+            fill="#FBBC05"
+            d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+          />
+          <path
+            fill="#34A853"
+            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+          />
         </svg>
       )}
       <span className={loading ? "opacity-60" : ""}>Sign up with Google</span>
@@ -99,9 +136,18 @@ function RegisterForm() {
 
   const strength = getPasswordStrength(password);
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const nameErrorMsg = nameTouched && name.length > 0 && name.trim().length < 2 ? "Full name must be at least 2 characters." : "";
-  const emailErrorMsg = emailTouched && email.length > 0 && !isEmailValid ? "Please enter a valid email address." : "";
-  const passwordErrorMsg = passwordTouched && password.length > 0 && password.length < 8 ? "Password must be at least 8 characters." : "";
+  const nameErrorMsg =
+    nameTouched && name.length > 0 && name.trim().length < 2
+      ? "Full name must be at least 2 characters."
+      : "";
+  const emailErrorMsg =
+    emailTouched && email.length > 0 && !isEmailValid
+      ? "Please enter a valid email address."
+      : "";
+  const passwordErrorMsg =
+    passwordTouched && password.length > 0 && password.length < 8
+      ? "Password must be at least 8 characters."
+      : "";
 
   // ── Google sign-up ──────────────────────────────────────────────────────
   const handleGoogle = useCallback(async () => {
@@ -133,7 +179,8 @@ function RegisterForm() {
           body: JSON.stringify({ name, email, password }),
         });
         const json = await res.json();
-        if (!res.ok) throw new Error(json?.error?.message ?? "Registration failed.");
+        if (!res.ok)
+          throw new Error(json?.error?.message ?? "Registration failed.");
 
         // 2. Auto-sign in after registration
         const result = await signIn("credentials", {
@@ -156,7 +203,7 @@ function RegisterForm() {
         setLoading(false);
       }
     },
-    [name, email, password, strength, router]
+    [name, email, password, strength, router],
   );
 
   if (success) {
@@ -170,8 +217,12 @@ function RegisterForm() {
           <CheckCircle2 className="w-8 h-8 text-success" />
         </div>
         <div>
-          <p className="font-display text-xl font-bold text-foreground">Account created!</p>
-          <p className="text-sm text-foreground-muted mt-2">Setting up your profile…</p>
+          <p className="font-display text-xl font-bold text-foreground">
+            Account created!
+          </p>
+          <p className="text-sm text-foreground-muted mt-2">
+            Setting up your profile…
+          </p>
         </div>
       </motion.div>
     );
@@ -190,7 +241,11 @@ function RegisterForm() {
           <div className="flex flex-col items-center gap-2">
             <motion.div
               animate={{ y: [0, -6, 0] }}
-              transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+              transition={{
+                repeat: Infinity,
+                duration: 2.5,
+                ease: "easeInOut",
+              }}
               className="text-5xl select-none"
             >
               🤖
@@ -206,8 +261,12 @@ function RegisterForm() {
           </div>
 
           <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Create your account</h1>
-            <p className="text-foreground-muted text-sm mt-1.5">Join 12,000+ students on Voldebug</p>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
+              Create your account
+            </h1>
+            <p className="text-foreground-muted text-sm mt-1.5">
+              Join 12,000+ students on Voldebug
+            </p>
           </div>
         </div>
 
@@ -237,10 +296,13 @@ function RegisterForm() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium text-foreground">
+            <label
+              htmlFor="name"
+              className="text-sm font-medium text-foreground"
+            >
               Full name
             </label>
-             <Input
+            <Input
               id="name"
               type="text"
               required
@@ -253,14 +315,21 @@ function RegisterForm() {
               className={`w-full transition-shadow focus:ring-2 ${nameErrorMsg ? "border-error focus:ring-error/20" : "focus:ring-accent/20"}`}
             />
             {nameErrorMsg && (
-              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-error">
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-error"
+              >
                 {nameErrorMsg}
               </motion.p>
             )}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-foreground">
+            <label
+              htmlFor="email"
+              className="text-sm font-medium text-foreground"
+            >
               Email address
             </label>
             <Input
@@ -276,14 +345,21 @@ function RegisterForm() {
               className={`w-full transition-shadow focus:ring-2 ${emailErrorMsg ? "border-error focus:ring-error/20" : "focus:ring-accent/20"}`}
             />
             {emailErrorMsg && (
-              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-error">
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-error"
+              >
                 {emailErrorMsg}
               </motion.p>
             )}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium text-foreground">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium text-foreground"
+            >
               Password
             </label>
             <div className="relative">
@@ -305,34 +381,54 @@ function RegisterForm() {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground transition-colors"
                 tabIndex={-1}
               >
-                {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                {showPassword ? (
+                  <EyeOff className="w-4.5 h-4.5" />
+                ) : (
+                  <Eye className="w-4.5 h-4.5" />
+                )}
               </button>
             </div>
             {passwordErrorMsg && (
-              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-error mt-1">
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-error mt-1"
+              >
                 {passwordErrorMsg}
               </motion.p>
             )}
 
             {/* Password strength meter */}
             {password.length > 0 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-2">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-2 mt-2"
+              >
                 <div className="flex gap-1.5">
                   {[1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
                       className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                        strength.score >= i ? strength.color : "bg-surface border border-card-border"
+                        strength.score >= i
+                          ? strength.color
+                          : "bg-surface border border-card-border"
                       }`}
                     />
                   ))}
                 </div>
                 {strength.label && (
-                  <p className={`text-xs font-semibold ${
-                    strength.label === "Weak" ? "text-error" :
-                    strength.label === "Fair" ? "text-warning" :
-                    strength.label === "Good" ? "text-info" : "text-success"
-                  }`}>
+                  <p
+                    className={`text-xs font-semibold ${
+                      strength.label === "Weak"
+                        ? "text-error"
+                        : strength.label === "Fair"
+                          ? "text-warning"
+                          : strength.label === "Good"
+                            ? "text-info"
+                            : "text-success"
+                    }`}
+                  >
                     {strength.label} password
                   </p>
                 )}
@@ -345,7 +441,14 @@ function RegisterForm() {
             variant="primary"
             size="lg"
             className="w-full font-semibold mt-2"
-            disabled={loading || !name || name.trim().length < 2 || !isEmailValid || password.length < 8 || strength.score < 2}
+            disabled={
+              loading ||
+              !name ||
+              name.trim().length < 2 ||
+              !isEmailValid ||
+              password.length < 8 ||
+              strength.score < 2
+            }
           >
             {loading ? (
               <>
@@ -364,15 +467,29 @@ function RegisterForm() {
         {/* Terms */}
         <p className="text-xs text-foreground-muted text-center leading-relaxed px-4">
           By registering, you agree to our{" "}
-          <Link href="/terms" className="text-accent font-medium hover:text-accent-light transition-colors">Terms of Service</Link>
-          {" "}and{" "}
-          <Link href="/privacy" className="text-accent font-medium hover:text-accent-light transition-colors">Privacy Policy</Link>.
+          <Link
+            href="/terms"
+            className="text-accent font-medium hover:text-accent-light transition-colors"
+          >
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/privacy"
+            className="text-accent font-medium hover:text-accent-light transition-colors"
+          >
+            Privacy Policy
+          </Link>
+          .
         </p>
 
         {/* Switch to login */}
         <p className="text-center text-sm text-foreground-muted border-t border-card-border pt-6 mt-6">
           Already have an account?{" "}
-          <Link href="/login" className="text-accent font-semibold hover:text-accent-light transition-colors">
+          <Link
+            href="/login"
+            className="text-accent font-semibold hover:text-accent-light transition-colors"
+          >
             Sign in
           </Link>
         </p>

@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Sparkles, Send, BookOpen, GraduationCap, CornerDownLeft, Loader2 } from "lucide-react";
+import {
+  Sparkles,
+  Send,
+  BookOpen,
+  GraduationCap,
+  CornerDownLeft,
+  Loader2,
+} from "lucide-react";
 import { api } from "@web/lib/api";
 import { useToast } from "@web/components/ui/toast-provider";
 import { WarningModal } from "./warning-modal";
@@ -47,9 +54,19 @@ const PREDICTIVE_CHIPS: Record<string, string[]> = {
   ],
 };
 
-const SUBJECTS = ["Mathematics", "Science", "History", "Computer Science", "English"];
+const SUBJECTS = [
+  "Mathematics",
+  "Science",
+  "History",
+  "Computer Science",
+  "English",
+];
 
-export function DoubtSolver({ toolId, toolName, defaultGradeLevel = 9 }: DoubtSolverProps) {
+export function DoubtSolver({
+  toolId,
+  toolName,
+  defaultGradeLevel = 9,
+}: DoubtSolverProps) {
   const [subject, setSubject] = useState("Science");
   const [topic, setTopic] = useState("");
   const [grade, setGrade] = useState<number>(defaultGradeLevel);
@@ -140,8 +157,12 @@ export function DoubtSolver({ toolId, toolName, defaultGradeLevel = 9 }: DoubtSo
             <Sparkles className="w-5 h-5 text-accent-light" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-foreground">AI Doubt Solver</h2>
-            <p className="text-xs text-foreground-subtle">Ask doubt queries tailored to your learning needs</p>
+            <h2 className="text-base font-semibold text-foreground">
+              AI Doubt Solver
+            </h2>
+            <p className="text-xs text-foreground-subtle">
+              Ask doubt queries tailored to your learning needs
+            </p>
           </div>
         </div>
 
@@ -199,9 +220,12 @@ export function DoubtSolver({ toolId, toolName, defaultGradeLevel = 9 }: DoubtSo
         {messages.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center p-6">
             <BookOpen className="w-10 h-10 text-foreground-muted mb-3" />
-            <h4 className="text-sm font-semibold text-foreground">Start asking doubts</h4>
+            <h4 className="text-sm font-semibold text-foreground">
+              Start asking doubts
+            </h4>
             <p className="text-xs text-foreground-subtle max-w-xs mt-1">
-              Select a subject, use predictive duda chips below, or write a custom query to get a grade-tailored AI explanation.
+              Select a subject, use predictive duda chips below, or write a
+              custom query to get a grade-tailored AI explanation.
             </p>
           </div>
         )}
@@ -209,7 +233,10 @@ export function DoubtSolver({ toolId, toolName, defaultGradeLevel = 9 }: DoubtSo
         {messages.map((msg, i) => {
           const isAI = msg.sender === "ai";
           return (
-            <div key={i} className={`flex ${isAI ? "justify-start" : "justify-end"}`}>
+            <div
+              key={i}
+              className={`flex ${isAI ? "justify-start" : "justify-end"}`}
+            >
               <div
                 className={`max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed whitespace-pre-wrap ${
                   isAI
@@ -229,7 +256,9 @@ export function DoubtSolver({ toolId, toolName, defaultGradeLevel = 9 }: DoubtSo
           <div className="flex justify-start">
             <div className="bg-surface border border-white/5 rounded-2xl px-4 py-3.5 flex items-center gap-2">
               <Loader2 className="w-4 h-4 text-accent-light animate-spin" />
-              <span className="text-xs text-foreground-muted">AI is explaining...</span>
+              <span className="text-xs text-foreground-muted">
+                AI is explaining...
+              </span>
             </div>
           </div>
         )}

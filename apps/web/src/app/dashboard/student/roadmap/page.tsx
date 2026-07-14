@@ -15,7 +15,7 @@ import {
   BookOpen,
   Info,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
 } from "lucide-react";
 
 // ─── Animation Presets ──────────────────────────────────────────────────
@@ -39,7 +39,13 @@ const itemVariants = {
   },
 };
 
-function ScrollReveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function ScrollReveal({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -53,7 +59,7 @@ function ScrollReveal({ children, className = "" }: { children: React.ReactNode;
       {
         threshold: 0.1,
         rootMargin: "0px 0px -50px 0px",
-      }
+      },
     );
 
     if (ref.current) {
@@ -90,7 +96,10 @@ export default function StudentRoadmapPage() {
   // Identify the recommended tool details
   const recommendedTool = useMemo(() => {
     if (!roadmapData) return null;
-    return roadmapData.tools.find((t) => t.id === roadmapData.recommendedToolId) || null;
+    return (
+      roadmapData.tools.find((t) => t.id === roadmapData.recommendedToolId) ||
+      null
+    );
   }, [roadmapData]);
 
   if (isLoading) {
@@ -105,7 +114,10 @@ export default function StudentRoadmapPage() {
           <div className="h-48 bg-white/5 animate-pulse rounded-[2rem]" />
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-white/5 animate-pulse rounded-3xl" />
+              <div
+                key={i}
+                className="h-32 bg-white/5 animate-pulse rounded-3xl"
+              />
             ))}
           </div>
         </div>
@@ -121,9 +133,13 @@ export default function StudentRoadmapPage() {
           <div className="w-12 h-12 rounded-full bg-error/10 border border-error/25 flex items-center justify-center mx-auto text-error">
             <Info className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-foreground">{isHindi ? "रोडमैप लोड करने में विफल" : "Failed to Load Roadmap"}</h2>
+          <h2 className="text-xl font-bold text-foreground">
+            {isHindi ? "रोडमैप लोड करने में विफल" : "Failed to Load Roadmap"}
+          </h2>
           <p className="text-sm text-foreground-subtle">
-            {isHindi ? "आपके विज़ुअल लर्निंग रोडमैप को पुनः प्राप्त करने में समस्या थी। कृपया बाद में पुनः प्रयास करें।" : "There was a problem retrieving your visual learning roadmap. Please check back later."}
+            {isHindi
+              ? "आपके विज़ुअल लर्निंग रोडमैप को पुनः प्राप्त करने में समस्या थी। कृपया बाद में पुनः प्रयास करें।"
+              : "There was a problem retrieving your visual learning roadmap. Please check back later."}
           </p>
         </div>
       </div>
@@ -141,11 +157,12 @@ export default function StudentRoadmapPage() {
   }
 
   return (
-    <div className={`min-h-screen relative selection:bg-accent/30 ${gradeClass}`}>
+    <div
+      className={`min-h-screen relative selection:bg-accent/30 ${gradeClass}`}
+    >
       <GradientMesh className="opacity-40" />
 
       <div className="max-w-4xl mx-auto space-y-8 pb-24 lg:pb-12 px-4 md:px-8 pt-8 relative z-10">
-        
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -159,10 +176,9 @@ export default function StudentRoadmapPage() {
               <span>{isHindi ? "सीखने का रोडमैप" : "Learning Roadmap"}</span>
             </h1>
             <p className="text-sm md:text-base text-foreground-subtle mt-2 font-medium tracking-wide">
-              {isHindi 
+              {isHindi
                 ? `अपने सीखने की प्रगति को ट्रैक करें, उपलब्धियां अर्जित करें और अपने शैक्षिक लक्ष्यों को पूरा करें, ${userName}।`
-                : `Track your learning progress, earn achievements, and complete your educational goals, ${userName}.`
-              }
+                : `Track your learning progress, earn achievements, and complete your educational goals, ${userName}.`}
             </p>
           </div>
         </motion.div>
@@ -183,8 +199,13 @@ export default function StudentRoadmapPage() {
                     {isHindi ? "आपका वर्तमान स्तर" : "Your Current Level"}
                   </h3>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold leading-none">{studentProgress.currentLevel}</span>
-                    <span className="text-xs text-foreground-muted font-medium">({studentProgress.totalXP} {isHindi ? "कुल एक्सपी" : "total XP"})</span>
+                    <span className="text-3xl font-bold leading-none">
+                      {studentProgress.currentLevel}
+                    </span>
+                    <span className="text-xs text-foreground-muted font-medium">
+                      ({studentProgress.totalXP}{" "}
+                      {isHindi ? "कुल एक्सपी" : "total XP"})
+                    </span>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-accent-surface flex items-center justify-center text-accent-light border border-accent/20">
@@ -194,13 +215,24 @@ export default function StudentRoadmapPage() {
 
               <div>
                 <div className="flex justify-between text-xs font-medium text-foreground-muted mb-2">
-                  <span>{isHindi ? `स्तर ${studentProgress.currentLevel} प्रगति` : `Level ${studentProgress.currentLevel} Progress`}</span>
-                  <span>{studentProgress.xpNeededForNextLevel} {isHindi ? `एक्सपी स्तर ${studentProgress.currentLevel + 1} के लिए` : `XP to Level ${studentProgress.currentLevel + 1}`}</span>
+                  <span>
+                    {isHindi
+                      ? `स्तर ${studentProgress.currentLevel} प्रगति`
+                      : `Level ${studentProgress.currentLevel} Progress`}
+                  </span>
+                  <span>
+                    {studentProgress.xpNeededForNextLevel}{" "}
+                    {isHindi
+                      ? `एक्सपी स्तर ${studentProgress.currentLevel + 1} के लिए`
+                      : `XP to Level ${studentProgress.currentLevel + 1}`}
+                  </span>
                 </div>
                 <div className="h-2.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${studentProgress.percentToNextLevel}%` }}
+                    animate={{
+                      width: `${studentProgress.percentToNextLevel}%`,
+                    }}
                     transition={{ duration: 1.5, ease: smoothEase }}
                     className="h-full bg-gradient-to-r from-accent to-accent-light rounded-full relative"
                   >
@@ -218,12 +250,13 @@ export default function StudentRoadmapPage() {
                 <Sparkles className="w-6 h-6 animate-pulse" />
               </div>
               <div>
-                <h4 className="font-semibold text-foreground text-sm">{isHindi ? "पथ प्रगति" : "Path Progression"}</h4>
+                <h4 className="font-semibold text-foreground text-sm">
+                  {isHindi ? "पथ प्रगति" : "Path Progression"}
+                </h4>
                 <p className="text-xs text-foreground-subtle mt-1.5 leading-relaxed">
-                  {isHindi 
+                  {isHindi
                     ? "असाइनमेंट पूरा करके और विभिन्न उपकरणों को आज़माकर एक्सपी अर्जित करें। उच्च स्तर एआई में महारत हासिल करने के लिए आपकी प्रगति और समर्पण को दर्शाते हैं।"
-                    : "Earn XP by completing assignments and trying different tools. Higher levels show your progress and dedication to mastering AI."
-                  }
+                    : "Earn XP by completing assignments and trying different tools. Higher levels show your progress and dedication to mastering AI."}
                 </p>
               </div>
             </GlassCard>
@@ -238,21 +271,21 @@ export default function StudentRoadmapPage() {
         >
           <div className="relative overflow-hidden group rounded-[2rem] border border-accent/20 bg-gradient-to-r from-accent-surface via-transparent to-transparent p-6 md:p-8 shadow-2xl">
             <div className="absolute inset-0 bg-gradient-to-r from-accent/5 to-transparent opacity-50" />
-            
+
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="space-y-3">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-[10px] font-bold text-accent-light uppercase tracking-wider">
-                  <Sparkles className="w-3.5 h-3.5 animate-pulse" /> {isHindi ? "सक्रिय साहसिक कार्य" : "Active Adventure"}
+                  <Sparkles className="w-3.5 h-3.5 animate-pulse" />{" "}
+                  {isHindi ? "सक्रिय साहसिक कार्य" : "Active Adventure"}
                 </span>
                 <div>
                   <h3 className="text-xl font-bold text-foreground">
                     {isHindi ? "आपकी सीखने की खोज" : "Your Learning Quest"}
                   </h3>
                   <p className="text-sm text-foreground-subtle mt-1.5 max-w-xl">
-                    {isHindi 
+                    {isHindi
                       ? "अपनी लाइब्रेरी का विस्तार करने के लिए नीचे दिए गए उपकरणों का उपयोग करके गतिविधियों को पूरा करें। आप जितना अधिक खोजते हैं, उतना ही आगे समठानें लगाते हैं।"
-                      : "Use the AI tools below to build skills and rack up XP. The more you explore, the further you climb."
-                    }
+                      : "Use the AI tools below to build skills and rack up XP. The more you explore, the further you climb."}
                   </p>
                 </div>
               </div>
@@ -261,7 +294,9 @@ export default function StudentRoadmapPage() {
                 href="/dashboard/tools"
                 className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-accent text-white font-semibold text-sm shadow-lg shadow-accent/20 hover:bg-accent-light hover:shadow-accent/30 transition-all active:scale-[0.98] w-full md:w-auto h-12"
               >
-                <span>{isHindi ? "सभी उपकरण ब्राउज़ करें" : "Browse All Tools"}</span>
+                <span>
+                  {isHindi ? "सभी उपकरण ब्राउज़ करें" : "Browse All Tools"}
+                </span>
                 <ArrowRight className="w-4 h-4" />
               </a>
             </div>
@@ -281,7 +316,7 @@ export default function StudentRoadmapPage() {
           {tools.map((tool, index) => {
             const isCompleted = tool.isCompleted;
             const isLocked = tool.isLocked;
-            
+
             // Alternates layout side for timeline on md+ screens
             const isLeft = index % 2 === 0;
 
@@ -293,9 +328,7 @@ export default function StudentRoadmapPage() {
                 } w-full`}
               >
                 {/* Timeline center node indicator */}
-                <div
-                  className="absolute left-6 md:left-1/2 top-10 w-8 h-8 rounded-full border-4 bg-surface border-white/10 text-foreground-muted transform -translate-x-1/2 z-10 flex items-center justify-center"
-                >
+                <div className="absolute left-6 md:left-1/2 top-10 w-8 h-8 rounded-full border-4 bg-surface border-white/10 text-foreground-muted transform -translate-x-1/2 z-10 flex items-center justify-center">
                   <BookOpen className="w-3.5 h-3.5 text-accent-light/75" />
                 </div>
 
@@ -310,8 +343,8 @@ export default function StudentRoadmapPage() {
                       isCompleted
                         ? "bg-success/5 border-success/20 shadow-lg"
                         : isLocked
-                        ? "bg-surface/15 border-white/5 shadow-md"
-                        : "bg-surface/30 border-white/5 hover:border-white/10 shadow-xl"
+                          ? "bg-surface/15 border-white/5 shadow-md"
+                          : "bg-surface/30 border-white/5 hover:border-white/10 shadow-xl"
                     } p-6 group`}
                   >
                     {/* Tool Category Banner & Milestone state indicator */}
@@ -321,7 +354,10 @@ export default function StudentRoadmapPage() {
                       </span>
                       {isLocked && (
                         <span className="text-[10px] font-semibold text-warning/95 flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-warning" /> {isHindi ? `स्तर ${tool.requiredLevel} खोज` : `Lvl ${tool.requiredLevel} Quest`}
+                          <Sparkles className="w-3 h-3 text-warning" />{" "}
+                          {isHindi
+                            ? `स्तर ${tool.requiredLevel} खोज`
+                            : `Lvl ${tool.requiredLevel} Quest`}
                         </span>
                       )}
                     </div>
@@ -330,7 +366,10 @@ export default function StudentRoadmapPage() {
                     <div className="flex items-start gap-4">
                       <div
                         className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-bold text-white shadow-lg flex-shrink-0"
-                        style={{ backgroundColor: tool.brandColor || "var(--color-accent)" }}
+                        style={{
+                          backgroundColor:
+                            tool.brandColor || "var(--color-accent)",
+                        }}
                       >
                         {tool.name[0]}
                       </div>
@@ -348,15 +387,22 @@ export default function StudentRoadmapPage() {
                     {tool.subjects && tool.subjects.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-4 pt-4 border-t border-white/5">
                         {tool.subjects.map((subj) => (
-                          <span key={subj} className="text-[10px] font-medium text-foreground-subtle bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-md">
+                          <span
+                            key={subj}
+                            className="text-[10px] font-medium text-foreground-subtle bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-md"
+                          >
                             {subj}
                           </span>
                         ))}
-                        {tool.useCases && tool.useCases.slice(0, 2).map((use) => (
-                          <span key={use} className="text-[10px] font-medium text-accent-light/80 bg-accent/5 border border-accent/5 px-2.5 py-0.5 rounded-md">
-                            {use}
-                          </span>
-                        ))}
+                        {tool.useCases &&
+                          tool.useCases.slice(0, 2).map((use) => (
+                            <span
+                              key={use}
+                              className="text-[10px] font-medium text-accent-light/80 bg-accent/5 border border-accent/5 px-2.5 py-0.5 rounded-md"
+                            >
+                              {use}
+                            </span>
+                          ))}
                       </div>
                     )}
 
@@ -366,7 +412,15 @@ export default function StudentRoadmapPage() {
                         href={`/dashboard/tools/${tool.id}`}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-accent-light hover:text-accent transition-colors"
                       >
-                        <span>{isCompleted ? (isHindi ? "पुनः एक्सप्लोर करें" : "Explore again") : (isHindi ? "पथ शुरू करें" : "Start path")}</span>
+                        <span>
+                          {isCompleted
+                            ? isHindi
+                              ? "पुनः एक्सप्लोर करें"
+                              : "Explore again"
+                            : isHindi
+                              ? "पथ शुरू करें"
+                              : "Start path"}
+                        </span>
                         <ChevronRight className="w-3.5 h-3.5" />
                       </a>
                     </div>
@@ -383,7 +437,13 @@ export default function StudentRoadmapPage() {
 
 // ─── Sub-components ──────────────────────────────────────────────────────
 
-function GlassCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function GlassCard({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div
       className={`bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-[2rem] p-6 shadow-2xl transition-all duration-500 hover:border-white/10 hover:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] ${className}`}

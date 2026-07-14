@@ -15,12 +15,20 @@ export async function handleGetSchool(req: Request, res: Response) {
     });
 
     if (!school) {
-      return apiError(res, { code: "NOT_FOUND", message: "School not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "School not found",
+        status: 404,
+      });
     }
 
     return apiSuccess(res, school);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch school", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch school",
+      status: 500,
+    });
   }
 }
 
@@ -31,11 +39,15 @@ export async function handleListUsers(req: Request, res: Response) {
   try {
     const school = await prisma.school.findFirst({
       where: { adminId: userId },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!school) {
-      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Managed school not found",
+        status: 404,
+      });
     }
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -74,7 +86,11 @@ export async function handleListUsers(req: Request, res: Response) {
       total,
     });
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to list users", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to list users",
+      status: 500,
+    });
   }
 }
 
@@ -85,11 +101,15 @@ export async function handleGetUser(req: Request, res: Response) {
   try {
     const school = await prisma.school.findFirst({
       where: { adminId: userId },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!school) {
-      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Managed school not found",
+        status: 404,
+      });
     }
 
     const user = await prisma.user.findFirst({
@@ -117,12 +137,20 @@ export async function handleGetUser(req: Request, res: Response) {
     });
 
     if (!user) {
-      return apiError(res, { code: "NOT_FOUND", message: "User not found in your school", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "User not found in your school",
+        status: 404,
+      });
     }
 
     return apiSuccess(res, user);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch user", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch user",
+      status: 500,
+    });
   }
 }
 
@@ -133,25 +161,37 @@ export async function handleUpdateUserRole(req: Request, res: Response) {
 
   try {
     if (!["STUDENT", "TEACHER", "ADMIN"].includes(role)) {
-      return apiError(res, { code: "VALIDATION_ERROR", message: "Invalid role", status: 422 });
+      return apiError(res, {
+        code: "VALIDATION_ERROR",
+        message: "Invalid role",
+        status: 422,
+      });
     }
 
     const school = await prisma.school.findFirst({
       where: { adminId: userId },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!school) {
-      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Managed school not found",
+        status: 404,
+      });
     }
 
     // Verify target user belongs to the same school
     const targetUser = await prisma.user.findFirst({
-      where: { id, schoolId: school.id }
+      where: { id, schoolId: school.id },
     });
 
     if (!targetUser) {
-      return apiError(res, { code: "NOT_FOUND", message: "User not found in your school", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "User not found in your school",
+        status: 404,
+      });
     }
 
     const user = await prisma.user.update({
@@ -162,7 +202,11 @@ export async function handleUpdateUserRole(req: Request, res: Response) {
 
     return apiSuccess(res, user);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to update role", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to update role",
+      status: 500,
+    });
   }
 }
 
@@ -173,11 +217,15 @@ export async function handleListClasses(req: Request, res: Response) {
   try {
     const school = await prisma.school.findFirst({
       where: { adminId: userId },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!school) {
-      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Managed school not found",
+        status: 404,
+      });
     }
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -205,7 +253,11 @@ export async function handleListClasses(req: Request, res: Response) {
       total,
     });
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to list classes", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to list classes",
+      status: 500,
+    });
   }
 }
 
@@ -217,20 +269,28 @@ export async function handleUpdateClass(req: Request, res: Response) {
   try {
     const school = await prisma.school.findFirst({
       where: { adminId: userId },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!school) {
-      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Managed school not found",
+        status: 404,
+      });
     }
 
     // Verify class belongs to the school
     const targetClass = await prisma.class.findFirst({
-      where: { id, schoolId: school.id }
+      where: { id, schoolId: school.id },
     });
 
     if (!targetClass) {
-      return apiError(res, { code: "NOT_FOUND", message: "Class not found in your school", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Class not found in your school",
+        status: 404,
+      });
     }
 
     const data: Record<string, unknown> = {};
@@ -238,10 +298,14 @@ export async function handleUpdateClass(req: Request, res: Response) {
     if (teacherId) {
       // Verify teacher belongs to the school
       const teacher = await prisma.user.findFirst({
-        where: { id: teacherId, role: "TEACHER", schoolId: school.id }
+        where: { id: teacherId, role: "TEACHER", schoolId: school.id },
       });
       if (!teacher) {
-        return apiError(res, { code: "VALIDATION_ERROR", message: "Teacher not found in your school", status: 400 });
+        return apiError(res, {
+          code: "VALIDATION_ERROR",
+          message: "Teacher not found in your school",
+          status: 400,
+        });
       }
       data.teacherId = teacherId;
     }
@@ -253,7 +317,11 @@ export async function handleUpdateClass(req: Request, res: Response) {
 
     return apiSuccess(res, updated);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to update class", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to update class",
+      status: 500,
+    });
   }
 }
 
@@ -264,26 +332,38 @@ export async function handleDeleteClass(req: Request, res: Response) {
   try {
     const school = await prisma.school.findFirst({
       where: { adminId: userId },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!school) {
-      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Managed school not found",
+        status: 404,
+      });
     }
 
     // Verify class belongs to the school
     const targetClass = await prisma.class.findFirst({
-      where: { id, schoolId: school.id }
+      where: { id, schoolId: school.id },
     });
 
     if (!targetClass) {
-      return apiError(res, { code: "NOT_FOUND", message: "Class not found in your school", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Class not found in your school",
+        status: 404,
+      });
     }
 
     await prisma.class.delete({ where: { id } });
     return apiSuccess(res, { success: true });
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to delete class", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to delete class",
+      status: 500,
+    });
   }
 }
 
@@ -296,12 +376,20 @@ export async function handleGetSchoolOverview(req: Request, res: Response) {
     const overview = await getSchoolOverview(userId);
 
     if (!overview) {
-      return apiError(res, { code: "NOT_FOUND", message: "No school found for this admin", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "No school found for this admin",
+        status: 404,
+      });
     }
 
     return apiSuccess(res, overview);
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch school overview", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch school overview",
+      status: 500,
+    });
   }
 }
 
@@ -314,19 +402,29 @@ export async function handleGetAuditLogs(req: Request, res: Response) {
   try {
     const school = await prisma.school.findFirst({
       where: { adminId: userId },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!school) {
-      return apiError(res, { code: "NOT_FOUND", message: "Managed school not found", status: 404 });
+      return apiError(res, {
+        code: "NOT_FOUND",
+        message: "Managed school not found",
+        status: 404,
+      });
     }
 
-    const filters: { isFlagged?: boolean; studentId?: string; toolUsed?: string; schoolId?: string } = {
-      schoolId: school.id
+    const filters: {
+      isFlagged?: boolean;
+      studentId?: string;
+      toolUsed?: string;
+      schoolId?: string;
+    } = {
+      schoolId: school.id,
     };
     if (flagged === "true") filters.isFlagged = true;
     if (flagged === "false") filters.isFlagged = false;
-    if (studentId && typeof studentId === "string") filters.studentId = studentId;
+    if (studentId && typeof studentId === "string")
+      filters.studentId = studentId;
     if (tool && typeof tool === "string") filters.toolUsed = tool;
 
     const result = await getAuditLogs(Number(limit), Number(offset), filters);
@@ -337,6 +435,10 @@ export async function handleGetAuditLogs(req: Request, res: Response) {
       total: result.total,
     });
   } catch {
-    return apiError(res, { code: "INTERNAL_ERROR", message: "Failed to fetch audit logs", status: 500 });
+    return apiError(res, {
+      code: "INTERNAL_ERROR",
+      message: "Failed to fetch audit logs",
+      status: 500,
+    });
   }
 }
