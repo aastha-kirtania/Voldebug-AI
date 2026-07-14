@@ -175,7 +175,7 @@ export default function ScoreboardPage() {
                   <option
                     key={cls.id}
                     value={cls.id}
-                    className="bg-background text-foreground"
+                    className="bg-input text-foreground"
                   >
                     {cls.name}
                   </option>
