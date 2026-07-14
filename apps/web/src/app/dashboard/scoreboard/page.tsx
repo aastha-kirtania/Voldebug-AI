@@ -28,10 +28,11 @@ interface LeaderboardResponse {
 
 // ─── Hooks ──────────────────────────────────────────────────────────────
 
-function useLeaderboard() {
+function useLeaderboard(userId?: string) {
   return useQuery({
-    queryKey: ["leaderboard"],
+    queryKey: ["leaderboard", userId],
     queryFn: () => api.get<LeaderboardResponse>("/v1/gamification/scoreboard"),
+    enabled: !!userId,
     staleTime: 30_000,
     refetchInterval: 15_000,
     retry: 2,
@@ -89,11 +90,16 @@ function GlassCard({
 // ─── Page ───────────────────────────────────────────────────────────────
 
 export default function ScoreboardPage() {
-  const { data, isLoading } = useLeaderboard();
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const { data, isLoading } = useLeaderboard(userId);
   const { t } = useTranslation();
   const isHindi = t("nav.home") === "होम";
+
+  const currentUserEntry = useMemo(
+    () => data?.leaderboard?.find((e) => e.userId === userId),
+    [data?.leaderboard, userId],
+  );
 
   const top3 = useMemo(
     () => data?.leaderboard?.slice(0, 3) ?? [],
@@ -146,15 +152,35 @@ export default function ScoreboardPage() {
             className="flex items-end justify-center gap-2 md:gap-6 mt-12 mb-8 h-64 md:h-72"
           >
             {/* 2nd Place */}
-            {second && <PodiumCard entry={second} rank={2} height="h-[75%]" />}
+            {second && (
+              <PodiumCard
+                entry={second}
+                rank={2}
+                height="h-[75%]"
+                isCurrentUser={second.userId === userId}
+              />
+            )}
 
             {/* 1st Place */}
             {first && (
-              <PodiumCard entry={first} rank={1} height="h-[95%]" isWinner />
+              <PodiumCard
+                entry={first}
+                rank={1}
+                height="h-[95%]"
+                isWinner
+                isCurrentUser={first.userId === userId}
+              />
             )}
 
             {/* 3rd Place */}
-            {third && <PodiumCard entry={third} rank={3} height="h-[60%]" />}
+            {third && (
+              <PodiumCard
+                entry={third}
+                rank={3}
+                height="h-[60%]"
+                isCurrentUser={third.userId === userId}
+              />
+            )}
           </motion.div>
         )}
 
@@ -225,14 +251,16 @@ export default function ScoreboardPage() {
                       </p>
                       {/* Note: We need the actual entry data for the pinned row, falling back to a placeholder if not in memory */}
                       <LeaderboardRow
-                        entry={{
-                          userId: userId,
-                          rank: userRank,
-                          name: "You",
-                          image: null,
-                          level: 0,
-                          totalXP: 0,
-                        }}
+                        entry={
+                          currentUserEntry || {
+                            userId: userId,
+                            rank: userRank,
+                            name: session?.user?.name || "You",
+                            image: session?.user?.image || null,
+                            level: 0,
+                            totalXP: 0,
+                          }
+                        }
                         isCurrentUser
                         delay={0}
                         pinned
@@ -255,29 +283,40 @@ function PodiumCard({
   rank,
   height,
   isWinner = false,
+  isCurrentUser = false,
 }: {
   entry: LeaderboardEntry;
   rank: number;
   height: string;
   isWinner?: boolean;
+  isCurrentUser?: boolean;
 }) {
+  const { t } = useTranslation();
+  const isHindi = t("nav.home") === "होम";
+
   const getStyles = () => {
     if (rank === 1)
       return {
-        bg: "from-amber-400/20 to-yellow-600/10 border-yellow-400/50 shadow-[0_0_30px_rgba(250,204,21,0.2)]",
+        bg: isCurrentUser
+          ? "from-amber-400/30 to-yellow-600/20 border-yellow-400 shadow-[0_0_40px_rgba(250,204,21,0.4)]"
+          : "from-amber-400/20 to-yellow-600/10 border-yellow-400/50 shadow-[0_0_30px_rgba(250,204,21,0.2)]",
         text: "text-yellow-400",
         badge: "bg-yellow-400 text-yellow-950",
         icon: <Crown className="w-5 h-5 mb-1 text-yellow-400 drop-shadow-md" />,
       };
     if (rank === 2)
       return {
-        bg: "from-slate-300/20 to-slate-500/10 border-slate-300/30",
+        bg: isCurrentUser
+          ? "from-slate-300/30 to-slate-500/20 border-slate-300 shadow-[0_0_30px_rgba(203,213,225,0.3)]"
+          : "from-slate-300/20 to-slate-500/10 border-slate-300/30",
         text: "text-slate-300",
         badge: "bg-slate-300 text-slate-900",
         icon: <Medal className="w-5 h-5 mb-1 text-slate-300" />,
       };
     return {
-      bg: "from-orange-400/20 to-red-600/10 border-orange-400/30",
+      bg: isCurrentUser
+        ? "from-orange-400/30 to-red-600/20 border-orange-400 shadow-[0_0_30px_rgba(251,146,60,0.3)]"
+        : "from-orange-400/20 to-red-600/10 border-orange-400/30",
       text: "text-orange-400",
       badge: "bg-orange-400 text-orange-950",
       icon: <Medal className="w-5 h-5 mb-1 text-orange-400" />,
@@ -289,7 +328,9 @@ function PodiumCard({
   return (
     <motion.div
       variants={podiumVariants}
-      className={`relative flex flex-col items-center justify-start rounded-t-3xl border-t border-x bg-gradient-to-b w-28 md:w-36 ${height} ${styles.bg} pt-6 md:pt-8 px-2`}
+      className={`relative flex flex-col items-center justify-start rounded-t-3xl border-t border-x bg-gradient-to-b w-28 md:w-36 ${height} ${styles.bg} pt-6 md:pt-8 px-2 transition-all duration-300 ${
+        isCurrentUser ? "ring-2 ring-accent ring-offset-2 ring-offset-background/50 shadow-[0_0_25px_rgba(99,102,241,0.25)]" : ""
+      }`}
     >
       {/* Sparkles for 1st Place */}
       {isWinner && (
@@ -309,13 +350,20 @@ function PodiumCard({
 
       {/* Avatar */}
       <div
-        className={`w-12 h-12 md:w-16 md:h-16 rounded-[1.25rem] bg-surface flex items-center justify-center text-xl md:text-2xl font-black shadow-inner border border-white/10 ${styles.text}`}
+        className={`w-12 h-12 md:w-16 md:h-16 rounded-[1.25rem] bg-surface flex items-center justify-center text-xl md:text-2xl font-black shadow-inner border border-white/10 ${
+          isCurrentUser ? "bg-accent text-white" : styles.text
+        }`}
       >
         {entry.name?.[0]?.toUpperCase() ?? "?"}
       </div>
 
-      <p className="text-sm md:text-base font-bold mt-3 text-center truncate w-full px-2 text-foreground">
-        {entry.name?.split(" ")[0] ?? "Unknown"}
+      <p className="text-sm md:text-base font-bold mt-3 text-center truncate w-full px-2 text-foreground flex items-center justify-center gap-1">
+        <span className="truncate">{entry.name?.split(" ")[0] ?? "Unknown"}</span>
+        {isCurrentUser && (
+          <span className="text-[10px] font-black uppercase tracking-widest text-accent-light bg-accent/20 px-1.5 py-0.5 rounded-md flex-shrink-0">
+            {isHindi ? "आप" : "You"}
+          </span>
+        )}
       </p>
 
       <p className={`font-black text-lg md:text-xl mt-1 ${styles.text}`}>
