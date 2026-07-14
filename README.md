@@ -1,4 +1,4 @@
-# ⚡ Voldebug AI Education Portal: Project Handover Walkthrough
+# ⚡ Voldebug AI Education Portal: Project Walkthrough
 
 Welcome to the **Voldebug AI Education Portal** project documentation. This guide is compiled to provide engineers, product owners, and school administrators with a comprehensive overview of the portal's features, tech stack, codebase structure, database models, core business logic, and local deployment details.
 
