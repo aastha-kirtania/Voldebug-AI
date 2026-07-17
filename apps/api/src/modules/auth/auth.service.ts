@@ -57,7 +57,7 @@ export async function registerUser(input: {
     data: {
       name: data.name,
       email: data.email,
-      emailVerified: new Date(), // email was verified via OTP
+      emailVerified: data.verificationToken ? new Date() : null, // email was verified via OTP
       passwordHash,
       role: "STUDENT",
     },

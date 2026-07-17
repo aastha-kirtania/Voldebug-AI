@@ -21,6 +21,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { sound } from "@web/lib/audio";
+import { usePublicStats } from "@web/hooks/use-public-stats";
 
 // Password strength helper
 function getPasswordStrength(pw: string): {
@@ -151,6 +152,11 @@ const HOW_IT_WORKS_ITEMS = [
 // ─── Step components ──────────────────────────────────────────────────────
 
 function WelcomeStep({ name }: { name: string }) {
+  const { data: stats } = usePublicStats();
+  const toolsCount = stats?.toolsCount ?? 350;
+  const rawStudents = stats?.studentsCount ?? 12000;
+  const studentsCount = rawStudents >= 1000 ? `${Math.floor(rawStudents / 1000)}K` : rawStudents.toLocaleString();
+
   return (
     <motion.div
       key="welcome"
@@ -172,8 +178,8 @@ function WelcomeStep({ name }: { name: string }) {
 
       <div className="grid grid-cols-3 gap-4 w-full max-w-sm mt-2">
         {[
-          { value: "350+", label: "AI Tools" },
-          { value: "12K+", label: "Students" },
+          { value: `${toolsCount}+`, label: "AI Tools" },
+          { value: `${studentsCount}+`, label: "Students" },
           { value: "∞", label: "XP to earn" },
         ].map((s) => (
           <div key={s.label} className="card p-3 text-center">
@@ -187,6 +193,9 @@ function WelcomeStep({ name }: { name: string }) {
 }
 
 function HowItWorksStep() {
+  const { data: stats } = usePublicStats();
+  const toolsCount = stats?.toolsCount ?? 350;
+
   return (
     <motion.div
       key="how"
@@ -223,7 +232,7 @@ function HowItWorksStep() {
             <div>
               <h3 className="font-semibold text-sm">{item.title}</h3>
               <p className="text-xs text-foreground-muted mt-0.5 leading-relaxed">
-                {item.description}
+                {item.description.replace("350+", `${toolsCount}+`)}
               </p>
             </div>
             <div className="ml-auto text-foreground-subtle/30 text-2xl font-bold font-display flex-shrink-0">

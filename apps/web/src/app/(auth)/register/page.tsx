@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Input } from "@web/components/ui/input";
 import { Button } from "@web/components/ui/button";
+import { usePublicStats } from "@web/hooks/use-public-stats";
 import {
   Zap,
   UserPlus,
@@ -108,6 +109,8 @@ function Divider() {
 function RegisterForm() {
   const router = useRouter();
   const [error, setError] = useState<string>();
+  const { data: stats } = usePublicStats();
+  const studentsCount = stats?.studentsCount ? stats.studentsCount.toLocaleString() : "12,000";
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -265,7 +268,7 @@ function RegisterForm() {
               Create your account
             </h1>
             <p className="text-foreground-muted text-sm mt-1.5">
-              Join 12,000+ students on Voldebug
+              Join {studentsCount}+ students on Voldebug
             </p>
           </div>
         </div>

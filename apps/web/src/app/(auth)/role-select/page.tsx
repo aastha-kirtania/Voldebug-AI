@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePublicStats } from "@web/hooks/use-public-stats";
 import {
   GraduationCap,
   BookOpen,
@@ -54,6 +55,8 @@ type RoleId = "STUDENT" | "TEACHER";
 export default function RoleSelectPage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
+  const { data: stats } = usePublicStats();
+  const toolsCount = stats?.toolsCount ?? 350;
 
   const [selected, setSelected] = useState<RoleId | null>(null);
   const [loading, setLoading] = useState(false);
@@ -246,7 +249,7 @@ export default function RoleSelectPage() {
                         className="w-3.5 h-3.5 flex-shrink-0"
                         style={{ color: role.color }}
                       />
-                      {perk.text}
+                      {perk.text.replace("350+", `${toolsCount}+`)}
                     </li>
                   ))}
                 </ul>
